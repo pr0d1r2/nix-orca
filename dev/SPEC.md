@@ -37,7 +37,7 @@ V2: dev lock graph: 1 nixpkgs (`.:V1`).
 ## §T TASKS
 
 id|status|task|cites
-T1|.|`dev/flake.nix` + `.envrc` + hook install|V1,V2
+T1|x|`dev/flake.nix` + `.envrc` + hook install|V1,V2
 T2|.|builder reachability message|-
 
 ## §B BUGS
