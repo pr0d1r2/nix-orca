@@ -10,6 +10,7 @@ rel|path|lens
 up|.|-
 up|nix|flake outputs, `nix/sources.json`; packages & modules in children
 self|nix/linux|Linux `orca-ide` from source on pin Electron
+sib|nix/darwin|darwin `orca-ide` from upstream signed zip
 
 ## §C CONSTRAINTS
 
