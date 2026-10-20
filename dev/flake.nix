@@ -124,6 +124,22 @@
         ];
       };
       missing = system: unavailable.${system} or [ ];
+
+      # The tools `pklith gen` names for this repository's checks, written to
+      # `nix/pklith.nix` (root T6). Resolved against nixpkgs plus the fleet
+      # inputs, the namespace pklith's catalog uses. Empty until it exists,
+      # and on a system missing fleet tools, whose gates fail anyway.
+      generated =
+        pkgs: system:
+        let
+          file = ../nix/pklith.nix;
+          catalog = pkgs // {
+            microlith = microlith.packages.${system}.default;
+            sherd = sherd.packages.${system}.default;
+            itok = itok.packages.${system}.default;
+          };
+        in
+        if missing system != [ ] || !builtins.pathExists file then [ ] else import file catalog;
       present =
         system:
         map (name: fleet.${name}.packages.${system}.default) (
@@ -160,21 +176,23 @@
               pkgs.vulnix
               pkgs.sbomnix
             ]
-            ++ present system;
+            ++ present system
+            ++ generated pkgs system;
 
             # Deterministic tool output across machines.
             LANG = "C.UTF-8";
 
-            # Hooks on every entry (dev V1): `hk install` is idempotent. Not
-            # before `hk.pkl` exists (root T6), so no empty config ever gates
-            # a commit. Without hk the shell refuses, and never falls back to
-            # another hook runner (`paradigm/V23`).
+            # Hooks on every entry (dev V1): git points at the tracked
+            # `.githooks/` pklith seeds, which run hk. Not before `hk.pkl`
+            # exists, so no empty config ever gates a commit (`paradigm/V22`).
+            # Without hk the shell says so, and never falls back to another
+            # hook runner (`paradigm/V23`).
             shellHook = ''
               nix_orca_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
-              if [ -n "$nix_orca_root" ] && [ -f "$nix_orca_root/hk.pkl" ]; then
+              if [ -n "$nix_orca_root" ] && [ -f "$nix_orca_root/hk.pkl" ] && [ -d "$nix_orca_root/.githooks" ]; then
                 if command -v hk >/dev/null; then
-                  (cd "$nix_orca_root" && hk install >/dev/null) \
-                    || echo "nix-orca(shell): hk install failed, commits are NOT gated" >&2
+                  [ "$(git -C "$nix_orca_root" config --local core.hooksPath)" = .githooks ] \
+                    || git -C "$nix_orca_root" config --local core.hooksPath .githooks
                 else
                   echo "nix-orca(shell): no hk on PATH, git hooks NOT installed" >&2
                 fi

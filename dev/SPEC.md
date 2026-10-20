@@ -20,7 +20,8 @@ sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, rele
 
 - `dev/flake.nix`, own lock; ⊥ in consumers' locks (D8). inputs follow `nixpkgs-lock`.
 - `.envrc`: `use flake ./dev`; also `nix develop ./dev`.
-- hk from `nix-hk`; shell hook runs `hk install` every entry, idempotent; ⊥ hk → refuse, ⊥ fallback runner (`paradigm/V23`).
+- hk from `nix-hk`; shell hook points `core.hooksPath` at pklith's tracked `.githooks/` every entry once `hk.pkl` exists, idempotent; ⊥ hk → refuse, ⊥ fallback runner (`paradigm/V23`). ⊥ `hk install`: pklith seeds tracked hooks (2026-10-20).
+- shell adds tools `pklith gen` names in `nix/pklith.nix`.
 - tools: hk, pklith, actlith, microlith, sherd, itok, characterminator, xenolith, rekall, bats, shellcheck, shfmt, nixfmt, statix, deadnix, gitleaks, jq, `cachix`, `nvd`, `vulnix`, `sbomnix`.
 - shell names `nix-builder.local`; Linux build w/ builder unreachable → clear message, ⊥ local Linux attempt (D34).
 
