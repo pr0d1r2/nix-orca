@@ -9,7 +9,8 @@ bats_require_minimum_version 1.5.0
 
 setup() {
   bump="$BATS_TEST_DIRNAME/../../../scripts/bump.sh"
-  cp "$BATS_TEST_DIRNAME/../../../nix/sources.json" "$BATS_TEST_TMPDIR/sources.json"
+  # A fixed v1.4.230 pin, not the live file a real bump moves.
+  cp "$BATS_TEST_DIRNAME/fixtures/sources-1.4.230.json" "$BATS_TEST_TMPDIR/sources.json"
   cd "$BATS_TEST_TMPDIR" || exit 1
   mkdir tools
   cat >tools/latest-tag.sh <<'STUB'
