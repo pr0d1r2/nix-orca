@@ -495,6 +495,31 @@ picks this flake over the others.
     `nix-serve` is a local convenience; nothing built there is pushed to
     cachix or released, which stays CI's job (decision 3). Amends build
     order step 1. Local.
+35. Hardening is tested, on `nix-builder.local` (owner's note,
+    2026-10-20). The module from open question 5 runs `orca-ide serve` as
+    a hardened systemd service (`DynamicUser`, `ProtectSystem=strict`,
+    `ProtectHome`, `PrivateTmp`, `PrivateDevices`, `NoNewPrivileges`,
+    `CapabilityBoundingSet=`, `RestrictAddressFamilies`,
+    `SystemCallFilter=@system-service`, `MemoryDenyWriteExecute` where V8
+    allows it), and every setting is proven by a `runNixOSTest` run on the
+    builder:
+    - `systemd-analyze security orca-ide-serve` exposure score is a
+      ratchet floor kept in `.exposure` (not `.coverage`, which
+      paradigm/V25 reserves); a change that raises it fails
+    - `orca-ide serve` answers, and a client session runs an agent
+      command, under the full hardening
+    - the same service runs inside a NixOS container (systemd-nspawn,
+      `containers.<name>`) within the VM, for hosts that run agents
+      containerised
+    - each relaxation carries a comment naming what breaks without it.
+      Known tension: `serve` starts Electron under Xvfb, and Chromium's
+      sandbox needs user namespaces, so `RestrictNamespaces` and
+      `PrivateUsers` are settled by the test, not by guessing
+    The VM tests need `kvm` and `nixos-test`, which the builder has and
+    `ubuntu-24.04` runners give only partly; CI runs them where KVM is
+    available and the builder is the reference. Applies once the module
+    node exists; open question 5 still decides whether that is version 1.
+    Local.
 
 # Non-goals
 
@@ -555,7 +580,8 @@ Ask before guessing. A question marked blocking stops the node it names.
    one) that writes Orca's settings declaratively and runs `orca-ide
    serve` as a hardened systemd service for a headless agent host, or only
    the overlay. Lean: overlay only in version 1; the module is the first
-   node after it, tested by the VM from decision 16. Not blocking.
+   node after it, tested by the VM from decision 16 and hardened and
+   tested as decision 35 says. Not blocking.
 6. Electron from nixpkgs on Linux. Closed by decision 21.
 7. Pinned agent CLIs: `orca-ide.override { agents = [ ... ]; }` puts agent
    CLIs from the same pin on Orca's `PATH` (in the pin on 2026-10-20:
