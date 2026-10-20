@@ -175,8 +175,7 @@ Sketch, not final:
   every pushed path is in the cache.
 - on merge to `main`: tag `v<upstream version>-nix.<n>` and publish a
   GitHub release whose notes give the upstream version, the nixpkgs rev,
-  and the store path per system, with per-system nix outputs as assets
-  (format: open question 2) and a `SHA256SUMS` file.
+  and the store path per system, with no binary assets (decision 22).
 - a day with no new upstream release and no new `nixpkgs-lock` rev makes no
   release.
 
@@ -319,6 +318,17 @@ picks this flake over the others.
     lands upstream before it lands in the pin. Darwin keeps upstream's
     Electron (rejected design below). Recount: `strings opt/Orca/orca-ide
     | grep -m1 Electron/`, `du -sk opt/Orca opt/Orca/resources`. Local.
+22. Releases carry no binaries (closes open question 2). A GitHub release
+    holds text only: per system the store path, the NAR hash and size,
+    the closure size, the nixpkgs rev and the commit; a `SHA256SUMS` over
+    the upstream assets it was built from; and the decision 13
+    attestations, made over the NAR hashes. The bytes come from
+    `pr0d1r2.cachix.org` only, so `nix build github:pr0d1r2/nix-orca/<tag>`
+    or `nix-store -r <path>` with the substituter is how a release is
+    fetched. Saves about 1 GB of GitHub storage per release, and a
+    consumer never gets an artifact nix did not check. Candidate
+    `(a)` (a `nix copy --to file://` tarball) is rejected for that size;
+    `nix bundle` was Linux only. Local.
 
 # Non-goals
 
@@ -372,20 +382,16 @@ Ask before guessing. A question marked blocking stops the node it names.
    against the pin's 43.7.11, native modules for four systems, and on
    darwin an unsigned app. Lean: binaries in version 1, a source build as a
    later node with its own spec round. Blocks the package node.
-2. Release asset format. Candidates: (a) a per-system binary cache
-   directory from `nix copy --to file://<dir>?compression=zstd`, tarred,
-   importable with `nix copy --from`; (b) `nix bundle` self-extracting
-   archives, Linux only; (c) a tar of the output path, not relocatable.
-   Lean: (a), plus store paths in the notes for cachix users. Each asset is
-   several hundred MB per system per release. Blocks the release node.
+2. Release asset format. Closed by decision 22.
 3. `x86_64-darwin` in CI: build on the arm64 macOS runner through Rosetta
    (`extra-platforms = x86_64-darwin`, which works for a no-compile
    derivation), or on GitHub's Intel macOS runner while it lasts. Lean:
    Rosetta, with a check that the output's `Orca.app` is the x64 build.
    Blocks the CI node.
 4. Cache and release retention: 4 systems, about 300 MB each, about every
-   1.4 days is about 25 GB a month on cachix and on GitHub. Keep how many
-   releases, and garbage-collect cachix how? Blocks the release node.
+   1.4 days is about 25 GB a month on cachix (decision 22 keeps it off
+   GitHub). Keep how many releases' paths, and garbage-collect cachix how?
+   Blocks the release node.
 5. Modules: a NixOS, nix-darwin or home-manager module (`kevinpita` has
    one) that writes Orca's settings declaratively and runs `orca-ide
    serve` as a hardened systemd service for a headless agent host, or only
