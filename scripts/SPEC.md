@@ -13,6 +13,7 @@ sib|nix|flake outputs, `nix/sources.json`; packages & modules in children
 sib|tests|VM & integration tests, stub model server
 sib|dev|dev shell flake, hook install on entry
 sib|gate|gate scripts: name guard, lock-graph guard; their bats
+sib|docs|human pages: README, SECURITY, CONTRIBUTING, LLM-DISCLAIMER
 
 ## §C CONSTRAINTS
 

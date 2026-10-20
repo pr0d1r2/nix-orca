@@ -18,6 +18,7 @@ scripts|bash for bump, release notes, cachix pins, budgets, reports; mirrored ba
 tests|VM & integration tests, stub model server|package builds (`nix`), unit bats (`scripts`, `gate`)|-
 dev|dev shell flake, hook install on entry|hk steps (`.pklith`), gate scripts (`gate`)|-
 gate|gate scripts: name guard, lock-graph guard; their bats|hk steps (`.pklith`, `hk.pkl`), dev shell (`dev`)|-
+docs|human pages: README, SECURITY, CONTRIBUTING, LLM-DISCLAIMER|spec rules, package behaviour (`nix`)|-
 
 ## §N NAV
 
