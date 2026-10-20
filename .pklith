@@ -69,6 +69,7 @@ path:.closure-budget|-|-|budget data; scripts/closure-budget.sh and its bats tes
 path:.github/workflows/*.yml|actionlint, zizmor, yamllint, actlith-check|-|-
 actlith|actlith-check|-|-
 path:nix/agents/no-package.txt|-|-|agent id list; scripts/agents/unknown.sh reads it
+LICENSE|-|-|license text, no linter reads it
 
 ## rules
 id|kind|select|target|except
