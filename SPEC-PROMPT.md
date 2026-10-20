@@ -445,6 +445,16 @@ picks this flake over the others.
       symlink in the output
     - every ELF file's interpreter and RUNPATH resolve inside the store
     Local.
+32. Desktop integration and README notes (owner's answer, 2026-10-20).
+    Linux: a `.desktop` entry (`StartupWMClass=orca`, as numtide found
+    Electron reports it), the icons from the `.deb`, the `orca://` URL
+    handler, and Wayland flags behind `NIXOS_OZONE_WL`. README notes:
+    Ubuntu 24.04 and later restrict unprivileged user namespaces through
+    AppArmor, and a store path cannot hold a setuid `chrome-sandbox`, so
+    Electron from nix will not start there without an AppArmor profile;
+    the README gives one rather than suggesting `--no-sandbox`. On
+    nix-darwin `Orca.app` lands in `Nix Apps`, which Spotlight may not
+    index. Plus decisions 26 and 27's notes. Local.
 
 # Non-goals
 
