@@ -11,6 +11,7 @@ up|.|-
 up|nix|flake outputs, `nix/sources.json`; packages & modules in children
 self|nix/darwin|darwin `orca-ide` from upstream signed zip
 sib|nix/linux|Linux `orca-ide` from source on pin Electron
+sib|nix/bin|`orca-ide-bin` & fixed-output pieces from `.deb`
 
 ## §C CONSTRAINTS
 
