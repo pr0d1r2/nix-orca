@@ -148,6 +148,11 @@ collected by the cache's retention.
   darwin, a launch from Finder or Spotlight does not go through it.
 - **Spotlight**: on nix-darwin and home-manager the app shows up under
   `Nix Apps`.
+- **`PYTHONPATH`**: Orca passes your environment to the agents it
+  starts, and a `PYTHONPATH` exported by a shell (a nix shell with Python
+  packages, a virtualenv) loads another Python's packages into the Python
+  agents: Mistral Vibe stopped with "cannot import name 'sentinel' from
+  'typing_extensions'". Launch Orca from an environment without it.
 - **Commands not on the wrapper's `PATH`**: the darwin wrapper adds `git`
   only. Agent CLIs come from `orca-ide-agents` or your own `PATH`. The
   Linux wrapper's list lands with the Linux build.
