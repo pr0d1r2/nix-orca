@@ -25,6 +25,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 - ⊥ cachix push of ∀ agent | `orca-ide-agents` (licence, 5 GB, `.:V5`).
 - agent inputs updated daily in own PR, opened w/ the bump App token (`release` §C, round 8) so `build.yml` runs; builds & checks, ⊥ release (D19, D43). ⊥ auto-merge: an update changes third-party nix code (`package.nix`) evaluated in this build; owner merges after reading the diff (round 9; D10 covers only upstream Orca bumps).
 - later, ⊥ v1: each agent in own `systemd-nspawn` container | hardened unit.
+- no-package list (V5), 26 ids at `v1.4.230`: `codebuddy`, `openclaude`, `autohand`, `ante`, `traecli`, `opencode2`, `mimo`, `omp`, `prime-agent`, `qodercli`, `qoderclicn`, `agy`, `kilo`, `auggie`, `cline`, `freebuff`, `command-code`, `cn`, `droid`, `kimi`, `hermes`, `muse`, `dsh-tui`, `zcode`, `devin`, `jcode`. potential, ⊥ v1: packaged only after first release (root T10) (owner, 2026-10-20).
 
 ## §I INTERFACES
 
@@ -52,7 +53,7 @@ T1|.|agent set from pin + `detectCmd` check|V1,V2
 T2|.|5 `flake = false` inputs + `nix-mistral-vibe`|V4
 T3|.|`orca-ide-agents` + `--version` checks|V3
 T4|.|daily agent-input update PR (`scripts`)|-
-T5|.|packaging nodes for 26 agents w/o nix package, nixpkgs first where licence allows|-
+T5|.|after first release (root T10): packaging nodes for no-package list (§C), nixpkgs first where licence allows|V5
 
 ## §B BUGS
 
