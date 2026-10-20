@@ -36,8 +36,8 @@ V2: README platform table ≡ systems in `flake.nix`.
 ## §T TASKS
 
 id|status|task|cites
-T1|.|README|V1,V2
-T2|.|SECURITY, CONTRIBUTING, LLM-DISCLAIMER|-
+T1|x|README|V1,V2
+T2|x|SECURITY, CONTRIBUTING, LLM-DISCLAIMER|-
 
 ## §B BUGS
 
