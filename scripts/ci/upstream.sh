@@ -11,12 +11,14 @@
 # issues go through ISSUE_TOKEN, the job's own token with `issues: write`
 # (the App holds contents and pull-requests only, round 8).
 # Usage: upstream.sh
-# Env: BUMP, GIT, GH name the tools (defaults: scripts/bump.sh, git, gh);
+# Env: BUMP, PR_BODY, GIT, GH name the tools (defaults: scripts/bump.sh,
+# scripts/bump/pr-body.sh, git, gh);
 # SOURCES the pinned file (default nix/sources.json).
 set -euo pipefail
 
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 bump=${BUMP:-$here/../bump.sh}
+pr_body=${PR_BODY:-$here/../bump/pr-body.sh}
 git=${GIT:-git}
 gh=${GH:-gh}
 sources=${SOURCES:-$here/../../nix/sources.json}
@@ -45,12 +47,15 @@ esac
 
 to=$(jq -r .version "$sources")
 title="chore(bump): orca-ide $from -> $to"
+# The dependency report is report-only (round 9): its failure never stops
+# the bump.
+body=$(bash "$pr_body" "v$from" "v$to") || body="The dependency report failed; see the run's log."
 "$git" checkout -B "$branch"
 "$git" commit -m "$title" -- nix/sources.json
 "$git" push --force origin "$branch"
 if [ "$("$gh" pr view "$branch" --json state --jq '.state == "OPEN"' 2>/dev/null)" = true ]; then
-  "$gh" pr edit "$branch" --title "$title"
+  "$gh" pr edit "$branch" --title "$title" --body "$body"
 else
-  "$gh" pr create --head "$branch" --title "$title" --body "Written by scripts/bump.sh."
+  "$gh" pr create --head "$branch" --title "$title" --body "$body"
 fi
 "$gh" pr merge "$branch" --auto --merge
