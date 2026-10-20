@@ -408,6 +408,13 @@ picks this flake over the others.
     read-only store fails; the README says so. Amends decision 6, which
     now holds by default only where upstream detects the external
     manager. Local.
+27. Telemetry off switch, opt-in (owner's answer, 2026-10-20). Upstream
+    honours `DO_NOT_TRACK=1` and `ORCA_TELEMETRY_DISABLED=1`
+    (`docs/site/content/docs/telemetry.mdx`). `orca-ide.override {
+    telemetry = false; }` sets `ORCA_TELEMETRY_DISABLED=1` in the wrapper.
+    Default: upstream's behaviour (patching behaviour is a non-goal). On
+    darwin the wrapper covers `bin/orca-ide` launches only, not the Dock
+    or Finder; the README says so and points at Settings, Privacy. Local.
 
 # Non-goals
 
