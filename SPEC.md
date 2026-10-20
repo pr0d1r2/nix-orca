@@ -90,13 +90,6 @@ V10: ⊥ private repo named in committed text (`paradigm/V37`).
 ## §T TASKS
 
 id|status|task|cites
-T1|x|vendor `FORMAT.md` & `FORMAT-EXTENSIONS.md` from paradigm `e5605a3`|-
-T2|x|spec run: root sections & ∀ node, 1 per commit, trailer `spec-run`|-
-T3|x|freeze `SPEC-PROMPT.md`: line 1 → `HISTORICAL INPUT`, own commit|-
-T4|x|dev shell (`dev`); ask human to reload|V1
-T5|x|`.gitignore`: `.claude/`, `.direnv/`, `result*`|-
-T6|x|guardrails via `.pklith`, 1 check per commit, planted violation each; release-approval waiver row per §C (D37); ask human to reload|V1,V2,V10
-T7|x|`.context-limits` from `sherd budget` + 12–20%|-
 T8|.|waves via `sherd wave`, build order: `nix/linux` x86_64-linux on `nix-builder.local` + unprivileged-user test → `nix/bin` → aarch64-linux (CI) → `nix/darwin` → `scripts` bump → CI → release → `docs` → `nix/modules` stacked → `nix/agents` → `tests` integration layers|V1,V2,V7
 T9|.|CI & release pipeline, see `release` node|V4,V5,V6
 T10|.|GitHub repo `pr0d1r2/nix-orca`, first push, first release `-nix.1`, ∀ w/ approval; `gh repo view` ∀ named repo first|V9,V10
@@ -104,6 +97,8 @@ T11|.|drop release-approval waiver row (§C) when `pr0d1r2/paradigm#24` decided|
 T12|.|follow paradigm: when paradigm moves past `e5605a3`, own PR re-vendors `FORMAT.md` & `FORMAT-EXTENSIONS.md`, updates LINEAGE pin, passes spec checks; owner merges (round 11)|-
 T13|.|owner reviews gap rounds 7–11 (agent-answered, `git log --format='%(trailers:key=Paradigm-Stage,valueonly)'` lists them); each amendment = new dated decision, ⊥ silent rewrite (`paradigm/V5`) (round 11)|-
 T14|.|gate follow-ups from T6: V2 check once `nix/linux` builds; pklith pin past v0.1.0 brings hk 2.7.0 schema, `bats-unit`, `tdd-order` rule, `## exempt` table (release waiver moves there); name guard allowlist half in CI (`paradigm/V37`)|V2,V9,V10
+T15|.|owner reviews agent-made decisions of 2026-10-20 (owner away), each in its commit body: `gitMinimal`, `codebuff` & `openclaw` out, `mistral-vibe` ⊥ x86_64-darwin, codex skip in darwin stub check, hand-written workflows, pnpm global store off, bump to `v1.4.232`|-
+T16|.|unblock `nix-builder.local` (ssh key, nix builder): `nix/linux`, `nix/bin`, `nix/modules`, `tests` VM layers wait on it|-
 
 ## §B BUGS
 
