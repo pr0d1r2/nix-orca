@@ -576,12 +576,12 @@ Ask before guessing. A question marked blocking stops the node it names.
    1.4 days is about 25 GB a month on cachix (decision 22 keeps it off
    GitHub). Keep how many releases' paths, and garbage-collect cachix how?
    Blocks the release node.
-5. Modules: a NixOS, nix-darwin or home-manager module (`kevinpita` has
-   one) that writes Orca's settings declaratively and runs `orca-ide
-   serve` as a hardened systemd service for a headless agent host, or only
-   the overlay. Lean: overlay only in version 1; the module is the first
-   node after it, tested by the VM from decision 16 and hardened and
-   tested as decision 35 says. Not blocking.
+5. Modules: a NixOS, nix-darwin (question 8) or home-manager module
+   (`kevinpita` has one) that writes Orca's settings declaratively and
+   runs `orca-ide serve` as a hardened systemd service for a headless
+   agent host, or only the overlay. Lean: overlay only in version 1;
+   the module is the first node after it, tested by the VM from decision
+   16 and hardened and tested as decision 35 says. Not blocking.
 6. Electron from nixpkgs on Linux. Closed by decision 21.
 7. Pinned agent CLIs: `orca-ide.override { agents = [ ... ]; }` puts agent
    CLIs from the same pin on Orca's `PATH` (in the pin on 2026-10-20:
@@ -590,6 +590,28 @@ Ask before guessing. A question marked blocking stops the node it names.
    plain package's closure does not grow; unfree licences stay the
    consumer's choice. Lean: in version 1, since it is a few lines of
    wrapper. Not blocking.
+8. Service hardening on darwin, through nix-darwin (the owner's machines
+   run nix-darwin, 2026-10-20). The module from question 5 gets a
+   nix-darwin counterpart, `darwinModules.default`, running `orca-ide
+   serve` as a `launchd.daemons` job. macOS has no systemd-style
+   isolation; the layers are: a dedicated user from nix-darwin
+   `users.users` (launchd `UserName`, `GroupName`), so the job cannot read
+   the owner's home or keychain; launchd keys (`Umask`,
+   `WorkingDirectory`, resource limits, `ProcessType`); a Seatbelt
+   profile through `sandbox-exec` (deny by default, read `/nix/store`,
+   write only the state directory, network only on the serve port).
+   `sandbox-exec` is marked deprecated but still works, and nix's own
+   darwin build sandbox uses it; whether Chromium's own Seatbelt use in
+   its helpers works under an outer profile is unknown, so a test
+   settles it. App Sandbox entitlements are out: they need re-signing
+   `Orca.app` (rejected design). Proof is by probes, since nothing like
+   `systemd-analyze security` exists: the job starts, `serve` answers,
+   a write outside the state directory fails, the owner's home is not
+   readable. GitHub macOS runners have no nested virtualisation, so CI
+   probes on the runner itself and a Tart macOS VM on the owner's Mac is
+   the reference. Lean: dedicated user and launchd keys in the module's
+   first version, the Seatbelt profile kept only if the probes pass. Not
+   blocking.
 
 # Process
 
