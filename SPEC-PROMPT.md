@@ -427,6 +427,10 @@ picks this flake over the others.
     pin) writes a CycloneDX and an SPDX SBOM per system from the release
     closure; both are text, attached to the release (decision 22) and
     covered by the decision 13 attestations. Local.
+30. Reproducibility proof (owner's answer, 2026-10-20). CI runs `nix build
+    --rebuild` for every system's package and fails when the rebuild is
+    not bit-identical; the release notes say it was. Cheap here, since
+    nothing compiles. Local.
 
 # Non-goals
 
