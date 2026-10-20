@@ -686,6 +686,55 @@ picks this flake over the others.
     when its tests pass (decision 16's VM for NixOS, the macOS runner and
     Tart for nix-darwin, an activation check for home-manager), and only
     then does the next start. Amends the build order. Local.
+43. Agent CLIs as native nix packages (owner's answer, 2026-10-20;
+    closes open question 7). Orca `v1.4.230` knows 45 agents, each found
+    by a `detectCmd` on `PATH` (`src/shared/tui-agent-config.ts`). Every
+    one with a usable nix package ships with this flake, 18 of them:
+    - from per-agent flakes that track upstream releases, ahead of the
+      pin: `sadjow/claude-code-nix` (`claude` 2.1.304),
+      `sadjow/codex-cli-nix` (`codex` 0.163.0), `sadjow/gemini-cli-nix`
+      (`gemini` 0.64.0), `sadjow/pi-nix` (`pi` 1.3.0),
+      `AodhanHayter/grok-build-nix` (xAI's Grok Build, `grok` 1.0.62)
+      and the fleet's `nix-mistral-vibe` (`vibe` 2.26.1);
+    - from the pin: `opencode` 1.15.10, `aider-chat` 0.86.1 (`aider`),
+      `goose-cli` 1.28.0, `amp-cli` (`amp`), `crush` 0.70.0, `codebuff`
+      1.0.674, `cursor-cli` (`cursor-agent`), `github-copilot-cli` 1.0.61
+      (`copilot`), `kiro-cli` 2.3.0, `qwen-code` 0.16.0 (`qwen`), `acli`
+      1.3.36 (Rovo Dev) and `openclaw` 2026.5.7.
+    Not matched: the pin's `grok-cli` 0.0.33 is a different, community
+    CLI under the same command; its `antigravity` is the IDE, whose
+    program is not Orca's `agy` (checked when packaged); `kilocode-cli`
+    lists no platforms and installs `kilocode`, not `kilo`; the pin's
+    `ante` and `muse` are unrelated programs (a language, a MIDI
+    sequencer). The other 26, Orca itself (`claude-agent-teams`)
+    aside, have no nix package; each is a later node, sent to nixpkgs
+    where its licence allows. Inputs: the five per-agent flakes are
+    `flake = false` inputs whose `package.nix` is called with the pin's
+    packages, so the closure keeps one nixpkgs and the lock gains five
+    leaf nodes; `nix-mistral-vibe` is a flake input with
+    `inputs.nixpkgs-lock.follows`. A consumer overrides any agent from
+    their own flake (`inputs.nix-orca.inputs.claude-code-nix.url = ...`
+    or `.follows`), and per package with `orca-ide.override { agents =
+    [ ... ]; }`. Outputs: `orca-ide` stays lean with no agents;
+    `orca-ide-agents` puts all 18 on Orca's `PATH`, and each agent is
+    also `legacyPackages.<system>.agents.<name>`; an agent missing on a
+    system is left out there rather than failing the build. Seven are
+    unfree (`claude-code`, `amp-cli`, `crush`, `cursor-cli`,
+    `github-copilot-cli`, `kiro-cli`, `acli`): the flake's own outputs
+    evaluate with `allowUnfree`, the overlay honours the consumer's
+    setting. Neither `orca-ide-agents` nor any agent is pushed to
+    cachix: unfree licences forbid redistributing most of them, the
+    free ones are on cache.nixos.org or their flakes' caches, and the 5
+    GB tier (decision 40) has no room. A daily job updates the agent
+    inputs in its own PR, which builds and checks but makes no release
+    (decision 19). Later, not version 1: each agent in its own
+    `systemd-nspawn` container or hardened unit, as decision 35 tests
+    for `serve`. Amends decision 8 (the root gains six inputs; decision
+    17's lock-graph check still asserts one nixpkgs). Recount: `detectCmd`
+    entries in `tui-agent-config.ts` at the tag; `nix eval` of each
+    attribute's `version`, `meta.mainProgram` and `meta.license` on the
+    pin; `version` in each flake's `package.nix` or `sources.json`.
+    Local.
 
 # Non-goals
 
@@ -744,13 +793,7 @@ Ask before guessing. A question marked blocking stops the node it names.
    days) is the baseline decision 40 compares against.
 5. Modules. Closed by decision 42.
 6. Electron from nixpkgs on Linux. Closed by decision 21.
-7. Pinned agent CLIs: `orca-ide.override { agents = [ ... ]; }` puts agent
-   CLIs from the same pin on Orca's `PATH` (in the pin on 2026-10-20:
-   `claude-code` 2.1.223, `codex` 0.146.0, `opencode` 1.15.10), so an
-   agent fleet is reproducible with its tools. Default list empty, so the
-   plain package's closure does not grow; unfree licences stay the
-   consumer's choice. Lean: in version 1, since it is a few lines of
-   wrapper. Not blocking.
+7. Pinned agent CLIs. Closed by decision 43.
 8. Service hardening on darwin. Closed by decision 36.
 
 # Process
