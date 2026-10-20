@@ -176,8 +176,8 @@ Sketch, not final:
 - on merge to `main`: tag `v<upstream version>-nix.<n>` and publish a
   GitHub release whose notes give the upstream version, the nixpkgs rev,
   and the store path per system, with no binary assets (decision 22).
-- a day with no new upstream release and no new `nixpkgs-lock` rev makes no
-  release.
+- a day with no new upstream release makes no release, even when
+  `nixpkgs-lock` moved (decision 19).
 
 # Decisions (2026-10-20)
 
