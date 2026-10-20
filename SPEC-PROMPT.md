@@ -263,6 +263,15 @@ picks this flake over the others.
     answers. Darwin: `codesign --verify --deep --strict` on the store
     `Orca.app`, proving the signature survived the copy into the store (a
     NAR keeps no extended attributes, so this is a real question). Local.
+17. One nixpkgs, from `nixpkgs-lock` (owner's request, 2026-10-20), for
+    everything: the package, the dev flake, and every tool this round
+    names (`nvd`, `vulnix`, `electron_43`, the agent CLIs). "The pin" in
+    this file always means `nixpkgs-lock`'s nixpkgs. No input may bring a
+    second nixpkgs, not even nixpkgs-unstable for a newer Electron or
+    agent CLI; a lock-graph check (exactly one nixpkgs node, every input
+    `follows` it, `docs/NIX.md`) fails the gate otherwise. The repository
+    follows `nixpkgs-lock` bumps through `nixpkgs-lock-subscribe`, and a
+    bump is a release input (decision 4). Narrows decision 8. Local.
 
 # Non-goals
 
