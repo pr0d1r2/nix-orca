@@ -43,6 +43,7 @@ V1: ∀ agent in set: `meta.mainProgram` = Orca `detectCmd` | alias for its id a
 V2: agent unavailable on a system → absent there, ⊥ eval | build failure.
 V3: ∀ agent `--version` exits 0 in sandbox w/o network | key.
 V4: lock graph keeps 1 nixpkgs w/ agent inputs present (`.:V1`).
+V5: ∀ `detectCmd` id at pinned upstream tag ∈ agent set ∪ no-package list kept here; new id upstream → check reports & opens 1 issue, ⊥ fails build (round 11).
 
 ## §T TASKS
 
