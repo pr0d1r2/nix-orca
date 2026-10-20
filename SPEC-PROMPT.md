@@ -520,6 +520,36 @@ picks this flake over the others.
     available and the builder is the reference. Applies once the module
     node exists; open question 5 still decides whether that is version 1.
     Local.
+36. Darwin service hardening with Seatbelt itself, on by default, with an
+    opt-out (owner's answer, 2026-10-20; closes open question 8). The
+    nix-darwin module (`darwinModules.default`) runs `orca-ide serve` as
+    a `launchd.daemons` job under a dedicated user from nix-darwin
+    `users.users` (launchd `UserName`, `GroupName`), with launchd limits
+    (`Umask`, `WorkingDirectory`, resource limits, `ProcessType`), through
+    the built-in `/usr/bin/sandbox-exec` and a Seatbelt profile kept in
+    this repository (`orca-ide.sb`): deny by default; read `/nix/store`
+    and the system paths Electron needs; read and write only the state
+    directory; inbound TCP only on the serve port; exec only from
+    `/nix/store`. The module renders the store path, state directory and
+    port as `sandbox-exec -D` parameters. Nothing beyond macOS is
+    installed; nix's own darwin build sandbox uses the same mechanism,
+    and nix's `sandbox-defaults.sb` and Chromium's `.sb` profiles are the
+    prior art the profile is written from, since Apple does not document
+    the profile language. Opt-out: `services.orca-ide.sandbox.enable =
+    false` drops `sandbox-exec` and keeps the dedicated user and launchd
+    limits; the option's description says it is for when the profile
+    breaks something, and the README asks for an issue whenever it is
+    used. Probes, run by CI on a macOS runner (no nested virtualisation)
+    and in a Tart macOS VM on the owner's Mac as the reference: the job
+    starts; `serve` answers; a write outside the state directory fails;
+    the owner's home is not readable; and the unified log (`log show
+    --predicate 'sender == "Sandbox"'`) shows only the denials the test
+    expects, so an unexpected denial fails the test. Known unknown,
+    settled by the probes: Chromium applies its own Seatbelt profile to
+    its helpers, which may not work under an outer profile; if it fails,
+    the profile is relaxed where the log points, not dropped. Network
+    rules are by address and port, not domain. Applies once the module
+    node exists (open question 5). Local.
 
 # Non-goals
 
@@ -590,28 +620,7 @@ Ask before guessing. A question marked blocking stops the node it names.
    plain package's closure does not grow; unfree licences stay the
    consumer's choice. Lean: in version 1, since it is a few lines of
    wrapper. Not blocking.
-8. Service hardening on darwin, through nix-darwin (the owner's machines
-   run nix-darwin, 2026-10-20). The module from question 5 gets a
-   nix-darwin counterpart, `darwinModules.default`, running `orca-ide
-   serve` as a `launchd.daemons` job. macOS has no systemd-style
-   isolation; the layers are: a dedicated user from nix-darwin
-   `users.users` (launchd `UserName`, `GroupName`), so the job cannot read
-   the owner's home or keychain; launchd keys (`Umask`,
-   `WorkingDirectory`, resource limits, `ProcessType`); a Seatbelt
-   profile through `sandbox-exec` (deny by default, read `/nix/store`,
-   write only the state directory, network only on the serve port).
-   `sandbox-exec` is marked deprecated but still works, and nix's own
-   darwin build sandbox uses it; whether Chromium's own Seatbelt use in
-   its helpers works under an outer profile is unknown, so a test
-   settles it. App Sandbox entitlements are out: they need re-signing
-   `Orca.app` (rejected design). Proof is by probes, since nothing like
-   `systemd-analyze security` exists: the job starts, `serve` answers,
-   a write outside the state directory fails, the owner's home is not
-   readable. GitHub macOS runners have no nested virtualisation, so CI
-   probes on the runner itself and a Tart macOS VM on the owner's Mac is
-   the reference. Lean: dedicated user and launchd keys in the module's
-   first version, the Seatbelt profile kept only if the probes pass. Not
-   blocking.
+8. Service hardening on darwin. Closed by decision 36.
 
 # Process
 
