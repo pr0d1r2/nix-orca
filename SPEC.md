@@ -30,7 +30,7 @@ self|.|-
 ## §C CONSTRAINTS
 
 - lang = nix + bash; 1 python stub (stdlib only) in `tests`. paradigm `docs/NIX.md`: nixfmt, statix, deadnix, nixpkgs follows nixpkgs-lock, 1 nixpkgs in lock graph, Linux-only work from macOS → remote Linux builder. `docs/SHELL.md`: one script one job, ⊥ shell functions except `info` `warn` `fatal`, extract ⊥ embed, mirrored bats both ways, TDD order on push, env-var seams named in script header.
-- 1 nixpkgs = pin = `nixpkgs-lock`'s nixpkgs (`8ce73368`) ∀ package, dev flake, tool (D17). ⊥ nixpkgs-unstable, ⊥ 2nd nixpkgs for newer Electron | agent. follows `nixpkgs-lock` bumps via `nixpkgs-lock-subscribe`.
+- 1 nixpkgs = pin = `nixpkgs-lock`'s nixpkgs (`f3a73bcf` since 2026-10-20; was `8ce73368`) ∀ package, dev flake, tool (D17). ⊥ nixpkgs-unstable, ⊥ 2nd nixpkgs for newer Electron | agent. follows `nixpkgs-lock` bumps via `nixpkgs-lock-subscribe`.
 - root inputs: `nixpkgs-lock` + 6 agent inputs (D8 amended by D43). gate tools in `dev/flake.nix` ⊥ root (D8).
 - systems: `aarch64-darwin`, `x86_64-darwin`, `x86_64-linux`, `aarch64-linux`, all built & checked by CI (D1). ⊥ Windows (D2).
 - Linux `orca-ide` = source build at upstream tag, run by pin `electron_43` (D21, D38). darwin `orca-ide` = upstream signed `-mac.zip`, `Orca.app` ⊥ modified (D38; nixpkgs Electron on darwin rejected: signature, TCC, keychain). darwin may lag Linux by ≥ 1 release (D38): until `nix/darwin` lands, releases cover Linux only & notes say so; after, ∀ 4 systems green ! before release (round 7).
@@ -68,7 +68,7 @@ self|.|-
 id|topic|finding|src
 R1|upstream 2026-10-20|latest `v1.4.230` 2026-10-19; 51 stable releases 2026-08-10…2026-10-19 (~1 / 1.4 d); `-rc.N` = prerelease; Electron 43.7.8, Node 24; `packageManager` pnpm 12.8.1 at tag (12.14.0 = latest pnpm, misread earlier); MIT|`gh release list -R stablyai/orca -L 200 --json tagName,publishedAt,isPrerelease`
 R2|upstream assets `v1.4.230`|`.deb` amd64 210 MB, arm64 205 MB; `-mac.zip` arm64 305 MB, x64 315 MB; `latest*.yml` w/ `sha512` & `size`; AppImage names unversioned|`gh release view -R stablyai/orca --json assets`
-R3|pin `8ce73368` 2026-10-20|`electron` 43.7.11, `pnpm` 11.27.0, `nodejs_24` 24.21.0, `agent-browser` 0.27.0, `sherpa-onnx` 1.12.38, `onnxruntime` 1.24.4, `sbomnix` 1.7.6, `vulnix` 1.12.4, `nvd` 0.2.4, `cachix` 1.11.1, `ollama` 0.40.3; `orca` = GNOME screen reader|`nix eval --raw github:NixOS/nixpkgs/<pin>#<attr>.version`
+R3|pin `8ce73368` 2026-10-20, same at `f3a73bcf`|`electron` 43.7.11, `pnpm` 11.27.0, `nodejs_24` 24.21.0, `agent-browser` 0.27.0, `sherpa-onnx` 1.12.38, `onnxruntime` 1.24.4, `sbomnix` 1.7.6, `vulnix` 1.12.4, `nvd` 0.2.4, `cachix` 1.11.1, `ollama` 0.40.3; `orca` = GNOME screen reader|`nix eval --raw github:NixOS/nixpkgs/<pin>#<attr>.version`
 R4|prior art 2026-10-20|numtide `llm-agents.nix`, `elsirion/orca-nix` (pnpm 11 reads upstream lockfile), `kevinpita`, `Samuka007`, `stslex`, NUR: ∀ repackage binaries; ⊥ `x86_64-darwin`, ⊥ follows `nixpkgs-lock`, ⊥ published outputs|`gh search code stablyai/orca --extension nix`
 R9|cachix 2026-10-20|free 5 GB for open source; `cachix pin <cache> <name> <path> --keep-revisions N`; cache prefers ZSTD|cachix.org/pricing, `cachix pin --help`, `app.cachix.org/api/v1/cache/pr0d1r2`
 R10|paradigm release rule `paradigm/V32`|per-publish approval ∵ registry artifact immutable; split proposed by reversibility, open|`pr0d1r2/paradigm#24`
