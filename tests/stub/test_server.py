@@ -37,6 +37,21 @@ class TurnTest(unittest.TestCase):
         self.assertEqual(server.turn(SCRIPT, 7), SCRIPT["turns"][1])
 
 
+class SideRequestTest(unittest.TestCase):
+    """A request that offers no tools (a title, a model router) gets the final text."""
+
+    def test_no_tools_means_the_last_text_turn(self):
+        self.assertEqual(server.pick(SCRIPT, "chat", {"messages": []}), SCRIPT["turns"][1])
+
+    def test_tools_offered_means_the_scripted_turn(self):
+        body = {"messages": [], "tools": [{"type": "function", "function": {"name": "Write"}}]}
+        self.assertEqual(server.pick(SCRIPT, "chat", body), SCRIPT["turns"][0])
+
+    def test_gemini_tools_count_as_offered(self):
+        body = {"contents": [], "tools": [{"functionDeclarations": [{"name": "write_file"}]}]}
+        self.assertEqual(server.pick(SCRIPT, "gemini", body), SCRIPT["turns"][0])
+
+
 class ToolResultsTest(unittest.TestCase):
     def test_chat_counts_tool_role_messages(self):
         body = {"messages": [{"role": "user", "content": "x"}, {"role": "tool", "content": "ok"}]}
@@ -57,6 +72,30 @@ class ToolResultsTest(unittest.TestCase):
             ]
         }
         self.assertEqual(server.tool_results("messages", body), 1)
+
+
+class GeminiTest(unittest.TestCase):
+    def test_counts_function_response_parts(self):
+        body = {"contents": [{"role": "user", "parts": [{"functionResponse": {"name": "write_file"}}]}]}
+        self.assertEqual(server.tool_results("gemini", body), 1)
+
+    def test_a_function_call(self):
+        reply = json.loads(server.render("gemini", SCRIPT["turns"][0], "stub", False))
+        part = reply["candidates"][0]["content"]["parts"][0]
+        self.assertEqual(part["functionCall"]["name"], "Write")
+        self.assertEqual(part["functionCall"]["args"], SCRIPT["turns"][0]["tool"]["arguments"])
+
+    def test_streamed_text(self):
+        events = [json.loads(e) for e in sse(server.render("gemini", SCRIPT["turns"][1], "stub", True))]
+        self.assertEqual(events[-1]["candidates"][0]["finishReason"], "STOP")
+        text = "".join(p.get("text", "") for e in events for p in e["candidates"][0]["content"]["parts"])
+        self.assertEqual(text, "Done.")
+
+    def test_routes(self):
+        self.assertEqual(server.route("/v1beta/models/gemini-x:generateContent"), ("gemini", False))
+        self.assertEqual(server.route("/v1beta/models/gemini-x:streamGenerateContent?alt=sse"), ("gemini", True))
+        self.assertEqual(server.route("/v1/messages"), ("messages", None))
+        self.assertEqual(server.route("/v1/nope"), (None, None))
 
 
 class ChatTest(unittest.TestCase):
@@ -116,7 +155,7 @@ class DeterminismTest(unittest.TestCase):
     """V1: the same script gives the same bytes, every protocol, every mode."""
 
     def test_same_bytes_twice(self):
-        for protocol in ("chat", "responses", "messages"):
+        for protocol in ("chat", "responses", "messages", "gemini"):
             for stream in (False, True):
                 for turn in SCRIPT["turns"]:
                     self.assertEqual(
@@ -152,6 +191,12 @@ class HttpTest(unittest.TestCase):
             self.post("/v1/messages", {"model": "m", "messages": [{"role": "user", "content": "go"}, result]})
         )
         self.assertEqual(second["content"][0]["text"], "Done.")
+
+    def test_gemini_streams_on_its_own_path(self):
+        body = {"contents": [{"role": "user", "parts": [{"text": "go"}]}], "tools": [{"functionDeclarations": []}]}
+        raw = self.post("/v1beta/models/m:streamGenerateContent?alt=sse", body)
+        first = json.loads(sse(raw)[0])
+        self.assertEqual(first["candidates"][0]["content"]["parts"][0]["functionCall"]["name"], "Write")
 
     def test_models_lists_one_model(self):
         with urllib.request.urlopen(self.base + "/v1/models") as response:
