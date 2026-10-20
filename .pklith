@@ -61,4 +61,4 @@ id|kind|select|target|except
 # bats file, and no bats file outlives its script. TDD order waits for a
 # pklith tag with the `tdd-order` kind (v0.1.0 has none).
 gate-test|exists|gate/*.sh|tests/unit/gate/{stem}.bats|-
-gate-orphan|orphan|gate/*.sh|tests/unit/gate/{stem}.bats|-
+gate-orphan|orphan|tests/unit/gate/*.bats|gate/{stem}.sh|-
