@@ -73,3 +73,16 @@ R8|agents `v1.4.230`|45 `detectCmd` in `src/shared/tui-agent-config.ts`; 18 w/ u
 R9|cachix 2026-10-20|free 5 GB for open source; `cachix pin <cache> <name> <path> --keep-revisions N`; cache prefers ZSTD|cachix.org/pricing, `cachix pin --help`, `app.cachix.org/api/v1/cache/pr0d1r2`
 R10|paradigm release rule `paradigm/V32`|per-publish approval ∵ registry artifact immutable; split proposed by reversibility, open|`pr0d1r2/paradigm#24`
 R11|space estimate 2026-10-20|pinned ~0.35 GB (2 Linux outputs × 2 systems, ~295 + 205 MB NAR, ~35% zstd assumed); pushed ~3 GB / month; source build expected smaller, measured at first push|D40, D41
+
+## §V INVARIANTS
+
+V1: lock graph: exactly 1 nixpkgs node, ∀ input w/ `nixpkgs` follows it; gate fails else (D17).
+V2: ⊥ `bin/orca` in ∀ output (D5).
+V3: ∀ GitHub release ⊥ binary asset; notes carry ∀ field of §I release (D13, D22, D29).
+V4: release ⇔ new upstream stable version; `nixpkgs-lock` bump alone → ⊥ release (D19).
+V5: ∀ cachix push ⊆ Linux `orca-ide` closure; ⊥ darwin, ⊥ `orca-ide-agents`, ⊥ agent, ⊥ unfree, ⊥ `orca-ide-bin` path (D38, D41, D43).
+V6: pin rotates only when path ≠ newest pinned revision; ⊥ change cache retention, ⊥ delete cache path (D40).
+V7: package ⊥ updates itself; store copy read-only (D6).
+V8: tests ⊥ network except fixed-output fetches; ⊥ paid inference, ⊥ API key (D44).
+V9: ∀ outward act ∈ approval list (§C) has human approval on record; ⊥ irreversible registry publish (D37).
+V10: ⊥ private repo named in committed text (`paradigm/V37`).
