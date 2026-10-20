@@ -25,6 +25,8 @@ jobs:
       contents: write
       id-token: write
       attestations: write
+      # The critical-CVE watch opens issues (round 9).
+      issues: write
     env:
       EVENT: ${{ github.event_name }}
     steps:
@@ -69,4 +71,12 @@ jobs:
           release/NAR-SHA256SUMS release/*.cdx.json release/*.spdx.json
         env:
           TAG: ${{ steps.tag.outputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+      # Report-only: a critical CVE in an owned path opens an issue; the
+      # release has gone out already (round 9, D15).
+      - if: steps.tag.outputs.tag != ''
+        run: >-
+          nix develop ./dev --command bash scripts/ci/vulnix-watch.sh
+          "$(readlink release/x86_64-linux)" "$(readlink release/aarch64-linux)"
+        env:
           GH_TOKEN: ${{ github.token }}
