@@ -37,7 +37,7 @@ self|.|-
 - stable upstream releases only, ⊥ `-rc.N` (D7).
 - program `orca-ide` only, ⊥ `orca` (screen reader clash, D5).
 - ⊥ self-update: update arrives as new flake release only (D6); updater & telemetry off switches opt-in, default = upstream behaviour (D26, D27).
-- cadence: build daily from `main`; release ⇔ new upstream stable version; `nixpkgs-lock` bump → built, checked, cached, ⊥ released (D19). build once: bump PR from own branch pushes cachix, release job builds nothing (D20). bump PR merges itself when ∀ required check green (D10).
+- cadence: build daily from `main`; release ⇔ new upstream stable version; `nixpkgs-lock` bump → built, checked, cached, ⊥ released (D19). build once: bump PR from own branch pushes cachix, release job builds nothing (D20). Orca & `nixpkgs-lock` bump PRs merge themselves when ∀ required check green (D10); agent-input PRs wait for the owner (round 9).
 - CI & release mechanics (workflows, tokens, permissions, bump flow, release job) in `release` node.
 - release = text only, ⊥ binary assets (D22). tag `v<upstream version>-nix.<n>`: `n = 1` for the first release of each upstream version, whatever unblocked it (round 7 decision 4); packaging fix that changes a Linux output for the current upstream version → `-nix.<n+1>`, only by owner-run `workflow_dispatch` of the release job, ⊥ automatic (round 7; D19 stays the only automatic trigger).
 - cache `pr0d1r2.cachix.org`: cachix free tier, 5 GB shared w/ fleet (D40). push = Linux `orca-ide` closure only: ⊥ darwin (D41), ⊥ agents, ⊥ unfree (D43), ⊥ `orca-ide-bin` (D38). pins keep 2 Linux revisions / system (D40). ⊥ change cache retention, ⊥ delete path.
