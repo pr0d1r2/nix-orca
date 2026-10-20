@@ -5,14 +5,17 @@ A script is JSON, `{"turns": [...]}`; each turn is either a tool call,
 `{"tool": {"name": ..., "arguments": {...}}}`, or a final answer,
 `{"text": ...}`. A request gets the turn whose index is the number of tool
 results it already carries, so an agent that runs the tool and sends its
-result back gets the next turn; past the end the last turn repeats.
+result back gets the next turn; past the end the last turn repeats. A
+request that offers no tools (a title, a model router) gets the script's
+last text turn instead: a tool call is no answer to it.
 
-Three protocols, each plain or streamed (server-sent events) as the
-request's `stream` asks:
+Four protocols, each plain or streamed (server-sent events):
 
-- OpenAI chat completions, POST /v1/chat/completions
-- OpenAI responses, POST /v1/responses
-- Anthropic messages, POST /v1/messages
+- OpenAI chat completions, POST /v1/chat/completions (`stream` in the body)
+- OpenAI responses, POST /v1/responses (`stream` in the body)
+- Anthropic messages, POST /v1/messages (`stream` in the body)
+- Google Gemini, POST /v1beta/models/<model>:generateContent, and
+  :streamGenerateContent for a stream
 
 GET /v1/models lists one model. Ids and timestamps are fixed, so the same
 script always gives the same bytes (tests V1). Stdlib only (root §C).
@@ -30,6 +33,8 @@ PROTOCOLS = {
     "/v1/messages": "messages",
 }
 
+GEMINI = "/v1beta/models/"
+
 USAGE = {"input_tokens": 1, "output_tokens": 1}
 
 
@@ -39,8 +44,37 @@ def turn(script, results):
     return turns[min(results, len(turns) - 1)]
 
 
+def route(path):
+    """(protocol, stream) for a POST path; stream is None when the body says."""
+    path = path.split("?")[0]
+    if path.startswith(GEMINI):
+        return "gemini", path.endswith(":streamGenerateContent")
+    return PROTOCOLS.get(path), None
+
+
+def offers_tools(body):
+    """Whether a request offers the model any tool, in any protocol's shape."""
+    for tool in body.get("tools") or []:
+        if "functionDeclarations" not in tool or tool["functionDeclarations"]:
+            return True
+    return False
+
+
+def pick(script, protocol, body):
+    """The turn for a request: its scripted turn, or the last text when it offers no tools."""
+    if not offers_tools(body):
+        texts = [t for t in script["turns"] if "text" in t]
+        if texts:
+            return texts[-1]
+    return turn(script, tool_results(protocol, body))
+
+
 def tool_results(protocol, body):
     """How many tool results a request already carries."""
+    if protocol == "gemini":
+        return sum(
+            1 for content in body.get("contents", []) for part in content.get("parts", []) if "functionResponse" in part
+        )
     if protocol == "chat":
         return sum(1 for m in body.get("messages", []) if m.get("role") == "tool")
     if protocol == "responses":
@@ -208,7 +242,23 @@ def messages(step, model, stream):
     )
 
 
-RENDERERS = {"chat": chat, "responses": responses, "messages": messages}
+def gemini(step, model, stream):
+    """Google Gemini generateContent; a stream is the same object per event."""
+    if "tool" in step:
+        part = {"functionCall": {"name": step["tool"]["name"], "args": step["tool"]["arguments"]}}
+    else:
+        part = {"text": step["text"]}
+    reply = {
+        "candidates": [{"content": {"role": "model", "parts": [part]}, "finishReason": "STOP", "index": 0}],
+        "usageMetadata": {"promptTokenCount": 1, "candidatesTokenCount": 1, "totalTokenCount": 2},
+        "modelVersion": model,
+    }
+    if not stream:
+        return dump(reply).encode()
+    return events([(None, reply)])
+
+
+RENDERERS = {"chat": chat, "responses": responses, "messages": messages, "gemini": gemini}
 
 
 def render(protocol, step, model, stream):
@@ -233,14 +283,15 @@ def handler(script):
             )
 
         def do_POST(self):
-            protocol = PROTOCOLS.get(self.path.split("?")[0])
+            protocol, stream = route(self.path)
             if protocol is None:
                 self.send_error(404)
                 return
             length = int(self.headers.get("Content-Length") or 0)
             body = json.loads(self.rfile.read(length) or b"{}")
-            stream = bool(body.get("stream"))
-            step = turn(script, tool_results(protocol, body))
+            if stream is None:
+                stream = bool(body.get("stream"))
+            step = pick(script, protocol, body)
             payload = render(protocol, step, body.get("model", "stub"), stream)
             self.reply(200, "text/event-stream" if stream else "application/json", payload)
 
