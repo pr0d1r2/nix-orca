@@ -171,9 +171,10 @@ Sketch, not final:
   is newer than `nix/sources.json`, run the bump script, which fetches the
   tag's source, its JS dependencies and the two darwin zips and writes
   their hashes; open a PR.
-- `build.yml`, on the PR: build and check all four systems with nix, each
-  on a native runner, push to cachix, and verify from a separate job that
-  every pushed path is in the cache.
+- `build.yml`, on the PR: build and check all four systems with nix
+  (`x86_64-darwin` through Rosetta, decision 39), push the Linux outputs
+  to cachix (decision 41), and verify from a separate job that every
+  pushed path is in the cache.
 - on merge to `main`: tag `v<upstream version>-nix.<n>` and publish a
   GitHub release whose notes give the upstream version, the nixpkgs rev,
   and the store path per system, with no binary assets (decision 22).
