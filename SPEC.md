@@ -101,6 +101,7 @@ T8|.|waves via `sherd wave`, build order: `nix/linux` x86_64-linux on `nix-build
 T9|.|CI & release pipeline, see `release` node|V4,V5,V6
 T10|.|GitHub repo `pr0d1r2/nix-orca`, first push, first release `-nix.1`, ∀ w/ approval; `gh repo view` ∀ named repo first|V9,V10
 T11|.|drop release-approval waiver row (§C) when `pr0d1r2/paradigm#24` decided|V9
+T12|.|follow paradigm: when paradigm moves past `e5605a3`, own PR re-vendors `FORMAT.md` & `FORMAT-EXTENSIONS.md`, updates LINEAGE pin, passes spec checks; owner merges (round 11)|-
 
 ## §B BUGS
 
