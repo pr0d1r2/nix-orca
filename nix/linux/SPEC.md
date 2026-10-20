@@ -57,7 +57,7 @@ V9: `updater = false` → updater reports itself unusable (D26).
 ## §T TASKS
 
 id|status|task|cites
-T1|.|JS deps FOD via `fetchPnpmDeps`; measured (R2)|-
+T1|x|JS deps FOD via `fetchPnpmDeps`; measured (R2)|-
 T2|.|source build x86_64-linux on `nix-builder.local`; Electron major guard|V4
 T3|.|ripgrep, agent-browser, sherpa swaps + guards|V2,V3
 T4|.|wrapper, desktop, AppArmor profile, overrides|V8,V9
