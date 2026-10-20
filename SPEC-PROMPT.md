@@ -361,6 +361,26 @@ picks this flake over the others.
     `Orca.app`). Recount: `strings agent-browser-linux-x64 | grep -m1
     'agent-browser [0-9]'`, `nix eval --raw <pin>#agent-browser.version`.
     Local.
+25. Linux uses the pin's sherpa-onnx and onnxruntime libraries, with a
+    load test (owner's answer, 2026-10-20). Upstream's
+    `node_modules/sherpa-onnx-linux-x64` (local speech-to-text,
+    `src/main/speech/`) carries `libonnxruntime.so` 1.23.2 (23 MB),
+    `libsherpa-onnx-c-api.so` (4.8 MB) and `libsherpa-onnx-cxx-api.so`
+    from sherpa-onnx 1.12.37; the pin ships `sherpa-onnx` 1.12.38, whose
+    `lib/` has both API libraries, linked to the pin's `onnxruntime`
+    1.24.4. The package deletes the three libraries, keeps upstream's
+    `sherpa-onnx.node` addon (0.9 MB) and points its RUNPATH at the pin's
+    `sherpa-onnx`. Load test, a check on every build: Electron in node
+    mode loads the addon, `ldd` shows every library resolving to the pin's
+    store paths and none to the package, and the addon reports its
+    version; a recognition round trip runs on a small model fetched as a
+    fixed-output derivation, if one of a few MB exists (the spec run
+    picks it). The decision 16 VM test loads the speech worker as well.
+    Guard: a check fails when upstream's sherpa-onnx and the pin's differ
+    in major or minor, and the package then keeps the bundled libraries.
+    Saves 28 MB per release. Darwin unchanged. Recount: `grep version
+    node_modules/sherpa-onnx-linux-x64/package.json`, `readelf -d` on the
+    addon and libraries. Local.
 
 # Non-goals
 
