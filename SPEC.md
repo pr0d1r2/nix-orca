@@ -58,3 +58,18 @@ self|.|-
 - release: tag `v<upstream>-nix.<n>`; notes per system: store path, NAR hash & size, closure size, nixpkgs rev, commit, closure diff, vulnix findings, `--rebuild` result; files: `SHA256SUMS` of upstream inputs, CycloneDX & SPDX SBOM, attestations over NAR hashes.
 - CI: `.github/workflows/build.yml`, `upstream.yml` from `.actlith`.
 - env: `CACHIX_AUTH_TOKEN` (CI secret).
+
+## §R RESEARCH
+
+id|topic|finding|src
+R1|upstream 2026-10-20|latest `v1.4.230` 2026-10-19; 51 stable releases 2026-08-10…2026-10-19 (~1 / 1.4 d); `-rc.N` = prerelease; Electron 43.7.8, Node 24, pnpm 12.14.0 workspace (`mobile/`, `cloud/`, `native/`); MIT|`gh release list -R stablyai/orca -L 200 --json tagName,publishedAt,isPrerelease`
+R2|upstream assets `v1.4.230`|`.deb` amd64 210 MB, arm64 205 MB; `-mac.zip` arm64 305 MB, x64 315 MB; `latest*.yml` w/ `sha512` & `size`; AppImage names unversioned|`gh release view -R stablyai/orca --json assets`
+R3|pin `8ce73368` 2026-10-20|`electron` 43.7.11, `pnpm` 11.27.0, `nodejs_24` 24.21.0, `agent-browser` 0.27.0, `sherpa-onnx` 1.12.38, `onnxruntime` 1.24.4, `sbomnix` 1.7.6, `vulnix` 1.12.4, `nvd` 0.2.4, `cachix` 1.11.1, `ollama` 0.40.3; `orca` = GNOME screen reader|`nix eval --raw github:NixOS/nixpkgs/<pin>#<attr>.version`
+R4|prior art 2026-10-20|numtide `llm-agents.nix`, `elsirion/orca-nix` (pnpm 11 reads upstream lockfile), `kevinpita`, `Samuka007`, `stslex`, NUR: ∀ repackage binaries; ⊥ `x86_64-darwin`, ⊥ follows `nixpkgs-lock`, ⊥ published outputs|`gh search code stablyai/orca --extension nix`
+R5|`.deb` `v1.4.230` amd64 size|680 MB unpacked: Electron 318, `resources/` 363 (UI copies ~158, `orcad-template` 84, 15 `ripgrep` copies 72, `node_modules` 53, `cloud/` 6.5); 57 MB duplicate files|`du -sk`, file hashes of unpacked `.deb`
+R6|`v1.4.229` → `v1.4.230`|514 of 663 MB files byte-identical; stable: `orcad-template/targets` 58.5 MB 91.5%, `node_modules` w/o sherpa ~20 MB 99.8%, `onboarding` 10.9 MB, `app.asar.unpacked/resources` 4.1 MB|hash ∀ file of both `.deb`s, group by `resources/` entry
+R7|upstream packaging bugs filed 2026-10-20|`stablyai/orca#30993`: `app.asar` ships `cloud/` + 7 root configs, 652 files 6.5 MB, byte-identical to tag; `stablyai/orca#30999`: ssh2 `pagent.exe`, `pagent.c`, `build_pagent.bat` in Linux package|`gh issue view -R stablyai/orca`
+R8|agents `v1.4.230`|45 `detectCmd` in `src/shared/tui-agent-config.ts`; 18 w/ usable nix package; 7 unfree|`nix eval` `version`, `meta.mainProgram`, `meta.license` on pin
+R9|cachix 2026-10-20|free 5 GB for open source; `cachix pin <cache> <name> <path> --keep-revisions N`; cache prefers ZSTD|cachix.org/pricing, `cachix pin --help`, `app.cachix.org/api/v1/cache/pr0d1r2`
+R10|paradigm release rule `paradigm/V32`|per-publish approval ∵ registry artifact immutable; split proposed by reversibility, open|`pr0d1r2/paradigm#24`
+R11|space estimate 2026-10-20|pinned ~0.35 GB (2 Linux outputs × 2 systems, ~295 + 205 MB NAR, ~35% zstd assumed); pushed ~3 GB / month; source build expected smaller, measured at first push|D40, D41
