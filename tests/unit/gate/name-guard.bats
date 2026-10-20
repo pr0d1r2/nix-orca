@@ -4,7 +4,7 @@
 
 setup() {
   guard="$BATS_TEST_DIRNAME/../../../gate/name-guard.sh"
-  cd "$BATS_TEST_TMPDIR"
+  cd "$BATS_TEST_TMPDIR" || exit 1
   printf '# a comment, not an entry\n\nzorblax\n  Quuxcorp  \n' >denylist
   export NAME_GUARD_DENYLIST="$BATS_TEST_TMPDIR/denylist"
 }

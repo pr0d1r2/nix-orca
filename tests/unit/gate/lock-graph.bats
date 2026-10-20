@@ -7,7 +7,7 @@ bats_require_minimum_version 1.5.0
 setup() {
   guard="$BATS_TEST_DIRNAME/../../../gate/lock-graph.sh"
   lock="$BATS_TEST_DIRNAME/../../../dev/flake.lock"
-  cd "$BATS_TEST_TMPDIR"
+  cd "$BATS_TEST_TMPDIR" || exit 1
 }
 
 @test "the dev shell's lock passes, quietly" {
