@@ -19,6 +19,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 
 - source: upstream tag via `fetchFromGitHub`, hash in `nix/sources.json` (D38).
 - JS deps: 1 fixed-output derivation via pin `fetchPnpmDeps` (`fetcherVersion = 4`, pnpm 11.27.0) from `pnpm-lock.yaml`; path changes only when lockfile does. ⊥ workspace filter: saves 0 (R2). store ∀ platforms (`--force`) 1.84 GB, build-time only, ⊥ in runtime closure, ⊥ cached (`.:V5`). pnpm ! stay 11.27.0, ⊥ self-switch to `packageManager` 12.8.1.
+- pnpm major follows the pin: fetcher uses pin `pnpm`; once pin offers pnpm major = upstream `packageManager` major (12 today), switch in own PR w/ new deps hash; check reports while they differ (round 11).
 - build: upstream scripts, `ELECTRON_SKIP_BINARY_DOWNLOAD=1`; `app.asar` launched by pin `electron_43` (D21). native modules `node-pty`, `@parcel/watcher` rebuilt vs pin Electron headers.
 - Electron major guard: upstream `package.json` Electron major ≠ pin `electron_43` major → build fails, message names `orca-ide-bin` (D21).
 - ripgrep: symlink pin `rg` at `resources/ripgrep/<host platform>/rg`; ⊥ other `rg` copies; keep `licenses/` (D23).
