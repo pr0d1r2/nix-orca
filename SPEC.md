@@ -43,6 +43,7 @@ self|.|-
 - token `CACHIX_AUTH_TOKEN` repo secret; PR jobs from forks build w/o it (D18, D20).
 - bump PRs opened by a GitHub App installation token (`actions/create-github-app-token`), ⊥ `GITHUB_TOKEN`: PRs & pushes made w/ `GITHUB_TOKEN` trigger no workflow, so `build.yml` would never run on them. App owned by owner, permissions `contents: write`, `pull-requests: write` on this repo only; secrets `BUMP_APP_ID`, `BUMP_APP_PRIVATE_KEY` (round 8).
 - release job idempotent: runs on merge to `main` | owner dispatch; tag absent → verify ∀ Linux path in cache → attest → tag & publish; tag present → exit 0, ⊥ second release. re-run safe (round 8).
+- workflow permissions least privilege: default `contents: read`; release job adds `contents: write`, `id-token: write`, `attestations: write`; ∀ action pinned by full commit SHA; ⊥ `pull_request_target`; secrets only in jobs on own branches & `main` (round 8).
 - outward acts ! explicit human approval: GitHub repo creation, first push, cachix token, bump GitHub App & its secrets (round 8), first release. after first release, releases go out behind required checks w/o per-release approval: `.pklith` `exempt` row for `paradigm/V32` citing `pr0d1r2/paradigm#24` (D37). ⊥ publish to irreversible registry.
 - Linux work from workstation → `nix-builder.local` (x86_64-linux, `kvm`, `nixos-test`, `big-parallel`); `aarch64-linux` CI only (D34). builder configured outside this repo; ⊥ push | release from builder.
 - first hands-on test: Linux, unprivileged account (⊥ sudo, ∉ `trusted-users`) (D38).
