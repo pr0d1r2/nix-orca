@@ -248,3 +248,54 @@ Sketch, not final:
   does not have; the `-mac.zip` holds the same signed `Orca.app`.
 - Building from source now: rejected for version 1, open question 1.
 - Windows through nix: decision 2.
+
+# Open questions
+
+Ask before guessing. A question marked blocking stops the node it names.
+
+1. Source or binaries. Version 1 repackages upstream's signed release
+   binaries, as all prior art does: a source build needs pnpm 12 (the pin
+   has 11.27.0; `elsirion` shows 11 can read the lockfile), Electron 43.7.8
+   against the pin's 43.7.11, native modules for four systems, and on
+   darwin an unsigned app. Lean: binaries in version 1, a source build as a
+   later node with its own spec round. Blocks the package node.
+2. Release asset format. Candidates: (a) a per-system binary cache
+   directory from `nix copy --to file://<dir>?compression=zstd`, tarred,
+   importable with `nix copy --from`; (b) `nix bundle` self-extracting
+   archives, Linux only; (c) a tar of the output path, not relocatable.
+   Lean: (a), plus store paths in the notes for cachix users. Each asset is
+   several hundred MB per system per release. Blocks the release node.
+3. `x86_64-darwin` in CI: build on the arm64 macOS runner through Rosetta
+   (`extra-platforms = x86_64-darwin`, which works for a no-compile
+   derivation), or on GitHub's Intel macOS runner while it lasts. Lean:
+   Rosetta, with a check that the output's `Orca.app` is the x64 build.
+   Blocks the CI node.
+4. Cache and release retention: 4 systems, about 300 MB each, about every
+   1.4 days is about 25 GB a month on cachix and on GitHub. Keep how many
+   releases, and garbage-collect cachix how? Blocks the release node.
+5. Modules: a NixOS, nix-darwin or home-manager module (`kevinpita` has
+   one), or only the overlay. Lean: overlay only in version 1. Not
+   blocking.
+
+# Process
+
+The paradigm lifecycle for a nix and shell member: dev shell, then ask me
+to reload; guardrails first, one check per commit, then ask me to reload;
+TDD, with RED commits red on purpose and tests on push; mirror bats tests
+for every script; federated SPEC-DAG built in sherd waves.
+
+Build order:
+1. `aarch64-darwin` and `x86_64-linux` packages and their checks, built
+   locally.
+2. `aarch64-linux` and `x86_64-darwin`.
+3. The bump script and `upstream.yml`.
+4. `build.yml`: build, cache, verify, for all four systems.
+5. The release job and the first `-nix.1` release.
+6. The README: platform table, pin graph, cachix trust trap, how to attach
+   the overlay to a NixOS, nix-darwin and home-manager closure.
+
+Outward-facing steps need my explicit approval: creating the GitHub
+repository, the first push, the cachix token, and the first release; after
+that the daily loop runs on its own (decision 10). Before the first push,
+check every repository named in a committed file with `gh repo view`, and
+name no private repository.
