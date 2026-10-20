@@ -34,6 +34,11 @@ sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, rele
 - check: `checks.x86_64-linux.{launch,agents-detect,agents-stub}`; `ollama` layer as `legacyPackages.x86_64-linux.nightly.agents-ollama`.
 - cmd: `tests/stub/server.py --script <file> --port <n>`.
 
+## §R RESEARCH
+
+id|topic|finding|src
+R1|stub layer probe, aarch64-darwin 2026-10-20|`claude` 2.1.304: `ANTHROPIC_BASE_URL` + any `ANTHROPIC_API_KEY`, `-p ... --permission-mode acceptEdits --allowedTools Write` → `Write` tool, file written (`tests/stub/scripts/claude.json`). `codex` 0.163.0 ignores `OPENAI_BASE_URL` (hit `api.openai.com`, 401 w/ fake key); works via `-c model_provider=stub` + `model_providers.stub={base_url,env_key,wire_api="responses"}`, `exec -s workspace-write` → `exec_command` tool (`tests/stub/scripts/codex.json`)|run agent vs `tests/stub/server.py`, empty `HOME`
+
 ## §V INVARIANTS
 
 V1: stub run deterministic: same script → same agent-visible bytes.
