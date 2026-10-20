@@ -68,7 +68,7 @@ self|.|-
 ## §R RESEARCH
 
 id|topic|finding|src
-R1|upstream 2026-10-20|latest `v1.4.230` 2026-10-19; 51 stable releases 2026-08-10…2026-10-19 (~1 / 1.4 d); `-rc.N` = prerelease; Electron 43.7.8, Node 24, pnpm 12.14.0 workspace (`mobile/`, `cloud/`, `native/`); MIT|`gh release list -R stablyai/orca -L 200 --json tagName,publishedAt,isPrerelease`
+R1|upstream 2026-10-20|latest `v1.4.230` 2026-10-19; 51 stable releases 2026-08-10…2026-10-19 (~1 / 1.4 d); `-rc.N` = prerelease; Electron 43.7.8, Node 24; `packageManager` pnpm 12.8.1 at tag (12.14.0 = latest pnpm, misread earlier); MIT|`gh release list -R stablyai/orca -L 200 --json tagName,publishedAt,isPrerelease`
 R2|upstream assets `v1.4.230`|`.deb` amd64 210 MB, arm64 205 MB; `-mac.zip` arm64 305 MB, x64 315 MB; `latest*.yml` w/ `sha512` & `size`; AppImage names unversioned|`gh release view -R stablyai/orca --json assets`
 R3|pin `8ce73368` 2026-10-20|`electron` 43.7.11, `pnpm` 11.27.0, `nodejs_24` 24.21.0, `agent-browser` 0.27.0, `sherpa-onnx` 1.12.38, `onnxruntime` 1.24.4, `sbomnix` 1.7.6, `vulnix` 1.12.4, `nvd` 0.2.4, `cachix` 1.11.1, `ollama` 0.40.3; `orca` = GNOME screen reader|`nix eval --raw github:NixOS/nixpkgs/<pin>#<attr>.version`
 R4|prior art 2026-10-20|numtide `llm-agents.nix`, `elsirion/orca-nix` (pnpm 11 reads upstream lockfile), `kevinpita`, `Samuka007`, `stslex`, NUR: ∀ repackage binaries; ⊥ `x86_64-darwin`, ⊥ follows `nixpkgs-lock`, ⊥ published outputs|`gh search code stablyai/orca --extension nix`
@@ -79,6 +79,7 @@ R8|agents `v1.4.230`|45 `detectCmd` in `src/shared/tui-agent-config.ts`; 18 w/ u
 R9|cachix 2026-10-20|free 5 GB for open source; `cachix pin <cache> <name> <path> --keep-revisions N`; cache prefers ZSTD|cachix.org/pricing, `cachix pin --help`, `app.cachix.org/api/v1/cache/pr0d1r2`
 R10|paradigm release rule `paradigm/V32`|per-publish approval ∵ registry artifact immutable; split proposed by reversibility, open|`pr0d1r2/paradigm#24`
 R11|space estimate 2026-10-20|pinned ~0.35 GB (2 Linux outputs × 2 systems, ~295 + 205 MB NAR, ~35% zstd assumed); pushed ~3 GB / month; source build expected smaller, measured at first push|D40, D41
+R12|JS deps measured 2026-10-20|root `pnpm-lock.yaml` (v9.0, 548 KB) covers app, `src/packages/*`, `native/windows-{registry,security}`; `mobile/` & `cloud/` own lockfiles ∴ ⊥ fetched. `--filter 'orca...'` → same 1311 host packages ∴ filter saves 0. pin `fetchPnpmDeps` (`fetcherVersion = 4`, pnpm 11.27.0, `--force` ∀ platforms): 1524 packages, `pnpm-store.tar.zst` 1.84 GB NAR, 21 s install, 62 s total on aarch64-darwin. outside nix, pnpm 11 self-switches to `packageManager` 12.8.1; inside fetcher stays 11.27.0. largest: `mermaid` 84 MB, `monaco-editor` 73, `agent-browser` 72, `sherpa-onnx-<platform>` 72, `@oven/bun-<platform>` 67, `node-pty` 62|`nix build` of `fetchPnpmDeps` on pin, `nix path-info -S`, `nix log`
 
 ## §V INVARIANTS
 
