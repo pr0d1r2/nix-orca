@@ -16,7 +16,7 @@ STUB
 #!/usr/bin/env bash
 echo "runHook $*" >>"$BATS_TEST_TMPDIR/log"
 STUB
-  chmod +x stubs/*
+  chmod +x stubs/* src/Orca.app/Contents/Resources/bin/orca
   export PATH="$BATS_TEST_TMPDIR/stubs:$PATH"
   export out="$BATS_TEST_TMPDIR/out"
   export ORCA_PATH=/store/git/bin
