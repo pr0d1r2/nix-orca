@@ -75,3 +75,71 @@ Goals:
     repository name is about the upstream project, the attribute about the
     program.
   - a `-lith` name: the fleet keeps `-lith` for its own tools.
+
+# Survey (2026-10-20)
+
+Upstream, `stablyai/orca`:
+- MIT, TypeScript, created 2026-03-17, about 98,000 stars.
+- Electron 43.7.8, Node 24, pnpm 12.14.0 (`packageManager` in
+  `package.json`), a pnpm workspace that also holds `mobile/`, `cloud/`
+  and `native/`.
+- Latest release `v1.4.230`, 2026-10-19. 51 `v*` stable releases between
+  2026-08-10 and 2026-10-19, about one every 1.4 days. Release candidates
+  (`-rc.N`) are marked prerelease: 95 of the last 200 releases.
+- Release assets per version, the desktop ones and their sizes for
+  `v1.4.230`:
+  - `orca-ide_<v>_amd64.deb` 210 MB, `orca-ide_<v>_arm64.deb` 205 MB
+  - `orca-ide-<v>.x86_64.rpm`, `orca-ide-<v>.aarch64.rpm`
+  - `orca-linux.AppImage`, `orca-linux-arm64.AppImage` (unversioned names)
+  - `Orca-<v>-arm64-mac.zip` 305 MB, `Orca-<v>-mac.zip` 315 MB (x64)
+  - `orca-macos-arm64.dmg`, `orca-macos-x64.dmg`
+  - `orca-windows-setup.exe`
+  - `latest*.yml` electron-updater manifests, `.blockmap` files, a
+    sourcemaps zip
+- The app has an electron-updater updater (`src/main/updater/`) with
+  `autoDownload = false`; a store copy is read-only, so an update it
+  downloads cannot be applied in place.
+- Upstream also ships a Homebrew cask (`Casks/orca.rb`, `orca@rc.rb`) and a
+  `homebrew-bump.yml` workflow.
+- Recount: `gh release list -R stablyai/orca -L 200 --json
+  tagName,publishedAt,isPrerelease`, `gh release view -R stablyai/orca
+  --json assets`, `gh api repos/stablyai/orca/contents/package.json`.
+
+Fleet nixpkgs pin (`nixpkgs-lock`, nixpkgs `8ce73368`): `electron` 43.7.11,
+`pnpm` 11.27.0, `nodejs_24` 24.21.0. Recount: `nix eval --raw
+github:NixOS/nixpkgs/<pin>#<attr>.version`.
+
+Prior art, all public, all repackaging upstream's release binaries:
+- `numtide/llm-agents.nix` `packages/orca`: `aarch64-darwin`,
+  `x86_64-linux`, `aarch64-linux`. Linux from the `.deb`, `autoPatchelf`
+  over everything except `resources/orcad-template` (per-platform daemons
+  Orca uploads to remote hosts and verifies by sha256, so they must stay
+  unpatched and unstripped), `chrome-sandbox` removed (a store path cannot
+  be setuid), `libglvnd` on the wrapper's `LD_LIBRARY_PATH` so WebGL does
+  not fall back to SwiftShader, the Wayland ozone flags behind
+  `NIXOS_OZONE_WL`, `git xclip xdotool xdg-utils xvfb xvfb-run` on `PATH`
+  because `orca serve` shells out to them. Darwin from the `-mac.zip`,
+  `Orca.app` copied untouched with `dontFixup`. Programs `orca-ide` and
+  `orca`. One `hashes.json` per version and an updater.
+- `elsirion/orca-nix`: Linux only, from the AppImage, a `smoke` test under
+  `ELECTRON_RUN_AS_NODE=1`, deliberately no `orca` command (screen reader
+  clash). Carries a source overlay built with `pnpm_11`, because pnpm 12
+  ships only as a native binary and pnpm 11 reads its lockfile.
+- `kevinpita/orca-nix`: Linux only, NixOS and home-manager modules.
+- `Samuka007/nix-orca`: the numtide set of three systems.
+- `stslex/orca-nix`: Linux only, a daily update workflow.
+- NUR (`lonerOrz`, `AstroOrbis`, `ahmet-cetinkaya` `orca-bin`): Linux
+  AppImage wrappers.
+- None builds `x86_64-darwin`, follows `nixpkgs-lock`, or publishes built
+  outputs.
+- Recount: `gh search code stablyai/orca --extension nix`, then read each
+  `flake.nix`.
+
+Fleet shape to copy: `nix-mistral-vibe` (root flake with only
+`nixpkgs-lock` as input, the gate in a separate `dev/` flake, `.pklith`
+seeded by `pklith seed --init`, `build.yml` and `upstream.yml`) and `nix-hk`
+(platform table, pin graph, cachix trust trap in the README, a version
+check, an upstream watch). Fleet tools on 2026-10-20: `pklith` v0.1.0,
+`actlith` v0.1.0, `microlith` v0.7.4, `sherd` v0.5.4, `itok` v0.3.1,
+`characterminator` v0.1.1, `xenolith` v0.1.0, `rekall` v0.4.0, hk from
+`nix-hk`. Recount: `gh api repos/pr0d1r2/<tool>/tags -q '.[0].name'`.
