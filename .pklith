@@ -16,10 +16,12 @@ format 1
 id|category|nix|glob|check|fix|env|msg
 # Root V1 on every tracked flake lock, root and dev (gate T1, gate:V1).
 lock-graph|supply|jq|**/flake.lock, gate/lock-graph.sh, gate/lock-graph.jq|git ls-files -z '*flake.lock' \| xargs -0 -n1 bash gate/lock-graph.sh|-|-|a flake lock holds more or fewer than one nixpkgs, or an input locks its own (root V1)
+# Private names never reach a commit (gate T2, root V10, paradigm/V37).
+name-guard|gate|gnugrep|**/*|bash gate/name-guard.sh {{files}}|-|-|a private name is staged (root V10); the hit names the denylist entry, never the name
 
 ## types
 type|checks|min|exempt
-*|trailing-whitespace, final-newline, line-endings, no-bom, no-merge-conflict, no-case-conflict, no-broken-symlinks, no-private-key, ripsecrets, typos, editorconfig-checker, no-local-paths|-|-
+*|name-guard, trailing-whitespace, final-newline, line-endings, no-bom, no-merge-conflict, no-case-conflict, no-broken-symlinks, no-private-key, ripsecrets, typos, editorconfig-checker, no-local-paths|-|-
 editorconfig|-|-|written by pklith (seed or gen)
 gitattributes|-|-|written by pklith (seed or gen)
 md|markdownlint|-|-
