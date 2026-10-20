@@ -53,7 +53,7 @@ STUB
 }
 
 @test "the script never deletes from the cache or changes its retention" {
-  run grep -nE 'cachix +(remove|delete|gc)|retention|DELETE' "$pin"
+  run bash -c "grep -vE '^ *#' '$pin' | grep -nE 'remove|delete|gc|retention|DELETE|--keep-(days|forever)'"
   [ "$status" -eq 1 ]
 }
 
