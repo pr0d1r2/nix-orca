@@ -143,3 +143,39 @@ check, an upstream watch). Fleet tools on 2026-10-20: `pklith` v0.1.0,
 `actlith` v0.1.0, `microlith` v0.7.4, `sherd` v0.5.4, `itok` v0.3.1,
 `characterminator` v0.1.1, `xenolith` v0.1.0, `rekall` v0.4.0, hk from
 `nix-hk`. Recount: `gh api repos/pr0d1r2/<tool>/tags -q '.[0].name'`.
+
+# Flake sketch
+
+Sketch, not final:
+- inputs: `nixpkgs-lock` and `nixpkgs.follows = "nixpkgs-lock/nixpkgs"`,
+  nothing else at the root
+- `packages.<system>.orca-ide` and `default`, for the four systems
+- `overlays.default`: adds `orca-ide`, touches nothing else
+- `apps.<system>.orca-ide` and `apps.<system>.default`
+- `checks.<system>`: the package, a version check (the binary or the
+  bundle's `Info.plist` reports the pinned version), a smoke run of the
+  CLI entry point, and an assertion that `orcad-template` is byte-for-byte
+  upstream's
+- `nix/sources.json`: version and one sha256 per system, the only file a
+  bump changes
+- `nixConfig`: the `pr0d1r2.cachix.org` substituter and key
+- `dev/flake.nix`: the dev shell and gate tools, kept out of consumers'
+  lock files; hk from `nix-hk`; entering the shell installs the hooks
+  (decision 11)
+- `.envrc`: `use flake ./dev`
+
+# Release sketch
+
+Sketch, not final:
+- `upstream.yml`, daily cron: read upstream's latest stable release; if it
+  is newer than `nix/sources.json`, run the bump script, which fetches the
+  four assets and writes their hashes; open a PR.
+- `build.yml`, on the PR: build and check all four systems with nix, each
+  on a native runner, push to cachix, and verify from a separate job that
+  every pushed path is in the cache.
+- on merge to `main`: tag `v<upstream version>-nix.<n>` and publish a
+  GitHub release whose notes give the upstream version, the nixpkgs rev,
+  and the store path per system, with per-system nix outputs as assets
+  (format: open question 2) and a `SHA256SUMS` file.
+- a day with no new upstream release and no new `nixpkgs-lock` rev makes no
+  release.
