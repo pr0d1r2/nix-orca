@@ -29,6 +29,12 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 - pkg: `orca-ide-bin` (Linux).
 - pkg: `orcad-targets` (internal, fixed-output piece).
 
+## §R RESEARCH
+
+id|topic|finding|src
+R1|`.deb` `v1.4.230` amd64 size|680 MB unpacked: Electron 318, `resources/` 363 (UI copies ~158, `orcad-template` 84, 15 `ripgrep` copies 72, `node_modules` 53, `cloud/` 6.5); 57 MB duplicate files|`du -sk`, file hashes of unpacked `.deb`
+R2|`v1.4.229` → `v1.4.230`|514 of 663 MB files byte-identical; stable: `orcad-template/targets` 58.5 MB 91.5%, `node_modules` w/o sherpa ~20 MB 99.8%, `onboarding` 10.9 MB, `app.asar.unpacked/resources` 4.1 MB|hash ∀ file of both `.deb`s, group by `resources/` entry
+
 ## §V INVARIANTS
 
 V1: `orcad-template` byte-for-byte upstream's; SSH upload from it to 2nd VM accepted by Orca's own sha256 check (D16, D33).

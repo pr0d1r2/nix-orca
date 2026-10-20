@@ -32,6 +32,11 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 - legacy: `legacyPackages.<system>.agents.<name>`, name = Orca `TuiAgent` id.
 - override: `inputs.nix-orca.inputs.<input>.{url,follows}`; `orca-ide.override { agents = [ ... ]; }`.
 
+## §R RESEARCH
+
+id|topic|finding|src
+R1|agents `v1.4.230`|45 `detectCmd` in `src/shared/tui-agent-config.ts`; 18 w/ usable nix package; 7 unfree|`nix eval` `version`, `meta.mainProgram`, `meta.license` on pin
+
 ## §V INVARIANTS
 
 V1: ∀ agent in set: `meta.mainProgram` = Orca `detectCmd` | alias for its id at pinned upstream tag; check reads `tui-agent-config.ts` from source.

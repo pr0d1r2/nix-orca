@@ -18,7 +18,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 ## §C CONSTRAINTS
 
 - source: upstream tag via `fetchFromGitHub`, hash in `nix/sources.json` (D38).
-- JS deps: 1 fixed-output derivation via pin `fetchPnpmDeps` (`fetcherVersion = 4`, pnpm 11.27.0) from `pnpm-lock.yaml`; path changes only when lockfile does. ⊥ workspace filter: saves 0 (`.:R12`). store ∀ platforms (`--force`) 1.84 GB, build-time only, ⊥ in runtime closure, ⊥ cached (`.:V5`). pnpm ! stay 11.27.0, ⊥ self-switch to `packageManager` 12.8.1.
+- JS deps: 1 fixed-output derivation via pin `fetchPnpmDeps` (`fetcherVersion = 4`, pnpm 11.27.0) from `pnpm-lock.yaml`; path changes only when lockfile does. ⊥ workspace filter: saves 0 (R2). store ∀ platforms (`--force`) 1.84 GB, build-time only, ⊥ in runtime closure, ⊥ cached (`.:V5`). pnpm ! stay 11.27.0, ⊥ self-switch to `packageManager` 12.8.1.
 - build: upstream scripts, `ELECTRON_SKIP_BINARY_DOWNLOAD=1`; `app.asar` launched by pin `electron_43` (D21). native modules `node-pty`, `@parcel/watcher` rebuilt vs pin Electron headers.
 - Electron major guard: upstream `package.json` Electron major ≠ pin `electron_43` major → build fails, message names `orca-ide-bin` (D21).
 - ripgrep: symlink pin `rg` at `resources/ripgrep/<host platform>/rg`; ⊥ other `rg` copies; keep `licenses/` (D23).
@@ -35,9 +35,15 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 - override: `{ updater ? true, telemetry ? true, agents ? [ ] }`.
 - check: `checks.<linux>.{orca-ide-version,electron-major,sherpa-load,runtime-commands,closure-hygiene,closure-budget,rebuild}`.
 
+## §R RESEARCH
+
+id|topic|finding|src
+R1|upstream packaging bugs filed 2026-10-20|`stablyai/orca#30993`: `app.asar` ships `cloud/` + 7 root configs, 652 files 6.5 MB, byte-identical to tag; `stablyai/orca#30999`: ssh2 `pagent.exe`, `pagent.c`, `build_pagent.bat` in Linux package|`gh issue view -R stablyai/orca`
+R2|JS deps measured 2026-10-20|root `pnpm-lock.yaml` (v9.0, 548 KB) covers app, `src/packages/*`, `native/windows-{registry,security}`; `mobile/` & `cloud/` own lockfiles ∴ ⊥ fetched. `--filter 'orca...'` → same 1311 host packages ∴ filter saves 0. pin `fetchPnpmDeps` (`fetcherVersion = 4`, pnpm 11.27.0, `--force` ∀ platforms): 1524 packages, `pnpm-store.tar.zst` 1.84 GB NAR, 21 s install, 62 s total on aarch64-darwin. outside nix, pnpm 11 self-switches to `packageManager` 12.8.1; inside fetcher stays 11.27.0. largest: `mermaid` 84 MB, `monaco-editor` 73, `agent-browser` 72, `sherpa-onnx-<platform>` 72, `@oven/bun-<platform>` 67, `node-pty` 62|`nix build` of `fetchPnpmDeps` on pin, `nix path-info -S`, `nix log`
+
 ## §V INVARIANTS
 
-V1: output ⊥ `cloud/`, ⊥ upstream root dev configs, ⊥ `pagent.exe` `pagent.c` `build_pagent.bat` (`.:R7`).
+V1: output ⊥ `cloud/`, ⊥ upstream root dev configs, ⊥ `pagent.exe` `pagent.c` `build_pagent.bat` (R1).
 V2: exactly 1 `rg` reachable from `resources/ripgrep` = pin's; ∀ `orcad-template` target carries own `rg`; upstream main process reads `resources/ripgrep` only for local spawn → else check fails (D23).
 V3: sherpa load test: Electron in node mode loads addon; `ldd` ∀ lib → pin store paths, ⊥ package path; addon reports version (D25).
 V4: `bin/orca-ide --version` prints upstream version from `nix/sources.json`.
@@ -50,7 +56,7 @@ V9: `updater = false` → updater reports itself unusable (D26).
 ## §T TASKS
 
 id|status|task|cites
-T1|.|JS deps FOD via `fetchPnpmDeps`; measured (`.:R12`)|-
+T1|.|JS deps FOD via `fetchPnpmDeps`; measured (R2)|-
 T2|.|source build x86_64-linux on `nix-builder.local`; Electron major guard|V4
 T3|.|ripgrep, agent-browser, sherpa swaps + guards|V2,V3
 T4|.|wrapper, desktop, AppArmor profile, overrides|V8,V9
