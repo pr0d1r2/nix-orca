@@ -674,6 +674,19 @@ picks this flake over the others.
     under 5 GB. Amends decisions 18, 20 and 22 (the release job asserts
     only Linux paths are cached) and 40. Local.
 
+# Decisions, round 6 (2026-10-20): modules, agents, integration
+
+42. Modules in version 1, stacked (owner's answer, 2026-10-20; closes
+    open question 5). Each module is its own node, built on the one
+    before it, in atomic commits: the overlay; then
+    `nixosModules.orca-ide` (the package and declarative settings);
+    then its `services.orca-ide` running `serve` with decision 35's
+    hardening; then `darwinModules.orca-ide` with decision 36's
+    Seatbelt profile; then `homeManagerModules.orca-ide`. A node is done
+    when its tests pass (decision 16's VM for NixOS, the macOS runner and
+    Tart for nix-darwin, an activation check for home-manager), and only
+    then does the next start. Amends the build order. Local.
+
 # Non-goals
 
 - Windows, decision 2
@@ -729,12 +742,7 @@ Ask before guessing. A question marked blocking stops the node it names.
 4. Cache and release retention. Closed by decision 40; its 25 GB a month
    estimate (4 systems, about 300 MB each, a release about every 1.4
    days) is the baseline decision 40 compares against.
-5. Modules: a NixOS, nix-darwin (question 8) or home-manager module
-   (`kevinpita` has one) that writes Orca's settings declaratively and
-   runs `orca-ide serve` as a hardened systemd service for a headless
-   agent host, or only the overlay. Lean: overlay only in version 1;
-   the module is the first node after it, tested by the VM from decision
-   16 and hardened and tested as decision 35 says. Not blocking.
+5. Modules. Closed by decision 42.
 6. Electron from nixpkgs on Linux. Closed by decision 21.
 7. Pinned agent CLIs: `orca-ide.override { agents = [ ... ]; }` puts agent
    CLIs from the same pin on Orca's `PATH` (in the pin on 2026-10-20:
@@ -764,6 +772,7 @@ Build order:
 5. The release job and the first `-nix.1` release.
 6. The README: platform table, pin graph, cachix trust trap, how to attach
    the overlay to a NixOS, nix-darwin and home-manager closure.
+7. The modules, one node each, stacked as decision 42 orders them.
 
 Outward-facing steps need my explicit approval: creating the GitHub
 repository, the first push, the cachix token, and the first release; after
