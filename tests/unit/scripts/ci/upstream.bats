@@ -26,7 +26,7 @@ STUB
 #!/usr/bin/env bash
 echo "gh $*" >>"$BATS_TEST_TMPDIR/calls"
 case "$*" in
-"pr view bump/orca-ide"*) [ -n "${STUB_PR_OPEN:-}" ] ;;
+"pr view bump/orca-ide"*) [ -n "${STUB_PR:-}" ] && echo "$STUB_PR" ;;
 "issue list"*) echo "${STUB_ISSUES:-0}" ;;
 esac
 STUB
@@ -52,11 +52,19 @@ STUB
 }
 
 @test "the next run updates the open PR in place" {
-  export STUB_PR_OPEN=1
+  export STUB_PR=true
   run --separate-stderr "$upstream"
   [ "$status" -eq 0 ]
   run ! grep -q "^gh pr create" calls
   grep -q "^gh pr edit bump/orca-ide --title chore(bump): orca-ide 1.4.230 -> 1.4.232" calls
+}
+
+@test "a merged or closed bump PR is not edited; a new one opens" {
+  export STUB_PR=false
+  run --separate-stderr "$upstream"
+  [ "$status" -eq 0 ]
+  grep -q "^gh pr create --head bump/orca-ide" calls
+  run ! grep -q "^gh pr edit" calls
 }
 
 @test "a moved upstream tag opens one issue and fails the run" {

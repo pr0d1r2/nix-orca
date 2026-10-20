@@ -1,5 +1,53 @@
 #!/usr/bin/env bash
-# Daily upstream run (release T1). Not written yet.
+# The daily upstream run (`release` T1). Runs the bump, then:
+# - exit 3, up to date: nothing else
+# - exit 0, bumped: commit nix/sources.json to `bump/orca-ide`, force-push,
+#   open the one bump PR or update it in place (round 8), and turn on
+#   auto-merge so it merges when every required check is green (D10)
+# - exit 4, upstream moved a pinned tag or asset: one issue, never reopened
+#   while open, and the run fails (round 9)
+# - anything else: the run fails, nothing pushed
+# Runs with a GitHub App token in GH_TOKEN, so the PR triggers the build.
+# Usage: upstream.sh
+# Env: BUMP, GIT, GH name the tools (defaults: scripts/bump.sh, git, gh);
+# SOURCES the pinned file (default nix/sources.json).
 set -euo pipefail
-echo "upstream: not implemented" >&2
-exit 1
+
+here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+bump=${BUMP:-$here/../bump.sh}
+git=${GIT:-git}
+gh=${GH:-gh}
+sources=${SOURCES:-$here/../../nix/sources.json}
+branch=bump/orca-ide
+issue="upstream moved a released tag or asset"
+
+from=$(jq -r .version "$sources")
+rc=0
+log=$(bash "$bump" 2>&1) || rc=$?
+case "$rc" in
+0) ;;
+3) exit 0 ;;
+4)
+  printf '%s\n' "$log" >&2
+  if [ "$("$gh" issue list --state open --search "\"$issue\" in:title" --json number --jq length)" = 0 ]; then
+    "$gh" issue create --title "$issue" --body "$log"
+  fi
+  exit 1
+  ;;
+*)
+  printf '%s\n' "$log" >&2
+  exit 1
+  ;;
+esac
+
+to=$(jq -r .version "$sources")
+title="chore(bump): orca-ide $from -> $to"
+"$git" checkout -B "$branch"
+"$git" commit -m "$title" -- nix/sources.json
+"$git" push --force origin "$branch"
+if [ "$("$gh" pr view "$branch" --json state --jq '.state == "OPEN"' 2>/dev/null)" = true ]; then
+  "$gh" pr edit "$branch" --title "$title"
+else
+  "$gh" pr create --head "$branch" --title "$title" --body "Written by scripts/bump.sh."
+fi
+"$gh" pr merge "$branch" --auto --merge
