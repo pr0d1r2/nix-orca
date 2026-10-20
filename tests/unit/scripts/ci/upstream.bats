@@ -31,8 +31,15 @@ case "$*" in
 "issue list"*) echo "${STUB_ISSUES:-0}" ;;
 esac
 STUB
+  cat >stubs/pr-body <<'STUB'
+#!/usr/bin/env bash
+echo "pr-body $*" >>"$BATS_TEST_TMPDIR/calls"
+[ -z "${STUB_BODY_FAILS:-}" ] || exit 1
+echo "REPORT $1 $2"
+STUB
   chmod +x stubs/*
   export BUMP="$PWD/stubs/bump" GIT="$PWD/stubs/git" GH="$PWD/stubs/gh" SOURCES="$PWD/sources.json"
+  export PR_BODY="$PWD/stubs/pr-body"
 }
 
 @test "up to date: nothing is pushed, opened or merged" {
@@ -50,6 +57,20 @@ STUB
   grep -qxF "git push --force origin bump/orca-ide" calls
   grep -q "^gh pr create --head bump/orca-ide --title chore(bump): orca-ide 1.4.230 -> 1.4.232" calls
   grep -qxF "gh pr merge bump/orca-ide --auto --merge" calls
+}
+
+@test "the PR body is the dependency report between the two tags" {
+  run --separate-stderr "$upstream"
+  [ "$status" -eq 0 ]
+  grep -qxF "pr-body v1.4.230 v1.4.232" calls
+  grep -qF -- "--body REPORT v1.4.230 v1.4.232" calls
+}
+
+@test "a failed report never stops the bump" {
+  export STUB_BODY_FAILS=1
+  run --separate-stderr "$upstream"
+  [ "$status" -eq 0 ]
+  grep -q "^gh pr create .*--body The dependency report failed" calls
 }
 
 @test "the next run updates the open PR in place" {
