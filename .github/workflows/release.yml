@@ -1,0 +1,72 @@
+# Hand-written, listed in .actlith: actlith v0.1.0 has no release kind. A
+# release is text only (root V3): notes, SBOMs and attested NAR hashes; the
+# Linux paths come from the cache, which the run checks first.
+---
+name: release
+
+on:
+  push:
+    branches: [main]
+  # The owner's packaging fix, `-nix.<n+1>` of the pinned version (round 7).
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    env:
+      EVENT: ${{ github.event_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+          # Tags: the next `-nix.<n>` is read from them.
+          fetch-depth: 0
+      - uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342  # v31.11.0
+        with:
+          extra_nix_config: |
+            extra-substituters = https://pr0d1r2.cachix.org
+            extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
+      # Exit 3: this version is released already; nothing to do (round 8).
+      - run: nix develop ./dev --command bash scripts/ci/release-tag.sh "$EVENT" > tag || test $? -eq 3
+      - id: tag
+        run: echo "tag=$(cat tag)" >> "$GITHUB_OUTPUT"
+      # Builds nothing (D20): a path missing from the cache stops the release.
+      - if: steps.tag.outputs.tag != ''
+        run: nix develop ./dev --command bash scripts/ci/verify-cache.sh x86_64-linux aarch64-linux
+      - if: steps.tag.outputs.tag != ''
+        run: >-
+          mkdir release
+          && nix build --out-link release/x86_64-linux .#packages.x86_64-linux.orca-ide
+          && nix build --out-link release/aarch64-linux .#packages.aarch64-linux.orca-ide
+      - if: steps.tag.outputs.tag != ''
+        run: >-
+          nix develop ./dev --command bash scripts/ci/release-subjects.sh
+          x86_64-linux="$(readlink release/x86_64-linux)"
+          aarch64-linux="$(readlink release/aarch64-linux)"
+          > release/NAR-SHA256SUMS
+      - if: steps.tag.outputs.tag != ''
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
+        with:
+          subject-checksums: release/NAR-SHA256SUMS
+      - if: steps.tag.outputs.tag != ''
+        run: nix develop ./dev --command bash scripts/ci/release-files.sh release
+      - if: steps.tag.outputs.tag != ''
+        run: >-
+          gh release create "$TAG" --target "$GITHUB_SHA" --title "$TAG"
+          --notes-file release/notes.md
+          release/NAR-SHA256SUMS release/*.cdx.json release/*.spdx.json
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          GH_TOKEN: ${{ github.token }}
