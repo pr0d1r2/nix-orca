@@ -84,6 +84,12 @@
           };
         };
       upstream = pkgs: (pkgs.callPackage ./nix/linux/sources.nix { inherit sources; }).src;
+      agentIds =
+        pkgs:
+        import ./nix/agents/ids.nix {
+          inherit (pkgs) runCommand;
+          src = upstream pkgs;
+        };
     in
     {
       overlays.default = import ./nix/overlay.nix { inherit inputs sources; };
@@ -109,6 +115,7 @@
 
       legacyPackages = forAll (pkgs: {
         agents = agentsFor pkgs.stdenv.hostPlatform.system;
+        agent-ids = agentIds pkgs;
       });
       packages = forAll (
         pkgs:
@@ -140,7 +147,7 @@
         }
         // import ./nix/agents/checks.nix {
           inherit (pkgs) lib runCommand;
-          src = upstream pkgs;
+          ids = agentIds pkgs;
           agents = agentsFor pkgs.stdenv.hostPlatform.system;
         }
         // nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin (

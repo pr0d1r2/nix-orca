@@ -1,0 +1,37 @@
+# Orca agent ids (TuiAgent) with no package here, by decision (nix/agents
+# V5, §C). scripts/agents/unknown.sh reports any id that is neither here nor
+# packaged, so a new upstream agent is noticed.
+
+# No nix package anywhere, as of v1.4.230; potential after the first
+# release (owner, 2026-10-20).
+codebuddy
+openclaude
+autohand
+ante
+trae
+opencode2
+mimo-code
+omp
+prime-agent
+qoder
+qoder-cn
+antigravity
+kilo
+aug
+cline
+freebuff
+command-code
+continue
+droid
+kimi
+hermes
+muse
+dsh
+zcode
+devin
+jcode
+
+# The pin's package downloads the CLI on first run.
+codebuff
+# The pin marks it insecure; a consumer can add it by override.
+openclaw

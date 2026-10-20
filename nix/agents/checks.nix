@@ -4,13 +4,10 @@
 {
   lib,
   runCommand,
-  src,
+  ids,
   agents,
 }:
 let
-  ids =
-    runCommand "orca-agent-ids" { }
-      "bash ${../../scripts/agents}/tui-ids.sh ${src}/src/shared/tui-agent-config.ts > $out";
   pairs = lib.mapAttrsToList (id: drv: lib.escapeShellArg "${id}=${drv}") agents;
   commands = lib.mapAttrsToList (id: drv: lib.escapeShellArg "${id}=${lib.getExe drv}") agents;
 in
