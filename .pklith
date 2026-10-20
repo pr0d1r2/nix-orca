@@ -4,13 +4,18 @@ format 1
 # files switch on (`pklith detect`). It is yours now: pklith never rewrites it.
 #
 # Edited by hand since (root T6): envrc gets shellcheck; gitignore is
-# exempt; the dev lock waits for the lock-graph guard (gate T1).
+# exempt; flake locks get the lock-graph guard (gate T1).
 #
 # Not laid, with its reason:
 # - itok: `.context-limits` holds sherd's chain ceilings (`paradigm/V12`);
 #   itok reads the same file as per-file ceilings and refuses SPEC.md at
 #   3,787 tokens against the 3,000 root chain ceiling. sherd-budget gates
 #   it, as in a sibling gate.
+
+## checks
+id|category|nix|glob|check|fix|env|msg
+# Root V1 on every tracked flake lock, root and dev (gate T1, gate:V1).
+lock-graph|supply|jq|**/flake.lock, gate/lock-graph.sh, gate/lock-graph.jq|git ls-files -z '*flake.lock' \| xargs -0 -n1 bash gate/lock-graph.sh|-|-|a flake lock holds more or fewer than one nixpkgs, or an input locks its own (root V1)
 
 ## types
 type|checks|min|exempt
@@ -27,7 +32,7 @@ pre-commit|-|-|written by pklith (seed or gen)
 pre-push|-|-|written by pklith (seed or gen)
 envrc|shellcheck|-|-
 gitignore|-|-|ignore patterns, no linter reads them
-path:dev/flake.lock|-|-|written by `nix flake lock`; gate T1 adds the lock-graph guard
+path:dev/flake.lock|lock-graph|-|-
 markdownlintignore|-|-|ignore patterns, no linter reads them
 path:.markdownlint.yaml|-|-|markdownlint configuration; yamllint arrives with the workflows (`release` node)
 toml|taplo|-|-
