@@ -13,3 +13,4 @@ path|reason
 .github/workflows/build.yml|the `build` kind pushes every system and refuses x86_64-darwin; only Linux orca-ide closures are pushed (root V5), and x86_64-darwin builds under Rosetta (D39)
 .github/workflows/upstream.yml|the bump PR comes from a GitHub App token so it triggers the build (round 8), and a moved upstream tag opens an issue (round 9); the `upstream` kind does neither
 .github/workflows/release.yml|no release kind in actlith v0.1.0; text-only release with attested NAR hashes, idempotent per tag (round 8)
+.github/workflows/agents.yml|the agent-input PR comes from a GitHub App token so it triggers the build (round 8) and never merges itself (round 9); `update-pins` does neither
