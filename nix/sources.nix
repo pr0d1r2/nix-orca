@@ -27,6 +27,9 @@ let
     && lib.assertMsg (
       sources.tag or null == "v${sources.version}"
     ) "nix/sources.json: tag must be v<version>"
+    && lib.assertMsg (
+      builtins.match "[0-9a-f]{40}" (sources.commit or "") != null
+    ) "nix/sources.json: commit must be the tag's 40-hex commit (round 9)"
     && sri "sha256" "src.hash" (sources.src.hash or "")
     && sri "sha256" "pnpmDeps.hash" (sources.pnpmDeps.hash or "")
     && perSystem "linux" [ "aarch64-linux" "x86_64-linux" ] "deb"
