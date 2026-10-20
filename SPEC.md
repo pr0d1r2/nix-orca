@@ -13,3 +13,9 @@ nix flake + bash scripts + 1 python stub server (tests). packaging only: fetch, 
 ## §F FEDERATION
 
 dir|owns|⊥owns|tokens
+
+## §N NAV
+
+rel|path|lens
+up|-|-
+self|.|-
