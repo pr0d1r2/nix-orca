@@ -329,6 +329,26 @@ picks this flake over the others.
     consumer never gets an artifact nix did not check. Candidate
     `(a)` (a `nix copy --to file://` tarball) is rejected for that size;
     `nix bundle` was Linux only. Local.
+23. Linux uses the pin's `ripgrep` for local search and drops
+    `resources/ripgrep` (28 MB, `rg` for 6 platforms), keeping its
+    `licenses/`. Checked in upstream's source on 2026-10-20: remote hosts
+    get the `rg` inside their own `orcad-template/targets/<target>/`
+    ("Only the target's own ripgrep ships (design D2)",
+    `src/shared/orcad-artifacts.ts`; copied by `build-orcad.mjs`), and
+    the only remaining callers of `resources/ripgrep` are the local spawn
+    (`bundledRipgrepCommand`) and WSL routing, which only a Windows host
+    does. The SSH comment in `config/bundled-ripgrep-resources.cjs` is
+    stale: `bundledRipgrepContentKey` has no callers outside tests. The
+    package puts a symlink to the pin's `rg` at
+    `resources/ripgrep/<host platform>/rg`, where
+    `resolveBundledRipgrepPath` looks first. `orcad-template` stays
+    byte-for-byte upstream's (decision 16 checks it). Guards, so the cut
+    reverts the day upstream changes: a check fails when any
+    `orcad-template` target lacks its own `rg`, and when upstream's
+    compiled main process reads `resources/ripgrep` for anything but the
+    local spawn. Darwin is unchanged: `resources/` is inside the signed
+    `Orca.app`. A first draft of this prompt rejected the cut on the stale
+    comment; the source said otherwise. Local.
 
 # Non-goals
 
@@ -363,13 +383,6 @@ picks this flake over the others.
   `codesign --verify` into a weaker test. It also means rebuilding
   upstream's helper apps, `Info.plist` and signed native modules. Darwin
   ships upstream's `Orca.app` untouched; decision 21 is Linux only.
-- Swapping `resources/ripgrep` (28 MB, `rg` for 6 platforms) for the pin's
-  `ripgrep`: upstream's `config/bundled-ripgrep-resources.cjs` says "SSH
-  deploys upload the remote host's rg from the local bundle, and WSL runs
-  the Linux build", and `src/main/ripgrep/bundled-ripgrep-path.ts` hashes
-  the file to gate that upload. Every platform's copy is load-bearing, and
-  the pin's `rg` links against `/nix/store` glibc, so even the host's own
-  copy would break search on a non-nix SSH host. Checked 2026-10-20.
 - Windows through nix: decision 2.
 
 # Open questions
