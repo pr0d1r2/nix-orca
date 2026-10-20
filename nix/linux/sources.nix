@@ -24,5 +24,10 @@ rec {
     inherit src pnpm;
     inherit (sources.pnpmDeps) hash;
     fetcherVersion = 4;
+    # Upstream's config/pnpmfile.cjs (since v1.4.232) turns on pnpm's global
+    # virtual store outside CI; it unpacks packages into the store, and the
+    # fetcher's fixup then fails on their JSONC tsconfig files. Off, as
+    # upstream's own CI runs it.
+    ORCA_PNPM_GLOBAL_VIRTUAL_STORE = "0";
   };
 }
