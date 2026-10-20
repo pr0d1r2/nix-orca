@@ -41,3 +41,20 @@ self|.|-
 - ⊥ private repo named in committed text; ∀ repo named checked by `gh repo view` before first push (`paradigm/V37`).
 - licence MIT ? (upstream Orca MIT; owner to confirm before first push).
 - non-goals: Windows, Orca Mobile, building `cloud/` | `native/`, Orca relay, release candidates, patching behaviour beyond paths/libraries/sandbox/updater/telemetry, Homebrew tap.
+
+## §I INTERFACES
+
+- pkg: `packages.<system>.orca-ide` & `default` — `bin/orca-ide`, ∀ 4 systems (`nix`).
+- pkg: `packages.<system>.orca-ide-agents` — `orca-ide` w/ ∀ available agent CLI on `PATH` (`nix/agents`).
+- pkg: `packages.<linux>.orca-ide-bin` — `.deb` repackage fallback, built & checked, ⊥ cached, ⊥ released (`nix/bin`).
+- override: `orca-ide.override { updater = false; telemetry = false; agents = [ ... ]; }`.
+- overlay: `overlays.default` adds `orca-ide` & `orca-ide-agents` only.
+- app: `apps.<system>.orca-ide` & `default`.
+- legacy: `legacyPackages.<system>.agents.<name>`.
+- module: `nixosModules.orca-ide`, `darwinModules.orca-ide`, `homeManagerModules.orca-ide`, each also `default` (`nix/modules`).
+- input override: `inputs.nix-orca.inputs.<name>.{url,follows}` for `claude-code-nix`, `codex-cli-nix`, `gemini-cli-nix`, `pi-nix`, `grok-build-nix`, `nix-mistral-vibe`.
+- file: `nix/sources.json` — only file an upstream bump changes.
+- cache: `https://pr0d1r2.cachix.org`, key `pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=`, in `nixConfig` of root & dev flakes. pins `orca-ide-<system>` (Linux).
+- release: tag `v<upstream>-nix.<n>`; notes per system: store path, NAR hash & size, closure size, nixpkgs rev, commit, closure diff, vulnix findings, `--rebuild` result; files: `SHA256SUMS` of upstream inputs, CycloneDX & SPDX SBOM, attestations over NAR hashes.
+- CI: `.github/workflows/build.yml`, `upstream.yml` from `.actlith`.
+- env: `CACHIX_AUTH_TOKEN` (CI secret).
