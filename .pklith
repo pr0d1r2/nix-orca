@@ -31,3 +31,5 @@ path:dev/flake.lock|-|-|written by `nix flake lock`; gate T1 adds the lock-graph
 markdownlintignore|-|-|ignore patterns, no linter reads them
 path:.markdownlint.yaml|-|-|markdownlint configuration; yamllint arrives with the workflows (`release` node)
 toml|taplo|-|-
+sh|shellcheck, shfmt|-|-
+jq|-|-|jq program run by its shell script; that script's bats test runs it
