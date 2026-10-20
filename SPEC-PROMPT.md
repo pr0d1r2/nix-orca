@@ -225,6 +225,45 @@ Sketch, not final:
     install`. A shell without hk refuses to install hooks rather than
     falling back to another hook runner (paradigm/V23). Local.
 
+# Decisions, round 2 (2026-10-20): what nix adds
+
+No prior-art package does any of these; together they are why a consumer
+picks this flake over the others.
+
+12. Hashes come from upstream's own manifests. Each release carries
+    electron-updater manifests (`latest-mac.yml`, `latest-linux.yml`,
+    `latest-linux-arm64.yml`) with a `sha512` and `size` per asset,
+    checked present for `v1.4.230`. The bump script takes each fetch hash
+    as SRI `sha512-...` from the manifest and refuses an asset whose
+    manifest entry is missing or whose size differs, so nix itself checks
+    upstream's stated hash on every fetch. Limit, stated so nobody
+    oversells it: the manifest ships in the same GitHub release as the
+    asset, so this catches a corrupt or swapped upload, not a compromised
+    release. Recount: `gh release download <tag> -R stablyai/orca -p
+    'latest*.yml'`. Local.
+13. Attested releases. Each GitHub release states, per system, the store
+    path, the NAR hash, the nixpkgs rev and the commit, and carries a
+    GitHub artifact attestation (SLSA build provenance) for every asset,
+    so `gh attestation verify` ties an asset to the workflow run and
+    commit that built it. Local.
+14. Release notes say what changed: a closure diff against the previous
+    release per system (`nvd`, 0.2.4 in the pin, or `nix store
+    diff-closures`) and the closure size per system. A closure budget per
+    system, measured from the first release, fails CI when a bump grows
+    past it; raising it is its own reviewed commit. Local.
+15. Vulnerability scan of every release closure with `vulnix` (1.12.4 in
+    the pin, wrapped by the fleet's `nix-lefthook-vulnix-scan`), findings
+    in the release notes. A separate check reports when the Electron
+    bundled in Orca lags the pin's `electron_43`: on 2026-10-20 upstream's
+    `package.json` declares 43.7.8 and the pin has 43.7.11. Both report;
+    neither blocks a release until a gap round says which findings should.
+    Local.
+16. Launch tests beyond `--version`. Linux: a `runNixOSTest` VM starts
+    `orca-ide` under Xvfb and runs `orca-ide serve` headless, asserting it
+    answers. Darwin: `codesign --verify --deep --strict` on the store
+    `Orca.app`, proving the signature survived the copy into the store (a
+    NAR keeps no extended attributes, so this is a real question). Local.
+
 # Non-goals
 
 - Windows, decision 2
