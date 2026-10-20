@@ -49,6 +49,7 @@ T1|.|`nixosModules.orca-ide` + VM test|V6
 T2|.|`services.orca-ide` hardened + exposure ratchet + container test on `nix-builder.local`|V1,V2,V3
 T3|.|`darwinModules.orca-ide` + `orca-ide.sb` + probes (macOS runner, Tart reference)|V4,V5
 T4|.|`homeManagerModules.orca-ide` + activation check|V6
+T5|.|darwin app placement: nix-darwin `/Applications/Nix Apps`, home-manager its own apps dir; Tart probe: TCC grant (Accessibility, Screen Recording) given to version N still holds after update to N+1 at a new store path; result → §R & README (round 10)|V4
 
 ## §B BUGS
 
