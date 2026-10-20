@@ -1,7 +1,7 @@
-DRAFT INPUT. This file is the prompt for the first ck:spec run. When that
-run lands SPEC.md, mark this file HISTORICAL INPUT in its own commit; from
-then on SPEC.md and the node specs it federates are the law, and where they
-differ from this file, they win.
+HISTORICAL INPUT. This file was the prompt for the first ck:spec run,
+which landed SPEC.md and its node specs on 2026-10-20. SPEC.md and the
+node specs it federates are the law; where they differ from this file,
+they win.
 
 Paradigm: paradigm (`github.com/pr0d1r2/paradigm`), commit e5605a3 (no
 tag yet), with the language pages `docs/NIX.md` and `docs/SHELL.md`. This
