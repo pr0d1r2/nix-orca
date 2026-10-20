@@ -55,7 +55,7 @@ envrc|shellcheck|-|-
 gitignore|-|-|ignore patterns, no linter reads them
 lock|lock-graph|-|-
 markdownlintignore|-|-|ignore patterns, no linter reads them
-path:.markdownlint.yaml|-|-|markdownlint configuration; yamllint arrives with the workflows (`release` node)
+yaml|yamllint|-|-
 toml|taplo|-|-
 sh|shellcheck, shfmt|-|-
 jq|-|-|jq program run by its shell script; that script's bats test runs it
@@ -64,7 +64,7 @@ path:SPEC-PROMPT.md|-|-|frozen HISTORICAL INPUT (root T3); hk still runs every s
 json|json|-|-
 awk|-|-|awk program run by its shell script; that script's bats test runs it
 path:.closure-budget|-|-|budget data; scripts/closure-budget.sh and its bats test read it
-path:.github/workflows/*.yml|actionlint, zizmor|-|-
+path:.github/workflows/*.yml|actionlint, zizmor, yamllint|-|-
 actlith|-|-|actlith's registry; the actlith-check step lands next
 
 ## rules
