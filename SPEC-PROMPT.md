@@ -617,6 +617,41 @@ picks this flake over the others.
     cannot land under the x64 attribute, and decision 16's `codesign
     --verify` and launch run under Rosetta. Nothing depends on GitHub's
     Intel macOS runners. Local.
+40. Retention (owner's answer, 2026-10-20; closes open question 4): the
+    last darwin output and the last 10 Linux outputs per system stay
+    cached, held by cachix pins. After a push, CI runs `cachix pin
+    pr0d1r2 orca-ide-<system> <path>` with `--keep-revisions 1` on darwin
+    and `--keep-revisions 10` on Linux (`cachix` 1.11.1 in the pin), only
+    when the path differs from the pin's newest revision, so the daily
+    no-change build (decision 19) does not rotate the pins. An output is
+    a distinct store path, so a `nixpkgs-lock` bump counts as one even
+    without a release. Unpinned paths are left to the cache's own
+    retention, which is cache-wide and shared with the fleet; this
+    repository never changes that setting and never deletes a path.
+    Release notes say the bytes stay cached while pinned; past that,
+    `nix build` of an old tag rebuilds from source (Linux) or fetches
+    upstream's zip again (darwin). Space, estimated 2026-10-20 (store
+    sizes are NAR bytes; the cache stores them zstd-compressed):
+    - darwin: one `Orca.app` per system, about 0.6 GB for both, taken
+      from the zip sizes (305 and 315 MB), as signed Mach-O compresses
+      about as well under zstd as under the zip's deflate.
+    - Linux: about 295 MB for a first output and about 205 MB for each
+      new one (decision 33's `.deb` figures), so 10 outputs are about 2.1
+      GB per system and 4.3 GB for both; about 1.5 GB compressed, at an
+      assumed 35%. The source build should be smaller and is measured at
+      its first push.
+    - The pin's Electron and other nixpkgs paths are not counted, on the
+      expectation that cachix skips paths cache.nixos.org already holds;
+      the first push checks it.
+    - Pinned total: about 2 GB, and it stays flat, against open question
+      4's 25 GB a month with no retention.
+    - Pushed each month, before the cache collects it: about 21 releases,
+      so about 13 GB of darwin and 3 GB of Linux. Darwin is most of that
+      churn and gains least from the cache, as its output is a download
+      and an unzip.
+    Recount: the pin listing on app.cachix.org, `nix path-info -S --json`
+    per output, the zip sizes in `gh release view -R stablyai/orca --json
+    assets`. Local.
 
 # Non-goals
 
@@ -670,10 +705,9 @@ Ask before guessing. A question marked blocking stops the node it names.
 1. Source or binaries. Closed by decision 38.
 2. Release asset format. Closed by decision 22.
 3. `x86_64-darwin` in CI. Closed by decision 39.
-4. Cache and release retention: 4 systems, about 300 MB each, about every
-   1.4 days is about 25 GB a month on cachix (decision 22 keeps it off
-   GitHub). Keep how many releases' paths, and garbage-collect cachix how?
-   Blocks the release node.
+4. Cache and release retention. Closed by decision 40; its 25 GB a month
+   estimate (4 systems, about 300 MB each, a release about every 1.4
+   days) is the baseline decision 40 compares against.
 5. Modules: a NixOS, nix-darwin (question 8) or home-manager module
    (`kevinpita` has one) that writes Orca's settings declaratively and
    runs `orca-ide serve` as a hardened systemd service for a headless
