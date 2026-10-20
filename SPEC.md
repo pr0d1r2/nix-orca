@@ -38,7 +38,7 @@ self|.|-
 - ⊥ self-update: update arrives as new flake release only (D6); updater & telemetry off switches opt-in, default = upstream behaviour (D26, D27).
 - cadence: build daily from `main`; release ⇔ new upstream stable version; `nixpkgs-lock` bump → built, checked, cached, ⊥ released (D19). build once: bump PR from own branch pushes cachix, release job builds nothing (D20). bump PR merges itself when ∀ required check green (D10).
 - red source build on a bump (Electron major ahead of pin, lockfile pin pnpm cannot read, new build-time download): bump PR stays open (D10), issue opened, ⊥ release; `orca-ide-bin` still built & checked, so upstream breakage & ours read apart; release resumes when fixed | pin catches up. consumers keep previous release (round 7).
-- release = text only, ⊥ binary assets (D22). tag `v<upstream version>-nix.<n>`: `n = 1` for each new upstream version; packaging fix that changes a Linux output for the current upstream version → `-nix.<n+1>`, only by owner-run `workflow_dispatch` of the release job, ⊥ automatic (round 7; D19 stays the only automatic trigger).
+- release = text only, ⊥ binary assets (D22). tag `v<upstream version>-nix.<n>`: `n = 1` for the first release of each upstream version, whatever unblocked it (round 7 decision 4); packaging fix that changes a Linux output for the current upstream version → `-nix.<n+1>`, only by owner-run `workflow_dispatch` of the release job, ⊥ automatic (round 7; D19 stays the only automatic trigger).
 - cache `pr0d1r2.cachix.org`: cachix free tier, 5 GB shared w/ fleet (D40). push = Linux `orca-ide` closure only: ⊥ darwin (D41), ⊥ agents, ⊥ unfree (D43), ⊥ `orca-ide-bin` (D38). pins keep 2 Linux revisions / system (D40). ⊥ change cache retention, ⊥ delete path.
 - token `CACHIX_AUTH_TOKEN` repo secret; PR jobs from forks build w/o it (D18, D20).
 - outward acts ! explicit human approval: GitHub repo creation, first push, cachix token, first release. after first release, releases go out behind required checks w/o per-release approval: `.pklith` `exempt` row for `paradigm/V32` citing `pr0d1r2/paradigm#24` (D37). ⊥ publish to irreversible registry.
@@ -106,7 +106,7 @@ T5|.|`.gitignore`: `.claude/`, `.direnv/`, `result*`|-
 T6|.|guardrails via `.pklith`, 1 check per commit, planted violation each; release-approval waiver row per §C (D37); ask human to reload|V1,V2,V10
 T7|x|`.context-limits` from `sherd budget` + 12–20%|-
 T8|.|waves via `sherd wave`, build order: `nix/linux` x86_64-linux on `nix-builder.local` + unprivileged-user test → `nix/bin` → aarch64-linux (CI) → `nix/darwin` → `scripts` bump → CI → release → `docs` → `nix/modules` stacked → `nix/agents` → `tests` integration layers|V1,V2,V7
-T9|.|CI via actlith: `build.yml` (build & check ∀ 4, cache & verify Linux), `upstream.yml` (daily), required checks; `CACHIX_AUTH_TOKEN` w/ approval|V4,V5,V6
+T9|.|CI via actlith: `build.yml` (build & check ∀ 4, cache & verify Linux), `upstream.yml` (daily), release job w/ owner `workflow_dispatch` for `-nix.<n+1>` (round 7), required checks; `CACHIX_AUTH_TOKEN` w/ approval|V4,V5,V6
 T10|.|GitHub repo `pr0d1r2/nix-orca`, first push, first release `-nix.1`, ∀ w/ approval; `gh repo view` ∀ named repo first|V9,V10
 T11|.|drop release-approval waiver row (§C) when `pr0d1r2/paradigm#24` decided|V9
 
