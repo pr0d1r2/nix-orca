@@ -7,6 +7,7 @@ flake outputs wiring ∀ 4 systems: packages, overlay, apps, `legacyPackages.age
 ## §F FEDERATION
 
 dir|owns|⊥owns|tokens
+linux|Linux `orca-ide` from source on pin Electron|`.deb` repackage & fixed-output pieces (`bin`), agent set (`agents`)|-
 
 ## §N NAV
 
