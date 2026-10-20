@@ -17,7 +17,7 @@ sib|docs|human pages: README, SECURITY, CONTRIBUTING, LLM-DISCLAIMER
 
 ## §C CONSTRAINTS
 
-- `runNixOSTest`; reference runner `nix-builder.local` (kvm, nixos-test); CI where KVM exists (D34, D35).
+- `runNixOSTest`; reference runner `nix-builder.local` (kvm, nixos-test) (D34, D35). CI: required VM checks (launch, layers 1 & 2) on `ubuntu-24.04` x64 w/ `/dev/kvm` opened by udev rule; job asserts `/dev/kvm` first & fails loudly, ⊥ silent skip | TCG fallback. aarch64-linux VM checks ⊥ required until KVM proven on `ubuntu-24.04-arm` (round 8).
 - launch: `orca-ide` under Xvfb; `orca-ide serve` headless answers; speech worker loads (D16, D25).
 - integration layers (D44), each a VM w/ `orca-ide-agents` & `serve`:
 - 1 detection: Orca detects ∀ agent on `PATH`, each `--version` → required.
