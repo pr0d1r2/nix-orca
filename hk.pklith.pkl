@@ -59,6 +59,11 @@ steps: Mapping<String, Config.Step> = new {
     check = "command -v taplo >/dev/null 2>&1 || { echo 'taplo: taplo is not on PATH; re-enter the dev shell. A MISSING TOOL, not a finding.' >&2; exit 1; }; taplo fmt --check {{files}} || { echo 'taplo: TOML not formatted or not parseable' >&2; exit 1; }"
     fix = "taplo fmt {{files}}"
   }
+  ["ruff-format"] {
+    glob = List("**/*.py", "ruff.toml")
+    check = "command -v ruff >/dev/null 2>&1 || { echo 'ruff-format: ruff is not on PATH; re-enter the dev shell. A MISSING TOOL, not a finding.' >&2; exit 1; }; ruff format --check {{files}} || { echo 'ruff-format: Python not formatted' >&2; exit 1; }"
+    fix = "ruff format {{files}}"
+  }
   ["typos"] {
     glob = List("**/*")
     check = "command -v typos >/dev/null 2>&1 || { echo 'typos: typos is not on PATH; re-enter the dev shell. A MISSING TOOL, not a finding.' >&2; exit 1; }; typos --force-exclude {{files}} || { echo 'typos: misspelling; fix it or teach .typos.toml' >&2; exit 1; }"

@@ -42,6 +42,7 @@ actlith-check|gate|-|.actlith, .github/workflows/**|actlith check|-|-|a workflow
 # Python: tests/stub only, stdlib only (root §C). pklith's catalog has no
 # Python rows.
 ruff-check|lint|ruff|**/*.py, ruff.toml|ruff check {{files}}|ruff check --fix {{files}}|-|Python lint finding; ruff names the rule
+ruff-format|format|ruff|**/*.py, ruff.toml|ruff format --check {{files}}|ruff format {{files}}|-|Python not formatted
 
 ## types
 type|checks|min|exempt
@@ -73,7 +74,7 @@ path:.github/workflows/*.yml|actionlint, zizmor, yamllint, actlith-check|-|-
 actlith|actlith-check|-|-
 path:nix/agents/no-package.txt|-|-|agent id list; scripts/agents/unknown.sh reads it
 LICENSE|-|-|license text, no linter reads it
-py|ruff-check|-|-
+py|ruff-check, ruff-format|-|-
 
 ## rules
 id|kind|select|target|except
