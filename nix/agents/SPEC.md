@@ -1,0 +1,52 @@
+# SPEC
+
+## §G GOAL
+
+∀ Orca agent CLI w/ usable nix package as native nix package; `orca-ide-agents` puts them on Orca's `PATH`; consumer overrides any agent.
+
+## §N NAV
+
+rel|path|lens
+up|.|-
+up|nix|flake outputs, `nix/sources.json`; packages & modules in children
+self|nix/agents|agent CLI set, `orca-ide-agents`, agent inputs
+sib|nix/linux|Linux `orca-ide` from source on pin Electron
+sib|nix/darwin|darwin `orca-ide` from upstream signed zip
+sib|nix/bin|`orca-ide-bin` & fixed-output pieces from `.deb`
+
+## §C CONSTRAINTS
+
+- per-agent flakes, `flake = false` inputs, `package.nix` called w/ pin pkgs: `claude-code-nix` (`sadjow/claude-code-nix`), `codex-cli-nix` (`sadjow/codex-cli-nix`), `gemini-cli-nix` (`sadjow/gemini-cli-nix`), `pi-nix` (`sadjow/pi-nix`), `grok-build-nix` (`AodhanHayter/grok-build-nix`, xAI Grok Build). `nix-mistral-vibe` = flake input following `nixpkgs-lock` (D43).
+- from pin: `opencode`, `aider-chat`, `goose-cli`, `amp-cli`, `crush`, `codebuff`, `cursor-cli`, `github-copilot-cli`, `kiro-cli`, `qwen-code`, `acli`, `openclaw` (D43).
+- ⊥ pin `grok-cli` (community CLI, same command); ⊥ `ante`, `muse` (unrelated); `antigravity` ⊥ until its program = `agy`; `kilocode-cli` ⊥ (no platforms, wrong program).
+- unfree: `claude-code`, `amp-cli`, `crush`, `cursor-cli`, `github-copilot-cli`, `kiro-cli`, `acli`. flake outputs evaluate w/ `allowUnfree`; overlay honours consumer config.
+- `orca-ide` default `agents = [ ]`; ⊥ closure growth for lean package.
+- ⊥ cachix push of ∀ agent | `orca-ide-agents` (licence, 5 GB, `.:V5`).
+- agent inputs updated daily in own PR; builds & checks, ⊥ release (D19, D43).
+- later, ⊥ v1: each agent in own `systemd-nspawn` container | hardened unit.
+
+## §I INTERFACES
+
+- pkg: `orca-ide-agents` — `orca-ide.override { agents = <∀ available on system>; }`.
+- legacy: `legacyPackages.<system>.agents.<name>`, name = Orca `TuiAgent` id.
+- override: `inputs.nix-orca.inputs.<input>.{url,follows}`; `orca-ide.override { agents = [ ... ]; }`.
+
+## §V INVARIANTS
+
+V1: ∀ agent in set: `meta.mainProgram` = Orca `detectCmd` | alias for its id at pinned upstream tag; check reads `tui-agent-config.ts` from source.
+V2: agent unavailable on a system → absent there, ⊥ eval | build failure.
+V3: ∀ agent `--version` exits 0 in sandbox w/o network | key.
+V4: lock graph keeps 1 nixpkgs w/ agent inputs present (`.:V1`).
+
+## §T TASKS
+
+id|status|task|cites
+T1|.|agent set from pin + `detectCmd` check|V1,V2
+T2|.|5 `flake = false` inputs + `nix-mistral-vibe`|V4
+T3|.|`orca-ide-agents` + `--version` checks|V3
+T4|.|daily agent-input update PR (`scripts`)|-
+T5|.|packaging nodes for 26 agents w/o nix package, nixpkgs first where licence allows|-
+
+## §B BUGS
+
+id|date|cause|fix
