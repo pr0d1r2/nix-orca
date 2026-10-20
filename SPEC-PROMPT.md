@@ -451,8 +451,11 @@ picks this flake over the others.
     handler, and Wayland flags behind `NIXOS_OZONE_WL`. README notes:
     Ubuntu 24.04 and later restrict unprivileged user namespaces through
     AppArmor, and a store path cannot hold a setuid `chrome-sandbox`, so
-    Electron from nix will not start there without an AppArmor profile;
-    the README gives one rather than suggesting `--no-sandbox`. On
+    Electron from nix will not start there without an AppArmor profile.
+    Upstream ships one in the `.deb` (`resources/apparmor-profile`, for
+    `/opt/Orca`); the package installs it under `share/` with its paths
+    rewritten to the store path, and the README says how to load it,
+    rather than suggesting `--no-sandbox`. On
     nix-darwin `Orca.app` lands in `Nix Apps`, which Spotlight may not
     index. Plus decisions 26 and 27's notes. Local.
 
