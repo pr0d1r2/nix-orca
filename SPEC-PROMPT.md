@@ -272,6 +272,18 @@ picks this flake over the others.
     `follows` it, `docs/NIX.md`) fails the gate otherwise. The repository
     follows `nixpkgs-lock` bumps through `nixpkgs-lock-subscribe`, and a
     bump is a release input (decision 4). Narrows decision 8. Local.
+18. Binary cache: `pr0d1r2.cachix.org`, the fleet's existing cache (owner's
+    request, 2026-10-20), public key
+    `pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=`,
+    the same one `nix-hk` and `nix-mistral-vibe` use. Both flakes'
+    `nixConfig` list it. CI pushes every system's package and the dev
+    shell from `main` and the release job only, with the token in the
+    `CACHIX_AUTH_TOKEN` repository secret; PR jobs build without it, so a
+    fork PR never sees it. A separate job verifies every pushed path is in
+    the cache (`nix path-info --store https://pr0d1r2.cachix.org`), as in
+    `nix-hk`. The README states the untrusted-substituter trap. The space
+    in open question 4 is this shared cache's, so retention must not evict
+    the rest of the fleet. Local.
 
 # Non-goals
 
