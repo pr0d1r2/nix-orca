@@ -12,5 +12,6 @@ catalog: [
   catalog.shellcheck
   catalog.sherd
   catalog.statix
+  catalog.taplo
   catalog.typos
 ]
