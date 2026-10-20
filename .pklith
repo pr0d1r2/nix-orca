@@ -20,7 +20,7 @@ lock-graph|supply|jq|**/flake.lock, gate/lock-graph.sh, gate/lock-graph.jq|git l
 name-guard|gate|gnugrep|**/*|bash gate/name-guard.sh {{files}}|-|-|a private name is staged (root V10); the hit names the denylist entry, never the name
 # The whole bats suite at push, so a RED commit can land (`docs/SHELL.md`).
 # pklith main ships this row; v0.1.0, pinned here, does not.
-bats-unit|test|bats|-|bats --recursive tests|-|-|a bats test under tests/ failed, or there is no tests/ directory
+bats-unit|coverage|bats|-|bats --recursive tests|-|-|a bats test under tests/ failed, or there is no tests/ directory
 # Overrides the catalog row: bats files are bash too (`docs/SHELL.md`).
 shellcheck|lint|shellcheck|**/*.sh, **/*.bash, **/*.bats, .envrc|shellcheck {{files}}|-|-|shell script finding
 # Overrides the catalog row: shfmt reads bats from the extension.

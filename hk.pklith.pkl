@@ -116,9 +116,6 @@ steps: Mapping<String, Config.Step> = new {
     glob = List("**/SPEC.md", ".context-limits")
     check = "command -v sherd >/dev/null 2>&1 || { echo 'sherd-budget: sherd is not on PATH; re-enter the dev shell. A MISSING TOOL, not a finding.' >&2; exit 1; }; sherd budget || { echo 'sherd-budget: a spec chain is over its ceiling' >&2; exit 1; }"
   }
-  ["bats-unit"] {
-    check = "command -v bats >/dev/null 2>&1 || { echo 'bats-unit: bats is not on PATH; re-enter the dev shell. A MISSING TOOL, not a finding.' >&2; exit 1; }; bats --recursive tests || { echo 'bats-unit: a bats test under tests/ failed, or there is no tests/ directory' >&2; exit 1; }"
-  }
   ["lock-graph"] {
     glob = List("**/flake.lock", "gate/lock-graph.sh", "gate/lock-graph.jq")
     check = "command -v git >/dev/null 2>&1 || { echo 'lock-graph: git is not on PATH; re-enter the dev shell. A MISSING TOOL, not a finding.' >&2; exit 1; }; command -v bash >/dev/null 2>&1 || { echo 'lock-graph: bash is not on PATH; re-enter the dev shell. A MISSING TOOL, not a finding.' >&2; exit 1; }; git ls-files -z '*flake.lock' | xargs -0 -n1 bash gate/lock-graph.sh || { echo 'lock-graph: a flake lock holds more or fewer than one nixpkgs, or an input locks its own (root V1)' >&2; exit 1; }"
@@ -144,4 +141,7 @@ steps: Mapping<String, Config.Step> = new {
 }
 
 push: Mapping<String, Config.Step> = new {
+  ["bats-unit"] {
+    check = "command -v bats >/dev/null 2>&1 || { echo 'bats-unit: bats is not on PATH; re-enter the dev shell. A MISSING TOOL, not a finding.' >&2; exit 1; }; bats --recursive tests || { echo 'bats-unit: a bats test under tests/ failed, or there is no tests/ directory' >&2; exit 1; }"
+  }
 }
