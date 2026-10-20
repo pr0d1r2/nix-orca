@@ -11,6 +11,7 @@ linux|Linux `orca-ide` from source on pin Electron|`.deb` repackage & fixed-outp
 darwin|darwin `orca-ide` from upstream signed zip|Linux packages (`linux`, `bin`)|-
 bin|`orca-ide-bin` & fixed-output pieces from `.deb`|source build (`linux`)|-
 agents|agent CLI set, `orca-ide-agents`, agent inputs|Orca package (`linux`, `darwin`)|-
+modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposure`|packages (`linux`, `darwin`)|-
 
 ## §N NAV
 

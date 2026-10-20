@@ -13,6 +13,7 @@ self|nix/bin|`orca-ide-bin` & fixed-output pieces from `.deb`
 sib|nix/linux|Linux `orca-ide` from source on pin Electron
 sib|nix/darwin|darwin `orca-ide` from upstream signed zip
 sib|nix/agents|agent CLI set, `orca-ide-agents`, agent inputs
+sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposure`
 
 ## §C CONSTRAINTS
 
