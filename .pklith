@@ -51,7 +51,7 @@ pre-commit|-|-|written by pklith (seed or gen)
 pre-push|-|-|written by pklith (seed or gen)
 envrc|shellcheck|-|-
 gitignore|-|-|ignore patterns, no linter reads them
-path:dev/flake.lock|lock-graph|-|-
+lock|lock-graph|-|-
 markdownlintignore|-|-|ignore patterns, no linter reads them
 path:.markdownlint.yaml|-|-|markdownlint configuration; yamllint arrives with the workflows (`release` node)
 toml|taplo|-|-

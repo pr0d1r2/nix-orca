@@ -52,7 +52,7 @@ V3: `nix/sources.json` = only file an upstream bump changes; bump PR diff ⊄ ot
 ## §T TASKS
 
 id|status|task|cites
-T1|.|`flake.nix` skeleton: `nixpkgs-lock` input, 4 systems, `nixConfig`|V2
+T1|x|`flake.nix` skeleton: `nixpkgs-lock` input, 4 systems, `nixConfig`|V2
 T2|.|`nix/sources.json` + reader, schema check|V3
 T3|.|`overlays.default`, `apps`, `checks` aggregation|V1
 
