@@ -224,3 +224,27 @@ Sketch, not final:
     a fresh clone is gated from its first shell, with no manual `hk
     install`. A shell without hk refuses to install hooks rather than
     falling back to another hook runner (paradigm/V23). Local.
+
+# Non-goals
+
+- Windows, decision 2
+- Orca Mobile (the Android and iOS releases in the same repository)
+- building `cloud/` or `native/`, or running an Orca relay
+- release candidates, decision 7
+- patching Orca's behaviour beyond what nix needs: paths, libraries,
+  sandbox, and the updater (decision 6)
+- a Homebrew tap: upstream has one
+
+# Prior art and rejected designs
+
+- Use `numtide/llm-agents.nix` as an input: it follows its own nixpkgs,
+  has no `x86_64-darwin`, and ships `orca`, which shadows the screen
+  reader. Its packaging notes are the best map of what Orca needs and are
+  read first.
+- Upstream's AppImage on Linux (`elsirion`, NUR): its asset names carry no
+  version, so a pin cannot say what it pins without the hash. The `.deb` is
+  versioned and is what numtide patches.
+- The `.dmg` on darwin: mounting it needs `hdiutil`, which the nix sandbox
+  does not have; the `-mac.zip` holds the same signed `Orca.app`.
+- Building from source now: rejected for version 1, open question 1.
+- Windows through nix: decision 2.
