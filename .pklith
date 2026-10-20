@@ -3,8 +3,8 @@ format 1
 # Seeded by `pklith seed --init` from the fragments this repository's
 # files switch on (`pklith detect`). It is yours now: pklith never rewrites it.
 #
-# No built-in check reads these types yet, so `pklith check` names them
-# until each gets checks or an exempt reason: envrc, gitignore, lock.
+# Edited by hand since (root T6): envrc gets shellcheck; gitignore is
+# exempt; the dev lock waits for the lock-graph guard (gate T1).
 
 ## types
 type|checks|min|exempt
@@ -19,3 +19,6 @@ pklith|-|-|written by pklith (seed or gen)
 pkl|-|-|written by pklith (seed or gen)
 pre-commit|-|-|written by pklith (seed or gen)
 pre-push|-|-|written by pklith (seed or gen)
+envrc|shellcheck|-|-
+gitignore|-|-|ignore patterns, no linter reads them
+path:dev/flake.lock|-|-|written by `nix flake lock`; gate T1 adds the lock-graph guard
