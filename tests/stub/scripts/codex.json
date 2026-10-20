@@ -1,6 +1,6 @@
 {
   "turns": [
-    {"tool": {"name": "exec_command", "arguments": {"cmd": "printf %s hi > hello.txt"}}},
+    {"tool": {"name": "exec_command", "arguments": {"cmd": "printf 'hi\\n' > hello.txt"}}},
     {"text": "Done."}
   ]
 }

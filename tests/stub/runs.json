@@ -1,0 +1,163 @@
+{
+  "aider": {
+    "argv": [
+      "aider",
+      "--model",
+      "openai/stub",
+      "--edit-format",
+      "whole",
+      "--yes-always",
+      "--no-git",
+      "--no-check-update",
+      "--no-show-model-warnings",
+      "--no-analytics",
+      "--message",
+      "write hello.txt"
+    ],
+    "env": {
+      "OPENAI_API_BASE": "{base}/v1",
+      "OPENAI_API_KEY": "stub"
+    }
+  },
+  "claude": {
+    "argv": [
+      "claude",
+      "-p",
+      "write hello.txt",
+      "--permission-mode",
+      "acceptEdits",
+      "--allowedTools",
+      "Write"
+    ],
+    "env": {
+      "ANTHROPIC_API_KEY": "stub",
+      "ANTHROPIC_BASE_URL": "{base}",
+      "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+      "DISABLE_TELEMETRY": "1"
+    }
+  },
+  "codex": {
+    "argv": [
+      "codex",
+      "exec",
+      "--skip-git-repo-check",
+      "-s",
+      "workspace-write",
+      "-c",
+      "model_provider=stub",
+      "-c",
+      "model_providers.stub={name=\"stub\",base_url=\"{base}/v1\",env_key=\"STUB_KEY\",wire_api=\"responses\"}",
+      "-c",
+      "model=stub",
+      "write hello.txt"
+    ],
+    "env": {
+      "STUB_KEY": "stub"
+    }
+  },
+  "crush": {
+    "argv": [
+      "crush",
+      "run",
+      "write hello.txt"
+    ],
+    "files": {
+      "{workdir}/crush.json": "{\"providers\": {\"stub\": {\"type\": \"openai\", \"base_url\": \"{base}/v1\", \"api_key\": \"stub\", \"models\": [{\"id\": \"stub\", \"name\": \"stub\", \"context_window\": 100000, \"default_max_tokens\": 1000}]}}, \"models\": {\"large\": {\"provider\": \"stub\", \"model\": \"stub\"}, \"small\": {\"provider\": \"stub\", \"model\": \"stub\"}}, \"permissions\": {\"allowed_tools\": [\"write\"]}}\n"
+    }
+  },
+  "gemini": {
+    "argv": [
+      "gemini",
+      "-m",
+      "gemini-2.5-flash",
+      "-p",
+      "write hello.txt",
+      "--yolo"
+    ],
+    "env": {
+      "GEMINI_API_KEY": "stub",
+      "GOOGLE_GEMINI_BASE_URL": "{base}"
+    },
+    "files": {
+      "{home}/.gemini/settings.json": "{\"security\": {\"auth\": {\"selectedType\": \"gemini-api-key\"}, \"folderTrust\": {\"enabled\": false}}}\n"
+    }
+  },
+  "goose": {
+    "argv": [
+      "goose",
+      "run",
+      "-t",
+      "write hello.txt"
+    ],
+    "env": {
+      "GOOSE_MODE": "auto",
+      "GOOSE_MODEL": "stub",
+      "GOOSE_PROVIDER": "openai",
+      "OPENAI_API_KEY": "stub",
+      "OPENAI_HOST": "{base}"
+    }
+  },
+  "grok": {
+    "argv": [
+      "grok",
+      "-p",
+      "write hello.txt",
+      "--always-approve"
+    ],
+    "env": {
+      "GROK_XAI_API_BASE_URL": "{base}/v1",
+      "XAI_API_KEY": "stub"
+    }
+  },
+  "mistral-vibe": {
+    "argv": [
+      "vibe",
+      "-p",
+      "write hello.txt",
+      "--auto-approve"
+    ],
+    "env": {
+      "STUB_KEY": "stub"
+    },
+    "files": {
+      "{home}/.vibe/config.toml": "active_model = \"stub\"\n\n[[providers]]\nname = \"stub\"\napi_base = \"{base}/v1\"\napi_key_env_var = \"STUB_KEY\"\nbackend = \"generic\"\n\n[[models]]\nname = \"stub\"\nprovider = \"stub\"\nalias = \"stub\"\n"
+    }
+  },
+  "opencode": {
+    "argv": [
+      "opencode",
+      "run",
+      "write hello.txt"
+    ],
+    "files": {
+      "{workdir}/opencode.json": "{\"$schema\": \"https://opencode.ai/config.json\", \"model\": \"stub/stub\", \"provider\": {\"stub\": {\"npm\": \"@ai-sdk/openai-compatible\", \"name\": \"stub\", \"options\": {\"baseURL\": \"{base}/v1\", \"apiKey\": \"stub\"}, \"models\": {\"stub\": {\"name\": \"stub\"}}}}}\n"
+    }
+  },
+  "pi": {
+    "argv": [
+      "pi",
+      "--provider",
+      "stub",
+      "--model",
+      "stub",
+      "-p",
+      "write hello.txt"
+    ],
+    "files": {
+      "{home}/.pi/agent/models.json": "{\"providers\": {\"stub\": {\"baseUrl\": \"{base}/v1\", \"api\": \"openai-completions\", \"apiKey\": \"stub\", \"models\": [{\"id\": \"stub\", \"name\": \"stub\", \"contextWindow\": 100000, \"maxTokens\": 1000}]}}}\n"
+    }
+  },
+  "qwen-code": {
+    "argv": [
+      "qwen",
+      "-p",
+      "write hello.txt",
+      "--yolo"
+    ],
+    "env": {
+      "OPENAI_API_KEY": "stub",
+      "OPENAI_BASE_URL": "{base}/v1",
+      "OPENAI_MODEL": "stub"
+    }
+  }
+}
