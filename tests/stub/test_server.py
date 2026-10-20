@@ -21,6 +21,10 @@ SCRIPT = {
 }
 
 
+# What an agent offers in every request that may get a tool call.
+TOOLS = [{"name": "Write", "input_schema": {"type": "object"}}]
+
+
 def sse(body):
     """The `data:` payloads of a server-sent event stream, in order."""
     return [line[len("data: ") :] for line in body.decode().splitlines() if line.startswith("data: ")]
@@ -35,6 +39,18 @@ class TurnTest(unittest.TestCase):
 
     def test_past_the_end_the_last_turn_repeats(self):
         self.assertEqual(server.turn(SCRIPT, 7), SCRIPT["turns"][1])
+
+
+class WorkdirTest(unittest.TestCase):
+    """Agents that want absolute paths get the run's working directory."""
+
+    def test_every_workdir_placeholder_is_filled(self):
+        script = {
+            "turns": [{"tool": {"name": "w", "arguments": {"file_path": "{workdir}/a", "n": 1}}}, {"text": "{workdir}"}]
+        }
+        filled = server.fill(script, "/work")
+        self.assertEqual(filled["turns"][0]["tool"]["arguments"], {"file_path": "/work/a", "n": 1})
+        self.assertEqual(filled["turns"][1]["text"], "/work")
 
 
 class SideRequestTest(unittest.TestCase):
@@ -184,16 +200,23 @@ class HttpTest(unittest.TestCase):
             return response.read()
 
     def test_the_two_turns_over_anthropic_messages(self):
-        first = json.loads(self.post("/v1/messages", {"model": "m", "messages": [{"role": "user", "content": "go"}]}))
+        first = json.loads(
+            self.post("/v1/messages", {"model": "m", "tools": TOOLS, "messages": [{"role": "user", "content": "go"}]})
+        )
         self.assertEqual(first["stop_reason"], "tool_use")
         result = {"role": "user", "content": [{"type": "tool_result", "tool_use_id": first["content"][0]["id"]}]}
         second = json.loads(
-            self.post("/v1/messages", {"model": "m", "messages": [{"role": "user", "content": "go"}, result]})
+            self.post(
+                "/v1/messages", {"model": "m", "tools": TOOLS, "messages": [{"role": "user", "content": "go"}, result]}
+            )
         )
         self.assertEqual(second["content"][0]["text"], "Done.")
 
     def test_gemini_streams_on_its_own_path(self):
-        body = {"contents": [{"role": "user", "parts": [{"text": "go"}]}], "tools": [{"functionDeclarations": []}]}
+        body = {
+            "contents": [{"role": "user", "parts": [{"text": "go"}]}],
+            "tools": [{"functionDeclarations": [{"name": "Write"}]}],
+        }
         raw = self.post("/v1beta/models/m:streamGenerateContent?alt=sse", body)
         first = json.loads(sse(raw)[0])
         self.assertEqual(first["candidates"][0]["content"]["parts"][0]["functionCall"]["name"], "Write")
