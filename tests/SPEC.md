@@ -20,6 +20,7 @@ sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, rele
 
 - `runNixOSTest`; reference runner `nix-builder.local` (kvm, nixos-test) (D34, D35). CI: required VM checks (launch, layers 1 & 2) on `ubuntu-24.04` x64 w/ `/dev/kvm` opened by udev rule; job asserts `/dev/kvm` first & fails loudly, ⊥ silent skip | TCG fallback. aarch64-linux VM checks ⊥ required until KVM proven on `ubuntu-24.04-arm` (round 8).
 - launch: `orca-ide` under Xvfb; `orca-ide serve` headless answers; speech worker loads (D16, D25).
+- non-NixOS launch: `nix run` of `orca-ide` on plain `ubuntu-24.04` runner under `xvfb-run`, window up w/ software GL, as unprivileged runner user (round 10; D38 hands-on test, automated).
 - integration layers (D44), each a VM w/ `orca-ide-agents` & `serve`:
 - 1 detection: Orca detects ∀ agent on `PATH`, each `--version` → required.
 - 2 stub: `tests/stub` python stdlib server, OpenAI chat completions & responses + Anthropic messages, streaming; replays script: 1 tool call writing a file, then final message. ∀ agent w/ settable endpoint started by Orca via `serve` in worktree → required.
