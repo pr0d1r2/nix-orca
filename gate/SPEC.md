@@ -35,8 +35,8 @@ V2: name guard fails on planted private name fixture (`.:V10`).
 ## §T TASKS
 
 id|status|task|cites
-T1|.|`lock-graph.sh` + fixtures|V1
-T2|.|`name-guard.sh` + fixtures|V2
+T1|x|`lock-graph.sh` + fixtures|V1
+T2|x|`name-guard.sh` + fixtures|V2
 
 ## §B BUGS
 
