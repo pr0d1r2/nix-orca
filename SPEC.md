@@ -15,6 +15,7 @@ nix flake + bash scripts + 1 python stub server (tests). packaging only: fetch, 
 dir|owns|⊥owns|tokens
 nix|flake outputs, `nix/sources.json`; packages & modules in children|scripts (`scripts`), VM tests (`tests`), dev shell (`dev`)|-
 scripts|bash for bump, release notes, cachix pins, budgets, reports; mirrored bats|flake outputs (`nix`), workflows (`.actlith`)|-
+tests|VM & integration tests, stub model server|package builds (`nix`), unit bats (`scripts`, `gate`)|-
 
 ## §N NAV
 

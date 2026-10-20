@@ -10,6 +10,7 @@ rel|path|lens
 up|.|-
 self|scripts|bash for bump, release notes, cachix pins, budgets, reports; mirrored bats
 sib|nix|flake outputs, `nix/sources.json`; packages & modules in children
+sib|tests|VM & integration tests, stub model server
 
 ## §C CONSTRAINTS
 
