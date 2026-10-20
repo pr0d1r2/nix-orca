@@ -23,6 +23,8 @@ name-guard|gate|gnugrep|**/*|bash gate/name-guard.sh {{files}}|-|-|a private nam
 bats-unit|test|bats|-|bats --recursive tests|-|-|a bats test under tests/ failed, or there is no tests/ directory
 # Overrides the catalog row: bats files are bash too (`docs/SHELL.md`).
 shellcheck|lint|shellcheck|**/*.sh, **/*.bash, **/*.bats, .envrc|shellcheck {{files}}|-|-|shell script finding
+# Overrides the catalog row: shfmt reads bats from the extension.
+shfmt|format|shfmt|**/*.sh, **/*.bash, **/*.bats|shfmt --diff {{files}}|shfmt --write {{files}}|-|shell script not formatted
 
 ## types
 type|checks|min|exempt
@@ -45,7 +47,7 @@ path:.markdownlint.yaml|-|-|markdownlint configuration; yamllint arrives with th
 toml|taplo|-|-
 sh|shellcheck, shfmt|-|-
 jq|-|-|jq program run by its shell script; that script's bats test runs it
-bats|bats-parse, shellcheck, bats-unit|-|-
+bats|bats-parse, shellcheck, shfmt, bats-unit|-|-
 path:SPEC-PROMPT.md|-|-|frozen HISTORICAL INPUT (root T3); hk still runs every step on it except no-local-paths, which upstream's CI path in it trips
 
 ## rules
