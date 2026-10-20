@@ -101,3 +101,7 @@ T8|.|waves via `sherd wave`, build order: `nix/linux` x86_64-linux on `nix-build
 T9|.|CI via actlith: `build.yml` (build & check ∀ 4, cache & verify Linux), `upstream.yml` (daily), required checks; `CACHIX_AUTH_TOKEN` w/ approval|V4,V5,V6
 T10|.|GitHub repo `pr0d1r2/nix-orca`, first push, first release `-nix.1`, ∀ w/ approval; `gh repo view` ∀ named repo first|V9,V10
 T11|.|drop release-approval waiver row (§C) when `pr0d1r2/paradigm#24` decided|V9
+
+## §B BUGS
+
+id|date|cause|fix
