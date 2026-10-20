@@ -431,6 +431,20 @@ picks this flake over the others.
     --rebuild` for every system's package and fails when the rebuild is
     not bit-identical; the release notes say it was. Cheap here, since
     nothing compiles. Local.
+31. Closure hygiene, as checks (owner's answer, 2026-10-20):
+    - no reference to a build-only path (`disallowedReferences` on the
+      fetch and unpack inputs)
+    - no RUNPATH or string naming a foreign build host, such as the
+      `/home/runner/work/sherpa-onnx/...` RUNPATH upstream's sherpa addon
+      carries
+    - the closure's store paths match an allow list per system (Electron,
+      `ripgrep`, `agent-browser`, `sherpa-onnx`, `onnxruntime`, the
+      decision 28 tools, glibc and the libraries `autoPatchelf` adds); a
+      new path fails until the list is changed in a reviewed commit
+    - no setuid or setgid file, no world-writable file, no dangling
+      symlink in the output
+    - every ELF file's interpreter and RUNPATH resolve inside the store
+    Local.
 
 # Non-goals
 
