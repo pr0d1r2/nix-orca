@@ -12,6 +12,7 @@ catalog: [
   catalog.markdownlint-cli
   catalog.microlith
   catalog.nixfmt
+  catalog.python3
   catalog.ripsecrets
   catalog.ruff
   catalog.shellcheck

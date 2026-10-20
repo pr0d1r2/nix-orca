@@ -43,6 +43,8 @@ actlith-check|gate|-|.actlith, .github/workflows/**|actlith check|-|-|a workflow
 # Python rows.
 ruff-check|lint|ruff|**/*.py, ruff.toml|ruff check {{files}}|ruff check --fix {{files}}|-|Python lint finding; ruff names the rule
 ruff-format|format|ruff|**/*.py, ruff.toml|ruff format --check {{files}}|ruff format {{files}}|-|Python not formatted
+# The stub server's tests at push, so a RED commit can land.
+py-unit|coverage|python3|-|python3 -m unittest discover -s tests/stub -t .|-|-|a Python test under tests/stub failed
 
 ## types
 type|checks|min|exempt
@@ -74,7 +76,7 @@ path:.github/workflows/*.yml|actionlint, zizmor, yamllint, actlith-check|-|-
 actlith|actlith-check|-|-
 path:nix/agents/no-package.txt|-|-|agent id list; scripts/agents/unknown.sh reads it
 LICENSE|-|-|license text, no linter reads it
-py|ruff-check, ruff-format|-|-
+py|ruff-check, ruff-format, py-unit|-|-
 
 ## rules
 id|kind|select|target|except
