@@ -1,0 +1,6 @@
+{
+  "turns": [
+    {"tool": {"name": "Write", "arguments": {"file_path": "hello.txt", "content": "hi\n"}}},
+    {"text": "Done."}
+  ]
+}
