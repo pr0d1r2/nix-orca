@@ -70,6 +70,8 @@ id|kind|select|target|except
 # pklith tag with the `tdd-order` kind (v0.1.0 has none).
 gate-test|exists|gate/*.sh|tests/unit/gate/{stem}.bats|-
 gate-orphan|orphan|tests/unit/gate/*.bats|gate/{stem}.sh|-
+scripts-test|exists|scripts/**/*.sh|tests/unit/{path\|chop:.sh}.bats|-
+scripts-orphan|orphan|tests/unit/scripts/**/*.bats|{path\|strip:tests/unit/\|chop:.bats}.sh|-
 
 # Waivers (paradigm/V38, D52): `paradigm/V<n>` with its reason. pklith
 # v0.1.0 refuses an `## exempt` section ("unknown section"), so each
