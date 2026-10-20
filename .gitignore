@@ -7,3 +7,6 @@ result*
 # denylist (gate node).
 .envrc.local
 .private/
+
+# sbomnix's request cache, written to the working directory.
+http_cache.sqlite
