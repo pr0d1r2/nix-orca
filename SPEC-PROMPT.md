@@ -295,6 +295,17 @@ picks this flake over the others.
 - The `.dmg` on darwin: mounting it needs `hdiutil`, which the nix sandbox
   does not have; the `-mac.zip` holds the same signed `Orca.app`.
 - Building from source now: rejected for version 1, open question 1.
+- nixpkgs Electron on darwin (owner agreed, 2026-10-20): the pin's
+  `electron_43` 43.7.11 does build on both darwin systems, but there it is
+  Electron's own prebuilt zip, so the only gain is a patch version.
+  Putting `app.asar` into it breaks Stably's signature and notarization;
+  an ad-hoc signature changes on every release (about every 1.4 days),
+  which resets the TCC grants Orca's computer-use surface needs
+  (Accessibility, Screen Recording), cuts off keychain items stored by
+  `safeStorage` under upstream's signature, and turns decision 16's
+  `codesign --verify` into a weaker test. It also means rebuilding
+  upstream's helper apps, `Info.plist` and signed native modules. Darwin
+  ships upstream's `Orca.app` untouched; open question 6 is Linux only.
 - Windows through nix: decision 2.
 
 # Open questions
