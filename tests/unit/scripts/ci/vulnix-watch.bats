@@ -51,8 +51,14 @@ STUB
   run ! grep -q "issue create" calls
 }
 
-@test "anything but one path is a usage error, exit 2" {
+@test "every path given is scanned, one issue per CVE across them" {
+  run --separate-stderr "$watch" /nix/store/x-orca-ide-1.4.232 /nix/store/y-orca-ide-1.4.232
+  [ "$status" -eq 0 ]
+  [ "$(grep -c "^gh issue create" calls)" -eq 1 ]
+}
+
+@test "no path is a usage error, exit 2" {
   run --separate-stderr "$watch"
   [ "$status" -eq 2 ]
-  [ "$stderr" = "usage: vulnix-watch.sh STORE-PATH" ]
+  [ "$stderr" = "usage: vulnix-watch.sh STORE-PATH..." ]
 }
