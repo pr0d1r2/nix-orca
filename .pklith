@@ -18,6 +18,9 @@ id|category|nix|glob|check|fix|env|msg
 lock-graph|supply|jq|**/flake.lock, gate/lock-graph.sh, gate/lock-graph.jq|git ls-files -z '*flake.lock' \| xargs -0 -n1 bash gate/lock-graph.sh|-|-|a flake lock holds more or fewer than one nixpkgs, or an input locks its own (root V1)
 # Private names never reach a commit (gate T2, root V10, paradigm/V37).
 name-guard|gate|gnugrep|**/*|bash gate/name-guard.sh {{files}}|-|-|a private name is staged (root V10); the hit names the denylist entry, never the name
+# The whole bats suite at push, so a RED commit can land (`docs/SHELL.md`).
+# pklith main ships this row; v0.1.0, pinned here, does not.
+bats-unit|test|bats|-|bats --recursive tests|-|-|a bats test under tests/ failed, or there is no tests/ directory
 
 ## types
 type|checks|min|exempt
@@ -40,3 +43,13 @@ path:.markdownlint.yaml|-|-|markdownlint configuration; yamllint arrives with th
 toml|taplo|-|-
 sh|shellcheck, shfmt|-|-
 jq|-|-|jq program run by its shell script; that script's bats test runs it
+bats|bats-parse, bats-unit|-|-
+path:SPEC-PROMPT.md|-|-|frozen HISTORICAL INPUT (root T3); hk still runs every step on it except no-local-paths, which upstream's CI path in it trips
+
+## rules
+id|kind|select|target|except
+# Mirrored tests both ways (`docs/SHELL.md`): every gate script has its
+# bats file, and no bats file outlives its script. TDD order waits for a
+# pklith tag with the `tdd-order` kind (v0.1.0 has none).
+gate-test|exists|gate/*.sh|tests/unit/gate/{stem}.bats|-
+gate-orphan|orphan|gate/*.sh|tests/unit/gate/{stem}.bats|-
