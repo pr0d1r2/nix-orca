@@ -322,8 +322,25 @@ Ask before guessing. A question marked blocking stops the node it names.
    1.4 days is about 25 GB a month on cachix and on GitHub. Keep how many
    releases, and garbage-collect cachix how? Blocks the release node.
 5. Modules: a NixOS, nix-darwin or home-manager module (`kevinpita` has
-   one), or only the overlay. Lean: overlay only in version 1. Not
-   blocking.
+   one) that writes Orca's settings declaratively and runs `orca-ide
+   serve` as a hardened systemd service for a headless agent host, or only
+   the overlay. Lean: overlay only in version 1; the module is the first
+   node after it, tested by the VM from decision 16. Not blocking.
+6. Electron from nixpkgs on Linux: run upstream's `app.asar` on the pin's
+   `electron_43` instead of the bundled binary. Gains: a smaller closure,
+   Electron shared with other apps, nixpkgs' security bumps. Risk: native
+   modules (`node-pty` and others under `app.asar.unpacked`) are built for
+   upstream's Electron ABI, and a patch-level mismatch can still break.
+   Lean: a second package, `orca-ide-nixpkgs-electron`, with the launch
+   test from decision 16; it becomes the default only after it passes for
+   several releases. Not blocking.
+7. Pinned agent CLIs: `orca-ide.override { agents = [ ... ]; }` puts agent
+   CLIs from the same pin on Orca's `PATH` (in the pin on 2026-10-20:
+   `claude-code` 2.1.223, `codex` 0.146.0, `opencode` 1.15.10), so an
+   agent fleet is reproducible with its tools. Default list empty, so the
+   plain package's closure does not grow; unfree licences stay the
+   consumer's choice. Lean: in version 1, since it is a few lines of
+   wrapper. Not blocking.
 
 # Process
 
