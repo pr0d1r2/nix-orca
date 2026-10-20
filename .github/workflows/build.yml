@@ -67,3 +67,13 @@ jobs:
       # The package rebuilds bit-identical (nix/darwin V4, nix/linux V7).
       - if: matrix.system == 'aarch64-darwin'
         run: nix build .#packages.${{ matrix.system }}.orca-ide --rebuild --no-link
+      # Linux orca-ide closures only, pushed and pinned (root V5, D40); the
+      # bump PR from this repository's own branch pushes, so the release
+      # builds nothing (D20). Fork PRs get no secret and skip it (D18).
+      - if: >-
+          endsWith(matrix.system, '-linux')
+          && (github.event_name != 'pull_request'
+          || github.event.pull_request.head.repo.full_name == github.repository)
+        run: nix develop ./dev --command bash scripts/ci/cache-push.sh ${{ matrix.system }}
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
