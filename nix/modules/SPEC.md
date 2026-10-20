@@ -19,6 +19,7 @@ sib|nix/agents|agent CLI set, `orca-ide-agents`, agent inputs
 
 - order: `nixosModules.orca-ide` (package) → its `services.orca-ide` (`serve`, hardened) → `darwinModules.orca-ide` (launchd + Seatbelt) → `homeManagerModules.orca-ide`. next ⊥ start before previous green.
 - NixOS service (D35): `DynamicUser`, `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`, `PrivateDevices`, `NoNewPrivileges`, `CapabilityBoundingSet=`, `RestrictAddressFamilies`, `SystemCallFilter=@system-service`, `MemoryDenyWriteExecute` where JS JIT allows; `RestrictNamespaces` & `PrivateUsers` settled by test; ∀ relaxation commented w/ what breaks.
+- service state: `DynamicUser` + `StateDirectory=orca-ide` → `/var/lib/orca-ide` (`stateDir` default); `serve` works on repos under `stateDir` only, ⊥ `/home` (`ProtectHome`); agent CLI creds also under `stateDir` (round 10).
 - exposure ratchet in `.exposure` (⊥ `.coverage`, `paradigm/V25`).
 - darwin (D36): `launchd.daemons` job, dedicated user from `users.users`, launchd limits; `/usr/bin/sandbox-exec` w/ `orca-ide.sb` in repo: deny default, read `/nix/store` & system paths Electron needs, rw state dir only, inbound TCP only on serve port, exec only from `/nix/store`; store path, state dir, port as `-D` params. opt-out `services.orca-ide.sandbox.enable = false` keeps user & limits.
 - prior art for profile: nix `sandbox-defaults.sb`, Chromium `.sb`. network rules by address & port, ⊥ domain.
