@@ -20,7 +20,10 @@ Four protocols, each plain or streamed (server-sent events):
 GET /v1/models lists one model. Ids and timestamps are fixed, so the same
 script always gives the same bytes (tests V1). Stdlib only (root §C).
 
-Usage: python3 -m tests.stub.server --script FILE [--port N]
+A script may say `{workdir}` where an agent wants an absolute path; the
+server fills in `--workdir`.
+
+Usage: python3 -m tests.stub.server --script FILE [--port N] [--workdir DIR]
 """
 
 import argparse
@@ -36,6 +39,17 @@ PROTOCOLS = {
 GEMINI = "/v1beta/models/"
 
 USAGE = {"input_tokens": 1, "output_tokens": 1}
+
+
+def fill(value, workdir):
+    """`value` with `{workdir}` replaced by `workdir` in every string."""
+    if isinstance(value, str):
+        return value.replace("{workdir}", workdir)
+    if isinstance(value, list):
+        return [fill(v, workdir) for v in value]
+    if isinstance(value, dict):
+        return {k: fill(v, workdir) for k, v in value.items()}
+    return value
 
 
 def turn(script, results):
@@ -312,9 +326,10 @@ def main():
     parser = argparse.ArgumentParser(description="Replay a scripted model over OpenAI and Anthropic APIs.")
     parser.add_argument("--script", required=True, help='JSON script: {"turns": [...]}')
     parser.add_argument("--port", type=int, default=8787)
+    parser.add_argument("--workdir", default=".", help="fills `{workdir}` in the script, for absolute paths")
     args = parser.parse_args()
     with open(args.script, encoding="utf-8") as f:
-        script = json.load(f)
+        script = fill(json.load(f), args.workdir)
     ThreadingHTTPServer(("127.0.0.1", args.port), handler(script)).serve_forever()
 
 
