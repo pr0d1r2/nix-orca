@@ -391,6 +391,24 @@ picks this flake over the others.
     node_modules/sherpa-onnx-linux-x64/package.json`, `readelf -d` on the
     addon and libraries. Local.
 
+# Decisions, round 4 (2026-10-20): wrapper, proofs, integration
+
+26. Updater off switch, opt-in (owner's answer, 2026-10-20). Upstream
+    reads `resources/package-type` (`src/main/linux-update-package-type.ts`)
+    and its own comment names Nix among the repackagers that inherit the
+    `.deb`'s marker; a value other than `AppImage`, `deb` or `rpm` makes
+    the updater fail closed. `orca-ide.override { updater = false; }`
+    writes such a value, with a check that the updater reports itself
+    unusable. Default: upstream's marker, untouched; on NixOS upstream
+    already treats the install as externally managed because no trusted
+    `dpkg` exists. On another distribution with `dpkg`, upstream may offer
+    to install its `.deb` system-wide beside the nix one; the README says
+    so and recommends the override there. Darwin has no switch: downloads
+    are user-triggered (`autoDownload = false`) and installing into the
+    read-only store fails; the README says so. Amends decision 6, which
+    now holds by default only where upstream detects the external
+    manager. Local.
+
 # Non-goals
 
 - Windows, decision 2
