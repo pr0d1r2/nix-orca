@@ -23,7 +23,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 - unfree: `claude-code`, `amp-cli`, `crush`, `cursor-cli`, `github-copilot-cli`, `kiro-cli`, `acli`. flake outputs evaluate w/ `allowUnfree`; overlay honours consumer config.
 - `orca-ide` default `agents = [ ]`; ⊥ closure growth for lean package.
 - ⊥ cachix push of ∀ agent | `orca-ide-agents` (licence, 5 GB, `.:V5`).
-- agent inputs updated daily in own PR; builds & checks, ⊥ release (D19, D43).
+- agent inputs updated daily in own PR, opened w/ the bump App token (`release` §C, round 8) so `build.yml` runs; builds & checks, ⊥ release (D19, D43).
 - later, ⊥ v1: each agent in own `systemd-nspawn` container | hardened unit.
 
 ## §I INTERFACES

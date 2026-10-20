@@ -21,7 +21,7 @@ sib|docs|human pages: README, SECURITY, CONTRIBUTING, LLM-DISCLAIMER
 - red source build on a bump (Electron major ahead of pin, lockfile pin pnpm cannot read, new build-time download): bump PR stays open (D10), issue opened, ⊥ release; `orca-ide-bin` still built & checked, so upstream breakage & ours read apart; release resumes when fixed | pin catches up. consumers keep previous release (round 7).
 - token `CACHIX_AUTH_TOKEN` repo secret; PR jobs from forks build w/o it (D18, D20).
 - bump PRs opened by a GitHub App installation token (`actions/create-github-app-token`), ⊥ `GITHUB_TOKEN`: PRs & pushes made w/ `GITHUB_TOKEN` trigger no workflow, so `build.yml` would never run on them. App owned by owner, permissions `contents: write`, `pull-requests: write` on this repo only; secrets `BUMP_APP_ID`, `BUMP_APP_PRIVATE_KEY` (round 8).
-- release job idempotent: runs on merge to `main` | owner dispatch; tag absent → verify ∀ Linux path in cache → attest → tag & publish; tag present → exit 0, ⊥ second release. re-run safe (round 8).
+- release job idempotent: runs on merge to `main` | owner dispatch; tag absent → verify ∀ Linux path in cache → attest → tag & publish; tag present → exit 0, ⊥ second release. re-run safe; a merge that keeps the upstream version finds its tag & exits, so only a bump | owner dispatch (round 7) releases (round 8).
 - workflow permissions least privilege: default `contents: read`; release job adds `contents: write`, `id-token: write`, `attestations: write`; ∀ action pinned by full commit SHA; ⊥ `pull_request_target`; secrets only in jobs on own branches & `main` (round 8).
 - CI = GitHub Actions rendered by actlith from `.actlith`, same `hk.pkl` (`paradigm/V23`, `paradigm/V28`). hk from `nix-hk`.
 
