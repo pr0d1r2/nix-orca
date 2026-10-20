@@ -618,9 +618,10 @@ picks this flake over the others.
     --verify` and launch run under Rosetta. Nothing depends on GitHub's
     Intel macOS runners. Local.
 40. Retention (owner's answer, 2026-10-20; closes open question 4): the
-    last darwin output and the last 2 Linux outputs per system stay
-    cached, held by cachix pins: the current one and one known-good
-    fallback, since rolling Linux back otherwise means a source build.
+    last darwin output (dropped by decision 41) and the last 2 Linux
+    outputs per system stay cached, held by cachix pins: the current one
+    and one known-good fallback, since rolling Linux back otherwise means
+    a source build.
     Why so few: `pr0d1r2.cachix.org` is on cachix's free tier, 5 GB for
     open source (cachix.org/pricing, 2026-10-20), shared with every fleet
     repository that pushes there. After a push, CI runs `cachix pin
@@ -656,6 +657,21 @@ picks this flake over the others.
     Recount: the pin listing on app.cachix.org, `nix path-info -S --json`
     per output, the zip sizes in `gh release view -R stablyai/orca --json
     assets`. Local.
+41. Darwin is not pushed to cachix (owner's answer, 2026-10-20). The
+    5 GB free tier (decision 40) is shared with the fleet, and darwin
+    would push about 13 GB a month of the 16 GB total. A cache that
+    full may evict other members' paths every week or two. A darwin
+    output is only upstream's zip unpacked, so the cache saves a
+    consumer an unzip and little else. CI still builds and checks both
+    darwin systems; the release notes still give their store paths and
+    NAR hashes, with attestations over them. A consumer's `nix build`
+    fetches the zip from GitHub as a fixed-output derivation and unpacks
+    it locally, about 300 MB per update and no compiler. That rebuild
+    gives the attested NAR hash because of decision 30's proof. No
+    darwin pin. Cachix then holds only Linux: about 0.35 GB pinned and
+    about 3 GB pushed a month. The cache's garbage collection keeps that
+    under 5 GB. Amends decisions 18, 20 and 22 (the release job asserts
+    only Linux paths are cached) and 40. Local.
 
 # Non-goals
 
@@ -742,7 +758,8 @@ Build order:
 2. `aarch64-linux`, then `aarch64-darwin` and `x86_64-darwin`; darwin may
    come after the first release (decision 38).
 3. The bump script and `upstream.yml`.
-4. `build.yml`: build, cache, verify, for all four systems.
+4. `build.yml`: build and check all four systems; cache and verify Linux
+   (decision 41).
 5. The release job and the first `-nix.1` release.
 6. The README: platform table, pin graph, cachix trust trap, how to attach
    the overlay to a NixOS, nix-darwin and home-manager closure.
