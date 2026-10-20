@@ -5,7 +5,14 @@ amends "pkl/Config.pkl"
 // (excludes, depends) by amending a step by its id.
 import "hk.pklith.pkl" as generated
 
-local all = (generated.steps) { ...generated.push }
+// SPEC-PROMPT.md is frozen (root T3). Its one hit is upstream's CI runner
+// path in a RUNPATH it quotes, not a local one; only no-local-paths skips it.
+local commit = (generated.steps) {
+  when (generated.steps.containsKey("no-local-paths")) {
+    ["no-local-paths"] { exclude = List("SPEC-PROMPT.md") }
+  }
+}
+local all = (commit) { ...generated.push }
 
 hooks {
   ["pre-commit"] {
@@ -14,7 +21,7 @@ hooks {
     // `sherd wave` (root T8) runs parallel workers in worktrees, so one
     // hook could pop another checkout's files (actlith nix:B5).
     stash = "none"
-    steps = generated.steps
+    steps = commit
   }
   ["pre-push"] {
     steps = all
