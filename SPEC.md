@@ -94,7 +94,7 @@ T1|x|vendor `FORMAT.md` & `FORMAT-EXTENSIONS.md` from paradigm `e5605a3`|-
 T2|x|spec run: root sections & ∀ node, 1 per commit, trailer `spec-run`|-
 T3|x|freeze `SPEC-PROMPT.md`: line 1 → `HISTORICAL INPUT`, own commit|-
 T4|x|dev shell (`dev`); ask human to reload|V1
-T5|.|`.gitignore`: `.claude/`, `.direnv/`, `result*`|-
+T5|x|`.gitignore`: `.claude/`, `.direnv/`, `result*`|-
 T6|.|guardrails via `.pklith`, 1 check per commit, planted violation each; release-approval waiver row per §C (D37); ask human to reload|V1,V2,V10
 T7|x|`.context-limits` from `sherd budget` + 12–20%|-
 T8|.|waves via `sherd wave`, build order: `nix/linux` x86_64-linux on `nix-builder.local` + unprivileged-user test → `nix/bin` → aarch64-linux (CI) → `nix/darwin` → `scripts` bump → CI → release → `docs` → `nix/modules` stacked → `nix/agents` → `tests` integration layers|V1,V2,V7
