@@ -31,7 +31,7 @@ sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, rele
 
 ## §I INTERFACES
 
-- cmd: `scripts/bump.sh` → edits `nix/sources.json`, exit 0 = bumped, 3 = up to date.
+- cmd: `scripts/bump.sh` → edits `nix/sources.json`, exit 0 = bumped, 3 = up to date, 4 = upstream moved a pinned tag | asset (round 9), 1 = tool refused.
 - cmd: `scripts/release-notes.sh <system>...` → markdown stdout.
 - cmd: `scripts/cachix-pin.sh <system> <path>`.
 - cmd: `scripts/closure-budget.sh <system> <path>` → exit 1 over budget.
