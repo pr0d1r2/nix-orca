@@ -618,10 +618,14 @@ picks this flake over the others.
     --verify` and launch run under Rosetta. Nothing depends on GitHub's
     Intel macOS runners. Local.
 40. Retention (owner's answer, 2026-10-20; closes open question 4): the
-    last darwin output and the last 10 Linux outputs per system stay
-    cached, held by cachix pins. After a push, CI runs `cachix pin
+    last darwin output and the last 2 Linux outputs per system stay
+    cached, held by cachix pins: the current one and one known-good
+    fallback, since rolling Linux back otherwise means a source build.
+    Why so few: `pr0d1r2.cachix.org` is on cachix's free tier, 5 GB for
+    open source (cachix.org/pricing, 2026-10-20), shared with every fleet
+    repository that pushes there. After a push, CI runs `cachix pin
     pr0d1r2 orca-ide-<system> <path>` with `--keep-revisions 1` on darwin
-    and `--keep-revisions 10` on Linux (`cachix` 1.11.1 in the pin), only
+    and `--keep-revisions 2` on Linux (`cachix` 1.11.1 in the pin), only
     when the path differs from the pin's newest revision, so the daily
     no-change build (decision 19) does not rotate the pins. An output is
     a distinct store path, so a `nixpkgs-lock` bump counts as one even
@@ -636,14 +640,14 @@ picks this flake over the others.
       from the zip sizes (305 and 315 MB), as signed Mach-O compresses
       about as well under zstd as under the zip's deflate.
     - Linux: about 295 MB for a first output and about 205 MB for each
-      new one (decision 33's `.deb` figures), so 10 outputs are about 2.1
-      GB per system and 4.3 GB for both; about 1.5 GB compressed, at an
+      new one (decision 33's `.deb` figures), so 2 outputs are about 0.5
+      GB per system and 1 GB for both; about 0.35 GB compressed, at an
       assumed 35%. The source build should be smaller and is measured at
       its first push.
     - The pin's Electron and other nixpkgs paths are not counted, on the
       expectation that cachix skips paths cache.nixos.org already holds;
       the first push checks it.
-    - Pinned total: about 2 GB, and it stays flat, against open question
+    - Pinned total: about 1 GB, and it stays flat, against open question
       4's 25 GB a month with no retention.
     - Pushed each month, before the cache collects it: about 21 releases,
       so about 13 GB of darwin and 3 GB of Linux. Darwin is most of that
