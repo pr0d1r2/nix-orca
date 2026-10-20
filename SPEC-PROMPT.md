@@ -479,6 +479,22 @@ picks this flake over the others.
     piece is copied in instead of linked. Darwin impossible: the signed
     `.app` stays one tree. Recount: hash every file of two consecutive
     `.deb`s and group by top-level `resources/` entry. Local.
+34. Local Linux work runs on `nix-builder.local` (owner's note,
+    2026-10-20), a node built from the public `pr0d1r2/nixos-nix-builder`:
+    `x86_64-linux`, `supportedFeatures` `nixos-test`, `kvm`,
+    `big-parallel`, reached over SSH as a `nix.buildMachines` entry and
+    serving `nix-serve` on port 5000. From the aarch64-darwin workstation,
+    every `x86_64-linux` build and every `runNixOSTest` VM (decisions 16,
+    25 and 33) goes there, as `docs/NIX.md` asks ("Linux-only work from
+    macOS goes to a remote Linux builder"); the dev shell names the
+    builder and fails with a clear message when it is unreachable, rather
+    than trying a Linux build on darwin. The builder is configured in the
+    owner's machine configuration, not in this repository. It has no
+    `aarch64-linux`: that system is built and tested in CI only
+    (`ubuntu-24.04-arm`) unless the builder gains binfmt emulation. Its
+    `nix-serve` is a local convenience; nothing built there is pushed to
+    cachix or released, which stays CI's job (decision 3). Amends build
+    order step 1. Local.
 
 # Non-goals
 
@@ -558,7 +574,7 @@ for every script; federated SPEC-DAG built in sherd waves.
 
 Build order:
 1. `aarch64-darwin` and `x86_64-linux` packages and their checks, built
-   locally.
+   locally, the Linux one on `nix-builder.local` (decision 34).
 2. `aarch64-linux` and `x86_64-darwin`.
 3. The bump script and `upstream.yml`.
 4. `build.yml`: build, cache, verify, for all four systems.
