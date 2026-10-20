@@ -45,7 +45,7 @@ self|.|-
 - first hands-on test: Linux, unprivileged account (⊥ sudo, ∉ `trusted-users`) (D38).
 - CI = GitHub Actions rendered by actlith from `.actlith`, same `hk.pkl` (`paradigm/V23`, `paradigm/V28`). hk from `nix-hk`.
 - ⊥ private repo named in committed text; ∀ repo named checked by `gh repo view` before first push (`paradigm/V37`).
-- licence MIT ? (upstream Orca MIT; owner to confirm before first push).
+- licence MIT, same as upstream Orca (owner 2026-10-20).
 - non-goals: Windows, Orca Mobile, building `cloud/` | `native/`, Orca relay, release candidates, patching behaviour beyond paths/libraries/sandbox/updater/telemetry, Homebrew tap.
 
 ## §I INTERFACES
