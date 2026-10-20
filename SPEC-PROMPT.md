@@ -573,6 +573,15 @@ picks this flake over the others.
 - The `.dmg` on darwin: mounting it needs `hdiutil`, which the nix sandbox
   does not have; the `-mac.zip` holds the same signed `Orca.app`.
 - Building from source now: rejected for version 1, open question 1.
+- nono (`always-further/nono`, Rust, Seatbelt and Landlock, `nono`
+  0.61.1 in the pin) and Anthropic's `sandbox-runtime` (`srt`, npm,
+  0.0.52 in the pin) for darwin service hardening: both drive the same
+  Seatbelt underneath and add domain-level network filtering, but each
+  is a dependency beyond macOS for a profile this repository can hold
+  itself (decision 36). Revisit if domain filtering becomes a need.
+- `Jarred-Sumner/poof` for sandboxing: Linux only (overlayfs and
+  namespaces), isolates one command run rather than a service, no
+  licence, and marked experimental.
 - nixpkgs Electron on darwin (owner agreed, 2026-10-20): the pin's
   `electron_43` 43.7.11 does build on both darwin systems, but there it is
   Electron's own prebuilt zip, so the only gain is a patch version.
