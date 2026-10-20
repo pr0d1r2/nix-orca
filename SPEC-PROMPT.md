@@ -349,6 +349,18 @@ picks this flake over the others.
     local spawn. Darwin is unchanged: `resources/` is inside the signed
     `Orca.app`. A first draft of this prompt rejected the cut on the stale
     comment; the source said otherwise. Local.
+24. Linux uses the pin's `agent-browser` (owner's answer, 2026-10-20).
+    `resources/agent-browser-linux-<arch>` (11 MB) is upstream's
+    `agent-browser` 0.27.0, the same version the pin ships. It runs
+    locally only: upstream bundles just the host's build
+    (`config/electron-builder.config.cjs`) and no `orcad-template` target
+    carries it. The package replaces it with a symlink to the pin's
+    binary at the same path. Guard: a check fails when upstream's bundled
+    version and the pin's differ, and the package then keeps the bundled
+    binary until they match again. Darwin unchanged (inside the signed
+    `Orca.app`). Recount: `strings agent-browser-linux-x64 | grep -m1
+    'agent-browser [0-9]'`, `nix eval --raw <pin>#agent-browser.version`.
+    Local.
 
 # Non-goals
 
