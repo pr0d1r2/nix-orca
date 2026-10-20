@@ -25,6 +25,7 @@ sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, rele
 - bump PR body lists npm packages added, removed & version-changed between old & new `pnpm-lock.yaml`, plus new `allowBuilds` entries (install scripts) in `pnpm-workspace.yaml`; report-only, ⊥ blocks auto-merge (round 9).
 - pin: `cachix pin pr0d1r2 orca-ide-<system> <path> --keep-revisions 2` only when path ≠ newest pinned revision (D40).
 - release notes: ∀ field of `.` §I release; closure diff via `nvd` vs previous release (D14); vulnix findings & Electron-lag report, both report-only (D15); SBOM via `sbomnix` CycloneDX & SPDX (D29).
+- vulnix & Electron-lag stay report-only (D15); a new finding w/ CVSS ≥ 9.0 in a path the package owns (⊥ pin paths, which nixpkgs tracks) opens an issue once per CVE; ⊥ blocks release (round 9).
 - ⊥ network in bats; ⊥ real cachix | GitHub call in tests.
 
 ## §I INTERFACES
