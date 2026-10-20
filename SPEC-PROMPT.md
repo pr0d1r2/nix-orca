@@ -735,6 +735,33 @@ picks this flake over the others.
     attribute's `version`, `meta.mainProgram` and `meta.license` on the
     pin; `version` in each flake's `package.nix` or `sources.json`.
     Local.
+44. Integration tests without paid inference, on `nix-builder.local`
+    (owner's note, 2026-10-20). Three layers, each a `runNixOSTest` VM
+    running `orca-ide-agents` and `orca-ide serve`:
+    - Detection, no model: Orca's own detection finds each of decision
+      43's agents on `PATH`, and each answers `--version`. No network,
+      no key. Runs in CI and on the builder.
+    - Stub model, no inference: a mock server in this repository
+      (Python standard library) speaks OpenAI chat completions and
+      responses and Anthropic messages, streaming, and replays a
+      recorded script: one tool call that writes a file, then a final
+      message. Each agent whose endpoint can be set (for example
+      `ANTHROPIC_BASE_URL` for `claude`, a provider `base_url` for
+      `codex`, `OPENAI_API_BASE` for `aider`; which agents can is a test
+      finding) is started by Orca in a worktree through `serve`. The
+      test asserts the file appears and Orca reports the agent done.
+      Deterministic, so it is a required check, in CI and on the builder.
+    - Small real model, free and with no account: the pin's `ollama`
+      0.40.3 serving a small open-weight coding model, fetched as a
+      fixed-output derivation. Agents use its OpenAI-compatible
+      endpoint for the same task. On `nix-builder.local` only, nightly,
+      CPU, and not a required check, since a small model's output
+      varies.
+    Agents with no settable endpoint (`cursor-agent`, `copilot`, `amp`,
+    `kiro-cli`, `acli` and others the stub layer finds) stop at
+    detection. Hosted free tiers are rejected: the known ones
+    (OpenRouter's free models, Gemini's free tier, Groq) need an account
+    and a key, which would be a secret to manage in CI. Local.
 
 # Non-goals
 
@@ -816,6 +843,8 @@ Build order:
 6. The README: platform table, pin graph, cachix trust trap, how to attach
    the overlay to a NixOS, nix-darwin and home-manager closure.
 7. The modules, one node each, stacked as decision 42 orders them.
+8. `orca-ide-agents` (decision 43), then its integration tests in the
+   order decision 44 lists them.
 
 Outward-facing steps need my explicit approval: creating the GitHub
 repository, the first push, the cachix token, and the first release; after
