@@ -423,6 +423,10 @@ picks this flake over the others.
     only. A check lists every external command upstream's main process
     spawns and fails on one the wrapper does not provide or the README
     does not name. Local.
+29. SBOM per release (owner's answer, 2026-10-20). `sbomnix` (1.7.6 in the
+    pin) writes a CycloneDX and an SPDX SBOM per system from the release
+    closure; both are text, attached to the release (decision 22) and
+    covered by the decision 13 attestations. Local.
 
 # Non-goals
 
