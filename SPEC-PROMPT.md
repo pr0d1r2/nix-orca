@@ -458,6 +458,27 @@ picks this flake over the others.
     rather than suggesting `--no-sandbox`. On
     nix-darwin `Orca.app` lands in `Nix Apps`, which Spotlight may not
     index. Plus decisions 26 and 27's notes. Local.
+33. Content-addressed split on Linux (owner's answer, 2026-10-20).
+    Measured `v1.4.229` against `v1.4.230` (amd64): 514 of 663 MB of
+    files are byte-identical. Beyond what decisions 21 and 23 to 25
+    already drop, the stable parts are `orcad-template/targets` (58.5 MB,
+    91.5% unchanged), `node_modules` without sherpa (about 20 MB, 99.8%),
+    `onboarding` (10.9 MB, 100%) and `app.asar.unpacked/resources` (4.1
+    MB, 100%). Today each release makes new store paths for all of them,
+    because the derivation hangs off the new `.deb`. Each stable subtree
+    becomes its own fixed-output derivation, extracted from the `.deb`,
+    whose recursive NAR hash the bump script computes (`nix hash path`)
+    and writes to `nix/sources.json`; an unchanged subtree keeps its
+    store path, so cachix stores it once. The package symlinks the pieces
+    into `resources/`. Expected: about 205 MB of new store paths per
+    release instead of about 295. Risk: upstream resolves some paths with
+    `realpath` and checks they stay inside `process.resourcesPath` (seen
+    in the updater), which a symlinked subtree can fail; so the decision 16
+    VM test runs on this layout, plus an SSH upload from `orcad-template`
+    to a second VM checked by Orca's own sha256. If any piece fails, that
+    piece is copied in instead of linked. Darwin impossible: the signed
+    `.app` stays one tree. Recount: hash every file of two consecutive
+    `.deb`s and group by top-level `resources/` entry. Local.
 
 # Non-goals
 
