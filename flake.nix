@@ -47,7 +47,7 @@
   };
 
   outputs =
-    { nixpkgs, ... }:
+    { nixpkgs, ... }@inputs:
     let
       systems = [
         "aarch64-darwin"
@@ -58,15 +58,37 @@
       forAll = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
       sources = import ./nix/sources.nix { inherit (nixpkgs) lib; };
 
+      # The flake's own agent outputs evaluate unfree agents (nix §C); this
+      # is the one place config.allowUnfree is set, and only for agents.
+      agentsFor =
+        system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+        in
+        import ./nix/agents/default.nix {
+          inherit (pkgs) lib;
+          inherit pkgs inputs system;
+        };
+
       # Per system, the packages that exist there; filled node by node (root
       # T8). A system without a package still evaluates (nix V2).
       ownPackages =
         pkgs:
-        nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+        nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin rec {
           orca-ide = pkgs.callPackage ./nix/darwin/package.nix { inherit sources; };
+          orca-ide-agents = orca-ide.override {
+            agents = builtins.attrValues (agentsFor pkgs.stdenv.hostPlatform.system);
+          };
         };
+      upstream = pkgs: (pkgs.callPackage ./nix/linux/sources.nix { inherit sources; }).src;
     in
     {
+      legacyPackages = forAll (pkgs: {
+        agents = agentsFor pkgs.stdenv.hostPlatform.system;
+      });
       packages = forAll (
         pkgs:
         let
@@ -82,6 +104,11 @@
         {
           # Evaluating it runs nix/sources.nix's shape checks (nix T2).
           sources = pkgs.writeText "nix-orca-sources.json" (builtins.toJSON sources);
+        }
+        // import ./nix/agents/checks.nix {
+          inherit (pkgs) lib runCommand;
+          src = upstream pkgs;
+          agents = agentsFor pkgs.stdenv.hostPlatform.system;
         }
         // nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin (
           import ./nix/darwin/checks.nix {

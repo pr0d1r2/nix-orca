@@ -1,0 +1,60 @@
+# The agent CLIs Orca knows that have a nix package (nix/agents), keyed by
+# Orca's TuiAgent id (§I). An agent that does not evaluate on a system, by
+# platform, by an upstream throw or as unfree under the caller's config, is
+# left out there rather than failing the set (V2).
+{
+  lib,
+  pkgs,
+  inputs,
+  system,
+}:
+let
+  fromInput = input: args: pkgs.callPackage "${input}/package.nix" args;
+
+  candidates = {
+    # Per-agent flakes, ahead of the pin (D43).
+    claude = fromInput inputs.claude-code-nix { };
+    codex = fromInput inputs.codex-cli-nix { runtime = "native"; };
+    gemini = fromInput inputs.gemini-cli-nix { };
+    pi = fromInput inputs.pi-nix { };
+    grok = fromInput inputs.grok-build-nix { };
+    # Its build imports from a derivation at evaluation, so on x86_64-darwin
+    # evaluating it needs an x86_64-darwin builder, which tryEval cannot
+    # catch; left out there so every system evaluates from any host (nix V2).
+    mistral-vibe =
+      if system == "x86_64-darwin" then
+        null
+      else
+        inputs.nix-mistral-vibe.packages.${system}.mistral-vibe or null;
+    # The pin (D43).
+    inherit (pkgs)
+      opencode
+      crush
+      qwen-code
+      ;
+    aider = pkgs.aider-chat;
+    goose = pkgs.goose-cli;
+    amp = pkgs.amp-cli;
+    cursor = pkgs.cursor-cli;
+    copilot = pkgs.github-copilot-cli;
+    kiro = pkgs.kiro-cli;
+    rovo = pkgs.acli;
+    # codebuff: not offered. The pin's package is an npm launcher that
+    # downloads the real CLI on first run (`--version` printed
+    # "Downloading..."), so it is no native package and fails V3 offline.
+    # openclaw: not offered. The pin marks it insecure ("uses LLMs to parse
+    # untrusted content ... full access to system by default"); a consumer
+    # who accepts that adds it through `orca-ide.override { agents }` with
+    # `permittedInsecurePackages`.
+  };
+
+  evaluates =
+    drv:
+    let
+      tried = builtins.tryEval (
+        drv != null && lib.meta.availableOn pkgs.stdenv.hostPlatform drv && builtins.seq drv.drvPath true
+      );
+    in
+    tried.success && tried.value;
+in
+lib.filterAttrs (_: evaluates) candidates
