@@ -5,10 +5,16 @@ format 1
 #
 # Edited by hand since (root T6): envrc gets shellcheck; gitignore is
 # exempt; the dev lock waits for the lock-graph guard (gate T1).
+#
+# Not laid, with its reason:
+# - itok: `.context-limits` holds sherd's chain ceilings (`paradigm/V12`);
+#   itok reads the same file as per-file ceilings and refuses SPEC.md at
+#   3,787 tokens against the 3,000 root chain ceiling. sherd-budget gates
+#   it, as in a sibling gate.
 
 ## types
 type|checks|min|exempt
-*|trailing-whitespace, final-newline, line-endings, no-bom, no-merge-conflict, no-case-conflict, no-broken-symlinks, no-private-key, ripsecrets, typos, editorconfig-checker, no-local-paths, itok|-|-
+*|trailing-whitespace, final-newline, line-endings, no-bom, no-merge-conflict, no-case-conflict, no-broken-symlinks, no-private-key, ripsecrets, typos, editorconfig-checker, no-local-paths|-|-
 editorconfig|-|-|written by pklith (seed or gen)
 gitattributes|-|-|written by pklith (seed or gen)
 md|markdownlint|-|-
