@@ -7,7 +7,9 @@
 # - exit 4, upstream moved a pinned tag or asset: one issue, never reopened
 #   while open, and the run fails (round 9)
 # - anything else: the run fails, nothing pushed
-# Runs with a GitHub App token in GH_TOKEN, so the PR triggers the build.
+# Runs with a GitHub App token in GH_TOKEN, so the PR triggers the build;
+# issues go through ISSUE_TOKEN, the job's own token with `issues: write`
+# (the App holds contents and pull-requests only, round 8).
 # Usage: upstream.sh
 # Env: BUMP, GIT, GH name the tools (defaults: scripts/bump.sh, git, gh);
 # SOURCES the pinned file (default nix/sources.json).
@@ -19,6 +21,7 @@ git=${GIT:-git}
 gh=${GH:-gh}
 sources=${SOURCES:-$here/../../nix/sources.json}
 branch=bump/orca-ide
+issue_token=${ISSUE_TOKEN:-${GH_TOKEN:-}}
 issue="upstream moved a released tag or asset"
 
 from=$(jq -r .version "$sources")
@@ -29,8 +32,8 @@ case "$rc" in
 3) exit 0 ;;
 4)
   printf '%s\n' "$log" >&2
-  if [ "$("$gh" issue list --state open --search "\"$issue\" in:title" --json number --jq length)" = 0 ]; then
-    "$gh" issue create --title "$issue" --body "$log"
+  if [ "$(GH_TOKEN=$issue_token "$gh" issue list --state open --search "\"$issue\" in:title" --json number --jq length)" = 0 ]; then
+    GH_TOKEN=$issue_token "$gh" issue create --title "$issue" --body "$log"
   fi
   exit 1
   ;;

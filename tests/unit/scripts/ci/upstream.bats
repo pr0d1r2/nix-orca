@@ -25,6 +25,7 @@ STUB
   cat >stubs/gh <<'STUB'
 #!/usr/bin/env bash
 echo "gh $*" >>"$BATS_TEST_TMPDIR/calls"
+echo "${GH_TOKEN:-none} $1" >>"$BATS_TEST_TMPDIR/tokens"
 case "$*" in
 "pr view bump/orca-ide"*) [ -n "${STUB_PR:-}" ] && echo "$STUB_PR" ;;
 "issue list"*) echo "${STUB_ISSUES:-0}" ;;
@@ -73,6 +74,16 @@ STUB
   [ "$status" -eq 1 ]
   grep -q "^gh issue create --title upstream moved a released tag or asset --body" calls
   run ! grep -q "^git " calls
+}
+
+@test "issues use the job token, PRs the App token (round 8)" {
+  export STUB_BUMP=4 GH_TOKEN=app ISSUE_TOKEN=job
+  run --separate-stderr "$upstream"
+  [ "$(sort -u tokens)" = "job issue" ]
+  export STUB_BUMP=0
+  rm tokens
+  run --separate-stderr "$upstream"
+  [ "$(sort -u tokens)" = "app pr" ]
 }
 
 @test "an issue already open is not opened twice" {
