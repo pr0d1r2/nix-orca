@@ -53,7 +53,7 @@ V5: ∀ `detectCmd` id at pinned upstream tag ∈ agent set ∪ no-package list 
 id|status|task|cites
 T1|x|agent set from pin + `detectCmd` check|V1,V2
 T2|x|5 `flake = false` inputs + `nix-mistral-vibe`|V4
-T3|.|`orca-ide-agents` + `--version` checks|V3
+T3|x|`orca-ide-agents` + `--version` checks|V3
 T4|.|daily agent-input update PR (`scripts`)|-
 T5|.|after first release (root T10): packaging nodes for no-package list (§C), nixpkgs first where licence allows|V5
 
