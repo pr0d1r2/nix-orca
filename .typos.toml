@@ -1,0 +1,6 @@
+# typos: words the checker would "fix" wrongly (root T6).
+
+[default.extend-words]
+# ssh2's Windows helper `pagent.exe` (stablyai/orca#30999), named as
+# shipped; "pageant" is PuTTY's agent it talks to, not the file.
+pagent = "pagent"

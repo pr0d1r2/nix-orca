@@ -30,3 +30,4 @@ gitignore|-|-|ignore patterns, no linter reads them
 path:dev/flake.lock|-|-|written by `nix flake lock`; gate T1 adds the lock-graph guard
 markdownlintignore|-|-|ignore patterns, no linter reads them
 path:.markdownlint.yaml|-|-|markdownlint configuration; yamllint arrives with the workflows (`release` node)
+toml|taplo|-|-
