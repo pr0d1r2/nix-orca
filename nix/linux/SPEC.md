@@ -31,7 +31,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 
 ## §I INTERFACES
 
-- pkg: `orca-ide` (Linux) — `bin/orca-ide`, `share/applications/orca-ide.desktop`, `share/icons/`, `share/apparmor/orca-ide`.
+- pkg: `orca-ide` (Linux) — `bin/orca-ide` (GUI & CLI: wraps Electron for the app, upstream launcher `resources/bin/orca-ide` for CLI verbs, as upstream's shim does), `share/applications/orca-ide.desktop`, `share/icons/`, `share/apparmor/orca-ide`.
 - override: `{ updater ? true, telemetry ? true, agents ? [ ] }`.
 - check: `checks.<linux>.{orca-ide-version,electron-major,sherpa-load,runtime-commands,closure-hygiene,closure-budget,rebuild}`.
 

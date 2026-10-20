@@ -25,7 +25,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 
 ## §I INTERFACES
 
-- pkg: `orca-ide` (darwin) — `Applications/Orca.app`, `bin/orca-ide`.
+- pkg: `orca-ide` (darwin) — `Applications/Orca.app`, `bin/orca-ide` → `Orca.app/Contents/Resources/bin/orca` (upstream CLI launcher, renamed per D5).
 - check: `checks.<darwin>.{codesign,arch,orca-ide-version}`.
 
 ## §V INVARIANTS

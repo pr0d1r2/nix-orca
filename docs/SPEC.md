@@ -19,6 +19,7 @@ sib|gate|gate scripts: name guard, lock-graph guard; their bats
 
 - README: platform table, pin graph, cachix trust trap (untrusted user ignores flake `nixConfig`; admin adds substituter & key), attach overlay to NixOS / nix-darwin / home-manager, agents & overrides, releases = text only & how to fetch by store path.
 - README notes (D26, D27, D32): Ubuntu ≥ 24.04 AppArmor userns → load shipped profile, ⊥ suggest `--no-sandbox`; updater override on distros w/ `dpkg`; darwin updater & telemetry limits; `Nix Apps` Spotlight; darwin sandbox opt-out → please open issue.
+- README note (round 7): ⊥ use Orca's Settings → CLI "Register in PATH" under nix: it symlinks a command path (`orca` on darwin) to the launcher inside the store path, which dangles after update + GC; `bin/orca-ide` from the package is the CLI.
 - ⊥ private repo named.
 
 ## §I INTERFACES
