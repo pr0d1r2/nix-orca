@@ -24,6 +24,7 @@
     }
   },
   "darwin": {
+    "teamIdentifier": "6CX3WHS9HZ",
     "aarch64-darwin": {
       "zip": {
         "name": "Orca-1.4.230-arm64-mac.zip",

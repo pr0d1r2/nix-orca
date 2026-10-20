@@ -18,7 +18,7 @@ let
   perSystem =
     kind: names: file:
     lib.assertMsg (
-      builtins.attrNames (sources.${kind} or { }) == names
+      lib.subtractLists [ "teamIdentifier" ] (builtins.attrNames (sources.${kind} or { })) == names
     ) "nix/sources.json: ${kind} must list exactly ${toString names}"
     && lib.all (s: asset "${kind}.${s}.${file}" sources.${kind}.${s}.${file}) names;
 
@@ -30,6 +30,9 @@ let
     && sri "sha256" "src.hash" (sources.src.hash or "")
     && sri "sha256" "pnpmDeps.hash" (sources.pnpmDeps.hash or "")
     && perSystem "linux" [ "aarch64-linux" "x86_64-linux" ] "deb"
+    && lib.assertMsg (builtins.isString (
+      sources.darwin.teamIdentifier or null
+    )) "nix/sources.json: darwin.teamIdentifier missing (nix/darwin V5)"
     && perSystem "darwin" [ "aarch64-darwin" "x86_64-darwin" ] "zip";
 in
 assert valid;
