@@ -1,0 +1,6 @@
+# ruff for tests/stub, the one Python file set (root §C): stdlib only.
+line-length = 120
+target-version = "py313"
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP"]

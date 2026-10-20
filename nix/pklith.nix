@@ -13,6 +13,7 @@ catalog: [
   catalog.microlith
   catalog.nixfmt
   catalog.ripsecrets
+  catalog.ruff
   catalog.shellcheck
   catalog.sherd
   catalog.shfmt
