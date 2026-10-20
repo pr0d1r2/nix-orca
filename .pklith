@@ -35,6 +35,8 @@ pklith-check|gate|-|-|pklith check|-|-|a tracked file type has no row in .pklith
 no-core-worktree|gate|git|-|test -z "$(git config --local --get core.worktree)"|-|-|core.worktree is set in the shared .git/config, so every worktree acts on one checkout (paradigm/V15)
 # The gate is complete, fresh, runnable, and has steps (paradigm/V22).
 confirm|gate|-|-|pklith confirm|-|-|the gate is incomplete, stale, unrunnable or evaluates to no steps (paradigm/V22)
+# JSON parses (nix/sources.json, the file a bump writes).
+json|lint|jq|**/*.json|jq -e . {{files}} >/dev/null|-|-|a JSON file does not parse
 
 ## types
 type|checks|min|exempt
@@ -59,6 +61,7 @@ sh|shellcheck, shfmt|-|-
 jq|-|-|jq program run by its shell script; that script's bats test runs it
 bats|bats-parse, shellcheck, shfmt, bats-unit|-|-
 path:SPEC-PROMPT.md|-|-|frozen HISTORICAL INPUT (root T3); hk still runs every step on it except no-local-paths, which upstream's CI path in it trips
+json|json|-|-
 
 ## rules
 id|kind|select|target|except
