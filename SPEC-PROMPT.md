@@ -353,6 +353,13 @@ picks this flake over the others.
   `codesign --verify` into a weaker test. It also means rebuilding
   upstream's helper apps, `Info.plist` and signed native modules. Darwin
   ships upstream's `Orca.app` untouched; decision 21 is Linux only.
+- Swapping `resources/ripgrep` (28 MB, `rg` for 6 platforms) for the pin's
+  `ripgrep`: upstream's `config/bundled-ripgrep-resources.cjs` says "SSH
+  deploys upload the remote host's rg from the local bundle, and WSL runs
+  the Linux build", and `src/main/ripgrep/bundled-ripgrep-path.ts` hashes
+  the file to gate that upload. Every platform's copy is load-bearing, and
+  the pin's `rg` links against `/nix/store` glibc, so even the host's own
+  copy would break search on a non-nix SSH host. Checked 2026-10-20.
 - Windows through nix: decision 2.
 
 # Open questions
