@@ -1,26 +1,26 @@
 {
-  "version": "1.4.230",
-  "tag": "v1.4.230",
-  "commit": "b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e",
+  "version": "1.4.232",
+  "tag": "v1.4.232",
+  "commit": "49109f362f057cd2dc3d81cd378cb84d140c3dc5",
   "src": {
-    "hash": "sha256-up9LF/UQd2LAf/Jd40TO9dEYScKM9HK0vB6qTUf5XRw="
+    "hash": "sha256-sPiuqEpHqRpUekwOTdGCEBuxpbk3WfhHrjU0SYExCgI="
   },
   "pnpmDeps": {
-    "hash": "sha256-r/JS7KYjMDdBcbb67eiriz+0SmyPwIf5tYLoop0u//o="
+    "hash": "sha256-CbrScEguIUyo1lVAfCYvhczmERcZrwGmfmOK+FuYxI0="
   },
   "linux": {
     "x86_64-linux": {
       "deb": {
-        "name": "orca-ide_1.4.230_amd64.deb",
-        "size": 209670608,
-        "hash": "sha512-vpaIo5SyhVhfchDCTNgHsLpG4hC0VJ+uDyq8ULezIyz2wgzOUKxBtD+goM21l1D3UUmvn1utkZO6P+gpq4rBJQ=="
+        "name": "orca-ide_1.4.232_amd64.deb",
+        "size": 177819612,
+        "hash": "sha512-i1YV3yt3mxeeMClovFOB+cNAbafxf2PBFR9R7C8+qfmK2xX4qaiYCMl/T7UUG5kVBEj07V6kMg/h0/XUsK0myQ=="
       }
     },
     "aarch64-linux": {
       "deb": {
-        "name": "orca-ide_1.4.230_arm64.deb",
-        "size": 205245640,
-        "hash": "sha512-iase6FoiQ+RHO40h022+Jt9Th1IVFQGd7P1C4/+gE8F3HR6NTHTnhTmEg4YgM372dMgHCm0o6uicd4qXACheMw=="
+        "name": "orca-ide_1.4.232_arm64.deb",
+        "size": 173616908,
+        "hash": "sha512-5JCAe+DinwloZRW4AjSJ1ZrBirxG65iBDbhAnRLKd9FPsx0st5s24z7RSzvsscn7bV451uiBgvvP93zP2d881A=="
       }
     }
   },
@@ -28,16 +28,16 @@
     "teamIdentifier": "6CX3WHS9HZ",
     "aarch64-darwin": {
       "zip": {
-        "name": "Orca-1.4.230-arm64-mac.zip",
-        "size": 305374137,
-        "hash": "sha512-MSuK78MnWwZwHQUwhqu81FdPWOLAzHJT8U36OsnTi8I+4BEvVk3wiu94HVwJ36y46XrUWoApHAfJp1S6oLvhTw=="
+        "name": "Orca-1.4.232-arm64-mac.zip",
+        "size": 266464323,
+        "hash": "sha512-EJUttX6GBOgWWW+2Mz+aegPk7LeIcncr048B7gcm6GUDwn0dNjA19rv1ALbHMbq9a1bjIh/YLwoFPlqF6VQHtA=="
       }
     },
     "x86_64-darwin": {
       "zip": {
-        "name": "Orca-1.4.230-mac.zip",
-        "size": 314602541,
-        "hash": "sha512-yM0kG6TfKsfVUH/ZxRyacMlu9EKwYFmy/UTbnXWG1QhVwZlX5AS1/O/zJLI978gk62/q/ykPugwQY/ORfFtcZw=="
+        "name": "Orca-1.4.232-mac.zip",
+        "size": 275692347,
+        "hash": "sha512-H3WnRyyAN7c8X828pwvKjVcqpx2IdFfpINJGmI1Shi2zvJ657lGbCUpNAndzeDdf31+rkxkpy48prBE/cc5RDg=="
       }
     }
   }
