@@ -300,6 +300,25 @@ picks this flake over the others.
     release job on `main` asserts every path is already cached and builds
     nothing. PRs from forks build without the token, as decision 18 says.
     Amends decision 18. Local.
+21. Linux runs on the pin's Electron, not the bundled one (owner's
+    request, 2026-10-20; closes open question 6). Measured on the
+    `v1.4.230` amd64 `.deb`: 680 MB unpacked, of which 318 MB is the
+    Electron runtime (`orca-ide` 216 MB, `locales/` 46 MB, Chromium libs
+    and paks) and 363 MB is Orca's own `resources/`. The package keeps
+    only `resources/` and launches `app.asar` with `electron_43` from
+    `nixpkgs-lock`, so each release adds about half the bytes to the
+    store and the cache, and the runtime is one shared path per Electron
+    version that also gets nixpkgs' security bumps. Bundled Electron is
+    43.7.8 (Chrome 150, read from the binary), the pin's is 43.7.11; the
+    native modules (`node-pty` built for ABI 148, `@parcel/watcher`,
+    `sherpa-onnx`) target the Electron 43 ABI, which a patch release does
+    not change. Guards: a check fails when upstream's bundled Electron
+    major differs from the pin's, and the decision 16 VM test runs on this
+    package. `orca-ide-bundled-electron` stays as a fallback attribute,
+    built and tested but not cached or released, for the days a major
+    lands upstream before it lands in the pin. Darwin keeps upstream's
+    Electron (rejected design below). Recount: `strings opt/Orca/orca-ide
+    | grep -m1 Electron/`, `du -sk opt/Orca opt/Orca/resources`. Local.
 
 # Non-goals
 
@@ -333,7 +352,7 @@ picks this flake over the others.
   `safeStorage` under upstream's signature, and turns decision 16's
   `codesign --verify` into a weaker test. It also means rebuilding
   upstream's helper apps, `Info.plist` and signed native modules. Darwin
-  ships upstream's `Orca.app` untouched; open question 6 is Linux only.
+  ships upstream's `Orca.app` untouched; decision 21 is Linux only.
 - Windows through nix: decision 2.
 
 # Open questions
@@ -365,14 +384,7 @@ Ask before guessing. A question marked blocking stops the node it names.
    serve` as a hardened systemd service for a headless agent host, or only
    the overlay. Lean: overlay only in version 1; the module is the first
    node after it, tested by the VM from decision 16. Not blocking.
-6. Electron from nixpkgs on Linux: run upstream's `app.asar` on the pin's
-   `electron_43` instead of the bundled binary. Gains: a smaller closure,
-   Electron shared with other apps, nixpkgs' security bumps. Risk: native
-   modules (`node-pty` and others under `app.asar.unpacked`) are built for
-   upstream's Electron ABI, and a patch-level mismatch can still break.
-   Lean: a second package, `orca-ide-nixpkgs-electron`, with the launch
-   test from decision 16; it becomes the default only after it passes for
-   several releases. Not blocking.
+6. Electron from nixpkgs on Linux. Closed by decision 21.
 7. Pinned agent CLIs: `orca-ide.override { agents = [ ... ]; }` puts agent
    CLIs from the same pin on Orca's `PATH` (in the pin on 2026-10-20:
    `claude-code` 2.1.223, `codex` 0.146.0, `opencode` 1.15.10), so an
