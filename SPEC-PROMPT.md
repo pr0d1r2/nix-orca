@@ -551,6 +551,24 @@ picks this flake over the others.
     rules are by address and port, not domain. Applies once the module
     node exists (open question 5). Local.
 
+# Decisions, round 5 (2026-10-20): the blocking questions
+
+37. Releases go out without a human, under a waiver of paradigm/V32
+    (owner's answer, 2026-10-20). V32 asks explicit human approval for
+    every publish because a registry artifact is immutable. This
+    repository publishes only to channels that can be undone: a cachix
+    push (a store path is named by its inputs or content, so dropping one
+    uses up no name, and pushing it again gives the same bytes) and a
+    text-only GitHub release and tag, both deletable. So the owner
+    approves the pipeline and its first release (Process); after that,
+    releases go out behind the required checks with no approval per
+    release. Recorded as a `.pklith` `exempt` row for `paradigm/V32`
+    citing `pr0d1r2/paradigm#24`, which proposes splitting V32: per-publish
+    approval for irreversible registries (crates.io; probably npm, PyPI
+    and the Go module proxy), approval once for reversible channels. The
+    row goes when paradigm decides. Nothing here publishes to an
+    irreversible registry. Candidate (`pr0d1r2/paradigm#24`).
+
 # Non-goals
 
 - Windows, decision 2
