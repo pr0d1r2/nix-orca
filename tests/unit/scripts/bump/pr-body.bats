@@ -12,14 +12,26 @@ setup() {
   cat >stubs/gh <<'STUB'
 #!/usr/bin/env bash
 echo "gh $*" >>"$BATS_TEST_TMPDIR/calls"
-echo "content of $2"
+case "$2" in
+*package.json*) echo '{"optionalDependencies":{"sherpa-onnx-linux-x64":"1.12.37"}}' ;;
+*) echo "content of $2" ;;
+esac
+STUB
+  cat >stubs/nix <<'STUB'
+#!/usr/bin/env bash
+echo "nix $*" >>"$BATS_TEST_TMPDIR/calls"
+echo -n 1.12.38
+STUB
+  cat >stubs/sherpa-diff <<'STUB'
+#!/usr/bin/env bash
+echo "sherpa says $1 vs $2"
 STUB
   cat >stubs/lock-diff <<'STUB'
 #!/usr/bin/env bash
 for f in "$@"; do echo "diff input: $(cat "$f")"; done
 STUB
   chmod +x stubs/*
-  export GH="$PWD/stubs/gh" LOCK_DIFF="$PWD/stubs/lock-diff"
+  export GH="$PWD/stubs/gh" LOCK_DIFF="$PWD/stubs/lock-diff" NIX="$PWD/stubs/nix" SHERPA_DIFF="$PWD/stubs/sherpa-diff"
 }
 
 @test "the report compares both tags' lockfiles and workspaces" {
@@ -31,6 +43,13 @@ STUB
   [[ "$output" == *"diff input: content of repos/stablyai/orca/contents/pnpm-workspace.yaml?ref=v1.4.230"* ]]
   [[ "$output" == *"diff input: content of repos/stablyai/orca/contents/pnpm-workspace.yaml?ref=v1.4.232"* ]]
   grep -q -- "-H Accept: application/vnd.github.raw" calls
+}
+
+@test "the sherpa header check compares the new bundled version with the pin's" {
+  run --separate-stderr "$body" v1.4.230 v1.4.232
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"sherpa says 1.12.37 vs 1.12.38"* ]]
+  grep -q "repos/stablyai/orca/contents/package.json?ref=v1.4.232" calls
 }
 
 @test "anything but two tags is a usage error, exit 2" {
