@@ -64,6 +64,8 @@ path:SPEC-PROMPT.md|-|-|frozen HISTORICAL INPUT (root T3); hk still runs every s
 json|json|-|-
 awk|-|-|awk program run by its shell script; that script's bats test runs it
 path:.closure-budget|-|-|budget data; scripts/closure-budget.sh and its bats test read it
+path:.github/workflows/*.yml|actionlint|-|-
+actlith|-|-|actlith's registry; the actlith-check step lands next
 
 ## rules
 id|kind|select|target|except
