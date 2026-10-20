@@ -50,10 +50,10 @@ V5: ∀ script has mirrored bats & passes w/ stubs only.
 
 id|status|task|cites
 T1|.|`bump.sh` + manifest refusal + sherpa header diff|V1,V2
-T2|.|`cachix-pin.sh`|V3
+T2|x|`cachix-pin.sh`|V3
 T3|.|`release-notes.sh` w/ nvd, vulnix, Electron lag, SBOM|V4
-T4|.|`closure-budget.sh`|V5
-T5|.|`agents-update.sh`|V5
+T4|x|`closure-budget.sh`|V5
+T5|x|`agents-update.sh`|V5
 
 ## §B BUGS
 
