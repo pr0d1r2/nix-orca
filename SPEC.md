@@ -9,3 +9,7 @@ LINEAGE: `SPEC-PROMPT.md` (HISTORICAL after this run). where it & this spec diff
 ## §D DESCRIPTION
 
 nix flake + bash scripts + 1 python stub server (tests). packaging only: fetch, build, wrap, test, cache, release. ⊥ fork of Orca: patches only paths, libraries, sandbox, updater & telemetry switches (D6, D26, D27). consumer surface: `orca-ide`, `orca-ide-agents`, overlay, NixOS / nix-darwin / home-manager modules. fleet member, full paradigm conformance (D9).
+
+## §F FEDERATION
+
+dir|owns|⊥owns|tokens
