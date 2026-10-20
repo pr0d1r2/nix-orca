@@ -13,8 +13,8 @@ nix-orca
 
 Orca, the desktop app for running a fleet of coding agents side by side
 (`stablyai/orca`), as a Nix flake on the fleet's pinned nixpkgs, for all
-four systems the fleet uses, cached on cachix and released on GitHub every
-day.
+four systems the fleet uses, built daily, cached on cachix and released on
+GitHub when upstream releases. Linux is built from source.
 
 # Problem and goals
 
