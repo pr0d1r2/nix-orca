@@ -10,3 +10,4 @@ id|kind|systems|cache|args
 ## hand-written
 path|reason
 .github/workflows/gate.yml|the `gate` kind pushes all a job builds or reads no cache; darwin and dev-shell paths are never pushed (root V5), so this one reads the cache only
+.github/workflows/build.yml|the `build` kind pushes every system and refuses x86_64-darwin; only Linux orca-ide closures are pushed (root V5), and x86_64-darwin builds under Rosetta (D39)

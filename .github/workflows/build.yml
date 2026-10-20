@@ -1,0 +1,69 @@
+# Hand-written, listed in .actlith: actlith v0.1.0's `build` kind pushes
+# every system to the cache and refuses x86_64-darwin; here only Linux
+# orca-ide closures may be pushed (root V5) and x86_64-darwin builds under
+# Rosetta on an arm64 runner (D39).
+---
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Every system evaluates from one host (nix V2).
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342  # v31.11.0
+        with:
+          extra_nix_config: |
+            extra-substituters = https://pr0d1r2.cachix.org
+            extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
+      - run: nix flake check --all-systems --no-build
+
+  build:
+    name: build (${{ matrix.system }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - system: x86_64-linux
+            os: ubuntu-latest
+          - system: aarch64-linux
+            os: ubuntu-24.04-arm
+          - system: aarch64-darwin
+            os: macos-latest
+          # Rosetta on the arm64 runner (D39); extra-platforms below.
+          - system: x86_64-darwin
+            os: macos-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - if: matrix.system == 'x86_64-darwin'
+        run: softwareupdate --install-rosetta --agree-to-license
+      - uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342  # v31.11.0
+        with:
+          extra_nix_config: |
+            extra-substituters = https://pr0d1r2.cachix.org
+            extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
+            ${{ matrix.system == 'x86_64-darwin' && 'extra-platforms = x86_64-darwin' || '' }}
+      - run: nix develop ./dev --command bash scripts/ci/build-system.sh ${{ matrix.system }}
+      # The package rebuilds bit-identical (nix/darwin V4, nix/linux V7).
+      - if: matrix.system == 'aarch64-darwin'
+        run: nix build .#packages.${{ matrix.system }}.orca-ide --rebuild --no-link
