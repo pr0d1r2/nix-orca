@@ -21,6 +21,7 @@ sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, rele
 - `docs/SHELL.md` rules (`.` §C); env seams in header; external tools stubbed in bats.
 - bump: latest stable upstream tag (skip `-rc.N`); new → write `nix/sources.json` only: tag source hash, JS deps hash, `.deb` & piece hashes (`nix hash path`), darwin SRI `sha512` from manifests; refuse on missing manifest entry | size ≠ (D12). diff `sherpa-onnx/c-api/c-api.h` bundled vs pin (`gh api repos/k2-fsa/sherpa-onnx/compare/v<a>...v<b>`) (D25).
 - 1 bump PR at a time, branch `bump/orca-ide`, updated in place by the next run; ≥ 2 upstream releases since last bump → jump to latest, intermediates ⊥ released; `upstream.yml` concurrency group `upstream`, ⊥ cancel in progress (round 8).
+- upstream immutability: `nix/sources.json` records tag → commit sha; bump re-reads it ∀ run. pinned version whose tag moved | asset hash changed → stop, open issue, ⊥ rewrite hashes for a version already pinned. new version only via new tag (round 9).
 - pin: `cachix pin pr0d1r2 orca-ide-<system> <path> --keep-revisions 2` only when path ≠ newest pinned revision (D40).
 - release notes: ∀ field of `.` §I release; closure diff via `nvd` vs previous release (D14); vulnix findings & Electron-lag report, both report-only (D15); SBOM via `sbomnix` CycloneDX & SPDX (D29).
 - ⊥ network in bats; ⊥ real cachix | GitHub call in tests.
