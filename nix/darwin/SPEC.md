@@ -28,6 +28,11 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 - pkg: `orca-ide` (darwin) — `Applications/Orca.app`, `bin/orca-ide` → `Orca.app/Contents/Resources/bin/orca` (upstream CLI launcher, renamed per D5).
 - check: `checks.<darwin>.{codesign,arch,orca-ide-version}`.
 
+## §R RESEARCH
+
+id|topic|finding|src
+R1|aarch64-darwin `v1.4.230` 2026-10-20|`nix build --rebuild` bit-identical, NAR `sha256-yIki2hD8w6ecPqDc2f5Xra0HyakYMraAAE6H0FkIqOU=`; closure 973 MB w/ `gitMinimal` (2430 MB w/ `git`: python3 → apple-sdk, llvm)|`nix build --rebuild`, `nix path-info -S`
+
 ## §V INVARIANTS
 
 V1: `codesign --verify --deep --strict` passes on store `Orca.app` (D16).
