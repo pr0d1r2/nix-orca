@@ -28,11 +28,15 @@
         "aarch64-linux"
       ];
       forAll = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
+      sources = import ./nix/sources.nix { inherit (nixpkgs) lib; };
     in
     {
       # Filled node by node (root T8); empty sets keep every system evaluating
       # (nix V2).
       packages = forAll (_: { });
-      checks = forAll (_: { });
+      checks = forAll (pkgs: {
+        # Evaluating it runs nix/sources.nix's shape checks (nix T2).
+        sources = pkgs.writeText "nix-orca-sources.json" (builtins.toJSON sources);
+      });
     };
 }
