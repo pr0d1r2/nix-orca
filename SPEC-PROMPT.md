@@ -607,6 +607,16 @@ picks this flake over the others.
     `nix run`, the window opens (or `serve` answers when headless), and
     nothing asks for sudo. Amends decisions 12, 21 and 33 and the build
     order. Local.
+39. `x86_64-darwin` is built on the arm64 macOS runner through Rosetta
+    (owner's answer, 2026-10-20; closes open question 3), with
+    `extra-platforms = x86_64-darwin`. The derivation unpacks and copies,
+    so nothing compiles under emulation; the job installs Rosetta when
+    the image lacks it (`softwareupdate --install-rosetta
+    --agree-to-license`). A check asserts that `lipo -archs` of
+    `Orca.app/Contents/MacOS/Orca` prints `x86_64`, so the arm64 zip
+    cannot land under the x64 attribute, and decision 16's `codesign
+    --verify` and launch run under Rosetta. Nothing depends on GitHub's
+    Intel macOS runners. Local.
 
 # Non-goals
 
@@ -659,11 +669,7 @@ Ask before guessing. A question marked blocking stops the node it names.
 
 1. Source or binaries. Closed by decision 38.
 2. Release asset format. Closed by decision 22.
-3. `x86_64-darwin` in CI: build on the arm64 macOS runner through Rosetta
-   (`extra-platforms = x86_64-darwin`, which works for a no-compile
-   derivation), or on GitHub's Intel macOS runner while it lasts. Lean:
-   Rosetta, with a check that the output's `Orca.app` is the x64 build.
-   Blocks the CI node.
+3. `x86_64-darwin` in CI. Closed by decision 39.
 4. Cache and release retention: 4 systems, about 300 MB each, about every
    1.4 days is about 25 GB a month on cachix (decision 22 keeps it off
    GitHub). Keep how many releases' paths, and garbage-collect cachix how?
