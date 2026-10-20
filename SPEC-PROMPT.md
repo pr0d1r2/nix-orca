@@ -415,6 +415,14 @@ picks this flake over the others.
     Default: upstream's behaviour (patching behaviour is a non-goal). On
     darwin the wrapper covers `bin/orca-ide` launches only, not the Dock
     or Finder; the README says so and points at Settings, Privacy. Local.
+28. Runtime tools from the pin (owner's answer, 2026-10-20). `orca serve`
+    and the computer-use surface shell out to `git`, `xclip`, `xdotool`,
+    `xdg-utils`, `xvfb` and `xvfb-run` (the `.deb`'s `Depends`, as numtide
+    found). The Linux wrapper puts the pin's builds on `PATH` with
+    `--suffix`, so a consumer's own tools still win; darwin gets `git`
+    only. A check lists every external command upstream's main process
+    spawns and fails on one the wrapper does not provide or the README
+    does not name. Local.
 
 # Non-goals
 
