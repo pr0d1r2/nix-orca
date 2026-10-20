@@ -376,8 +376,17 @@ picks this flake over the others.
     version; a recognition round trip runs on a small model fetched as a
     fixed-output derivation, if one of a few MB exists (the spec run
     picks it). The decision 16 VM test loads the speech worker as well.
-    Guard: a check fails when upstream's sherpa-onnx and the pin's differ
-    in major or minor, and the package then keeps the bundled libraries.
+    Guard: the contract is sherpa-onnx's C API, not its version number.
+    The addon is N-API (`napi_register_module_v1`), so Electron's ABI does
+    not matter, but it passes config structs by pointer to
+    `libsherpa-onnx-c-api.so`: a field added in a newer library still
+    loads and silently reads the wrong memory. So the bump script diffs
+    `sherpa-onnx/c-api/c-api.h` between upstream's bundled version and the
+    pin's (`gh api repos/k2-fsa/sherpa-onnx/compare/v<a>...v<b>`), and on
+    any change the package keeps the bundled libraries and a check
+    reports it. For 1.12.37 to 1.12.38: 3 commits, 97 files, none under
+    `c-api/` (checked 2026-10-20). The recognizer-creation step of the
+    load test is what would catch a layout change the diff missed.
     Saves 28 MB per release. Darwin unchanged. Recount: `grep version
     node_modules/sherpa-onnx-linux-x64/package.json`, `readelf -d` on the
     addon and libraries. Local.
