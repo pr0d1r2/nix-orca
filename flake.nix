@@ -29,14 +29,44 @@
       ];
       forAll = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
       sources = import ./nix/sources.nix { inherit (nixpkgs) lib; };
+
+      # Per system, the packages that exist there; filled node by node (root
+      # T8). A system without a package still evaluates (nix V2).
+      ownPackages =
+        pkgs:
+        nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+          orca-ide = pkgs.callPackage ./nix/darwin/package.nix { inherit sources; };
+        };
     in
     {
-      # Filled node by node (root T8); empty sets keep every system evaluating
-      # (nix V2).
-      packages = forAll (_: { });
-      checks = forAll (pkgs: {
-        # Evaluating it runs nix/sources.nix's shape checks (nix T2).
-        sources = pkgs.writeText "nix-orca-sources.json" (builtins.toJSON sources);
-      });
+      packages = forAll (
+        pkgs:
+        let
+          own = ownPackages pkgs;
+        in
+        own // nixpkgs.lib.optionalAttrs (own ? orca-ide) { default = own.orca-ide; }
+      );
+      checks = forAll (
+        pkgs:
+        let
+          own = ownPackages pkgs;
+        in
+        {
+          # Evaluating it runs nix/sources.nix's shape checks (nix T2).
+          sources = pkgs.writeText "nix-orca-sources.json" (builtins.toJSON sources);
+        }
+        // nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin (
+          import ./nix/darwin/checks.nix {
+            inherit (pkgs)
+              lib
+              runCommand
+              diffutils
+              unzip
+              ;
+            inherit sources;
+            inherit (own) orca-ide;
+          }
+        )
+      );
     };
 }

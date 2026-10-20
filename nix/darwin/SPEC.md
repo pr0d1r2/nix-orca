@@ -39,7 +39,7 @@ V4: unpack reproducible: `nix build --rebuild` bit-identical ∴ attested NAR ha
 ## §T TASKS
 
 id|status|task|cites
-T1|.|`aarch64-darwin` package + checks|V1,V2,V3
+T1|x|`aarch64-darwin` package + checks|V1,V2,V3
 T2|.|`x86_64-darwin` via Rosetta|V2
 T3|.|rebuild check|V4
 
