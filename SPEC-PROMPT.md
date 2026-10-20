@@ -46,3 +46,32 @@ Goals:
   rendered by actlith, a federated spec checked by microlith and sherd,
   token ceilings by itok, characters by characterminator, one language
   per file by xenolith
+
+# Naming
+
+- Repository and flake name: `nix-orca`. The fleet names repositories
+  whose product is a nix package of someone else's program
+  `nix-<upstream>`: `nix-hk`, `nix-fakecloud`, `nix-mistral-vibe`,
+  `nix-semble`, `nix-cavekit`. A deviation from the `-lith` rule, as for
+  those; local.
+- Package attribute and program: `orca-ide`, the name upstream gives its
+  Linux packages (`orca-ide_<v>_amd64.deb`) and its CLI shim. Not `orca`:
+  in an overlay that name would shadow the screen reader for every
+  consumer of the overlay.
+- Availability checked 2026-10-20:
+  - no GitHub repository `pr0d1r2/nix-orca`
+  - GitHub repository search `nix-orca in:name`: 13 results, most of them
+    OrcaSlicer flakes; `Samuka007/nix-orca` packages this Orca,
+    `Verantor/nix-orca` is an unrelated "nix helper" last pushed
+    2024-09-06
+  - nixpkgs (fleet pin `8ce7336`): `orca` is "Screen reader"; no
+    `orca-ide`
+  - Recount: `gh api repos/pr0d1r2/nix-orca`, `gh api -X GET
+    search/repositories -f q='nix-orca in:name' -q .total_count`, `nix
+    eval --raw github:NixOS/nixpkgs/<pin>#orca.meta.description`.
+- Rejected alternatives (same date, same checks):
+  - `orca-nix`: 13 GitHub repositories match, 4 of them package this Orca.
+  - `nix-orca-ide`: free (0 results), but longer than it needs to be; the
+    repository name is about the upstream project, the attribute about the
+    program.
+  - a `-lith` name: the fleet keeps `-lith` for its own tools.
