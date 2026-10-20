@@ -179,3 +179,48 @@ Sketch, not final:
   (format: open question 2) and a `SHA256SUMS` file.
 - a day with no new upstream release and no new `nixpkgs-lock` rev makes no
   release.
+
+# Decisions (2026-10-20)
+
+1. Systems: `aarch64-darwin`, `x86_64-darwin`, `x86_64-linux`,
+   `aarch64-linux`, all tier 1: built by CI, cached, released. Deviation
+   from `nix-hk` and `nix-mistral-vibe`, which keep `x86_64-darwin` tier 2:
+   there it means compiling, here it means unpacking a zip, so a missing
+   Intel runner is not a reason to drop it (open question 3). Local.
+2. Windows is not a target. Nix does not run there, so a Windows asset
+   would be upstream's installer passed through, which nix adds nothing to.
+   Windows users take upstream's `orca-windows-setup.exe`; WSL users take
+   the Linux package. Local.
+3. Daily releases (owner's request, 2026-10-20): the schedule is daily, the
+   release happens only when its inputs change (decision 4). Every release
+   is built by nix in CI from the tagged commit; nothing is uploaded from a
+   workstation. Local.
+4. A release is keyed by the pair (upstream version, nixpkgs rev). Either
+   one moving makes a new `-nix.<n>`; neither moving makes none. Local.
+5. Package attribute `orca-ide`, programs `orca-ide` on every system; no
+   `orca` command, because on Linux it collides with the screen reader in
+   any closure that has both (`elsirion/orca-nix` made the same call).
+   Local.
+6. The package never updates itself: Orca's updater is switched off or made
+   inert in the package, and a test proves it. An update arrives as a new
+   flake release, nowhere else. Local.
+7. Only stable releases are packaged; `-rc.N` prereleases are skipped.
+   Local.
+8. The root flake has one input, `nixpkgs-lock`; the gate's tools live in
+   `dev/flake.nix`, as in `nix-mistral-vibe`, so a consumer's lock file
+   gains one node. Local.
+9. The repository conforms to the paradigm process in full and is a fleet
+   member, gated like `nix-mistral-vibe`: hk from `.pklith`, CI from
+   `.actlith`, a federated spec, the paradigm lifecycle and its
+   waivers. Every deviation is a numbered decision here, or a `.pklith`
+   `exempt` row citing `paradigm/V<n>` with a reason. Local.
+10. Every bump PR merges itself when every required check is green, so the
+    daily loop needs no human; a red check stops it and leaves the PR open.
+    Candidate (the fleet's `nix-*` repositories all bump by hand or by PR).
+11. Dev shell (owner's request, 2026-10-20): `dev/flake.nix` provides the
+    dev shell, entered by direnv (`.envrc`: `use flake ./dev`) or `nix
+    develop ./dev`. hk comes from `nix-hk`, following `nixpkgs-lock`, and
+    the shell hook installs the git hooks on every entry, idempotently, so
+    a fresh clone is gated from its first shell, with no manual `hk
+    install`. A shell without hk refuses to install hooks rather than
+    falling back to another hook runner (paradigm/V23). Local.
