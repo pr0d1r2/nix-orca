@@ -17,17 +17,18 @@ sib|nix/agents|agent CLI set, `orca-ide-agents`, agent inputs
 
 ## §C CONSTRAINTS
 
-- order: `nixosModules.orca-ide` (package + declarative settings) → its `services.orca-ide` (`serve`, hardened) → `darwinModules.orca-ide` (launchd + Seatbelt) → `homeManagerModules.orca-ide`. next ⊥ start before previous green.
+- order: `nixosModules.orca-ide` (package) → its `services.orca-ide` (`serve`, hardened) → `darwinModules.orca-ide` (launchd + Seatbelt) → `homeManagerModules.orca-ide`. next ⊥ start before previous green.
 - NixOS service (D35): `DynamicUser`, `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`, `PrivateDevices`, `NoNewPrivileges`, `CapabilityBoundingSet=`, `RestrictAddressFamilies`, `SystemCallFilter=@system-service`, `MemoryDenyWriteExecute` where JS JIT allows; `RestrictNamespaces` & `PrivateUsers` settled by test; ∀ relaxation commented w/ what breaks.
 - exposure ratchet in `.exposure` (⊥ `.coverage`, `paradigm/V25`).
 - darwin (D36): `launchd.daemons` job, dedicated user from `users.users`, launchd limits; `/usr/bin/sandbox-exec` w/ `orca-ide.sb` in repo: deny default, read `/nix/store` & system paths Electron needs, rw state dir only, inbound TCP only on serve port, exec only from `/nix/store`; store path, state dir, port as `-D` params. opt-out `services.orca-ide.sandbox.enable = false` keeps user & limits.
 - prior art for profile: nix `sandbox-defaults.sb`, Chromium `.sb`. network rules by address & port, ⊥ domain.
+- ⊥ declarative Orca settings in v1 (round 7): Orca keeps settings in SQLite `profile-state.db` (domain `settings`, revisioned writes) under Electron `userData`, legacy `orca-data.json` beside it (`src/main/persistence/`); ⊥ file a module can own. later node needs upstream import | CLI path.
 
 ## §I INTERFACES
 
-- module: `nixosModules.{orca-ide,default}` — `programs.orca-ide.{enable,package,settings}`, `services.orca-ide.{enable,package,port,stateDir}`.
+- module: `nixosModules.{orca-ide,default}` — `programs.orca-ide.{enable,package}`, `services.orca-ide.{enable,package,port,stateDir}`.
 - module: `darwinModules.{orca-ide,default}` — same + `services.orca-ide.sandbox.enable` (default `true`).
-- module: `homeManagerModules.{orca-ide,default}` — `programs.orca-ide.{enable,package,settings}`.
+- module: `homeManagerModules.{orca-ide,default}` — `programs.orca-ide.{enable,package}`.
 - file: `nix/modules/orca-ide.sb`, `.exposure`.
 
 ## §V INVARIANTS
@@ -37,7 +38,7 @@ V2: under full hardening `serve` answers & client session runs agent command (D3
 V3: same service runs in NixOS container (`containers.<name>`, systemd-nspawn) inside VM (D35).
 V4: darwin probes: job starts; `serve` answers; write outside state dir fails; owner home unreadable; unified log Sandbox denials = expected set only (D36).
 V5: `sandbox.enable = false` → ⊥ `sandbox-exec` in job, user & limits kept.
-V6: home-manager activation puts `orca-ide` on `PATH` & writes settings.
+V6: home-manager activation puts `orca-ide` on `PATH`; ⊥ module writes into Orca `userData`.
 
 ## §T TASKS
 
