@@ -37,7 +37,7 @@ self|.|-
 - program `orca-ide` only, ⊥ `orca` (screen reader clash, D5).
 - ⊥ self-update: update arrives as new flake release only (D6); updater & telemetry off switches opt-in, default = upstream behaviour (D26, D27).
 - cadence: build daily from `main`; release ⇔ new upstream stable version; `nixpkgs-lock` bump → built, checked, cached, ⊥ released (D19). build once: bump PR from own branch pushes cachix, release job builds nothing (D20). bump PR merges itself when ∀ required check green (D10).
-- release = text only, ⊥ binary assets (D22). tag `v<upstream version>-nix.<n>`.
+- release = text only, ⊥ binary assets (D22). tag `v<upstream version>-nix.<n>`: `n = 1` for each new upstream version; packaging fix that changes a Linux output for the current upstream version → `-nix.<n+1>`, only by owner-run `workflow_dispatch` of the release job, ⊥ automatic (round 7; D19 stays the only automatic trigger).
 - cache `pr0d1r2.cachix.org`: cachix free tier, 5 GB shared w/ fleet (D40). push = Linux `orca-ide` closure only: ⊥ darwin (D41), ⊥ agents, ⊥ unfree (D43), ⊥ `orca-ide-bin` (D38). pins keep 2 Linux revisions / system (D40). ⊥ change cache retention, ⊥ delete path.
 - token `CACHIX_AUTH_TOKEN` repo secret; PR jobs from forks build w/o it (D18, D20).
 - outward acts ! explicit human approval: GitHub repo creation, first push, cachix token, first release. after first release, releases go out behind required checks w/o per-release approval: `.pklith` `exempt` row for `paradigm/V32` citing `pr0d1r2/paradigm#24` (D37). ⊥ publish to irreversible registry.
@@ -86,7 +86,7 @@ R12|JS deps measured 2026-10-20|root `pnpm-lock.yaml` (v9.0, 548 KB) covers app,
 V1: lock graph: exactly 1 nixpkgs node, ∀ input w/ `nixpkgs` follows it; gate fails else (D17).
 V2: ⊥ `bin/orca` in ∀ output (D5).
 V3: ∀ GitHub release ⊥ binary asset; notes carry ∀ field of §I release (D13, D22, D29).
-V4: release ⇔ new upstream stable version; `nixpkgs-lock` bump alone → ⊥ release (D19).
+V4: automatic release ⇔ new upstream stable version; `nixpkgs-lock` bump alone → ⊥ release (D19); only other release = owner-dispatched `-nix.<n+1>` (round 7).
 V5: ∀ cachix push ⊆ Linux `orca-ide` closure; ⊥ darwin, ⊥ `orca-ide-agents`, ⊥ agent, ⊥ unfree, ⊥ `orca-ide-bin` path (D38, D41, D43).
 V6: pin rotates only when path ≠ newest pinned revision; ⊥ change cache retention, ⊥ delete cache path (D40).
 V7: package ⊥ updates itself; store copy read-only (D6).
