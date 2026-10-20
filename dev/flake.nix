@@ -181,6 +181,15 @@
               fi
               unset nix_orca_root
             ''
+            # Linux work from a Mac goes to `nix-builder.local` (D34). Say so on
+            # entry when nix does not list it as a builder: nix then refuses
+            # every Linux derivation, and nothing here tries one locally.
+            + pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
+              case "$(nix config show builders 2>/dev/null)" in
+                *nix-builder.local*) ;;
+                *) echo "nix-orca(shell): nix-builder.local is not a nix builder here -- Linux builds will not run from this machine" >&2 ;;
+              esac
+            ''
             + pkgs.lib.optionalString (absent != [ ]) ''
               echo "nix-orca(shell): no ${system} build of: ${builtins.concatStringsSep ", " absent} -- gates that need them FAIL here" >&2
             '';

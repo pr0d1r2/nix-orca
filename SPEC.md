@@ -93,7 +93,7 @@ id|status|task|cites
 T1|x|vendor `FORMAT.md` & `FORMAT-EXTENSIONS.md` from paradigm `e5605a3`|-
 T2|x|spec run: root sections & ∀ node, 1 per commit, trailer `spec-run`|-
 T3|x|freeze `SPEC-PROMPT.md`: line 1 → `HISTORICAL INPUT`, own commit|-
-T4|.|dev shell (`dev`); ask human to reload|V1
+T4|x|dev shell (`dev`); ask human to reload|V1
 T5|.|`.gitignore`: `.claude/`, `.direnv/`, `result*`|-
 T6|.|guardrails via `.pklith`, 1 check per commit, planted violation each; release-approval waiver row per §C (D37); ask human to reload|V1,V2,V10
 T7|x|`.context-limits` from `sherd budget` + 12–20%|-
