@@ -11,3 +11,4 @@ id|kind|systems|cache|args
 path|reason
 .github/workflows/gate.yml|the `gate` kind pushes all a job builds or reads no cache; darwin and dev-shell paths are never pushed (root V5), so this one reads the cache only
 .github/workflows/build.yml|the `build` kind pushes every system and refuses x86_64-darwin; only Linux orca-ide closures are pushed (root V5), and x86_64-darwin builds under Rosetta (D39)
+.github/workflows/upstream.yml|the bump PR comes from a GitHub App token so it triggers the build (round 8), and a moved upstream tag opens an issue (round 9); the `upstream` kind does neither

@@ -1,0 +1,50 @@
+# Hand-written, listed in .actlith: the bump PR must come from a GitHub App
+# token so it triggers the build (round 8), and a moved upstream tag opens
+# an issue (round 9); actlith v0.1.0's `upstream` kind does neither.
+---
+name: upstream
+
+on:
+  schedule:
+    - cron: "20 6 * * *"
+  workflow_dispatch:
+
+# One bump at a time; a cancelled run could leave a half-pushed branch.
+concurrency:
+  group: upstream
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - id: app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510  # v3.3.0
+        with:
+          app-id: ${{ secrets.BUMP_APP_ID }}
+          private-key: ${{ secrets.BUMP_APP_PRIVATE_KEY }}
+          # Only what the bump needs, whatever the installation grants.
+          permission-contents: write
+          permission-pull-requests: write
+      # Pushes bump/orca-ide, so the App token stays in the checkout.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          token: ${{ steps.app.outputs.token }}
+          persist-credentials: true  # zizmor: ignore[artipacked]
+      - uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342  # v31.11.0
+        with:
+          extra_nix_config: |
+            extra-substituters = https://pr0d1r2.cachix.org
+            extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
+      - run: git config user.name "nix-orca bump" && git config user.email "bump@users.noreply.github.com"
+      - run: nix develop ./dev --command bash scripts/ci/upstream.sh
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          ISSUE_TOKEN: ${{ github.token }}
