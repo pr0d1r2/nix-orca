@@ -1,0 +1,5 @@
+# Closure size budget per system, in bytes (D14, scripts/closure-budget.sh).
+# Each is the measured closure plus 5%; raising one is its own reviewed
+# commit that says why the closure grew.
+# aarch64-darwin: 863429056 measured at v1.4.232 on 2026-10-20.
+aarch64-darwin 906600000

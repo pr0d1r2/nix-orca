@@ -63,6 +63,7 @@ bats|bats-parse, shellcheck, shfmt, bats-unit|-|-
 path:SPEC-PROMPT.md|-|-|frozen HISTORICAL INPUT (root T3); hk still runs every step on it except no-local-paths, which upstream's CI path in it trips
 json|json|-|-
 awk|-|-|awk program run by its shell script; that script's bats test runs it
+path:.closure-budget|-|-|budget data; scripts/closure-budget.sh and its bats test read it
 
 ## rules
 id|kind|select|target|except
