@@ -67,3 +67,11 @@ id|kind|select|target|except
 # pklith tag with the `tdd-order` kind (v0.1.0 has none).
 gate-test|exists|gate/*.sh|tests/unit/gate/{stem}.bats|-
 gate-orphan|orphan|tests/unit/gate/*.bats|gate/{stem}.sh|-
+
+# Waivers (paradigm/V38, D52): `paradigm/V<n>` with its reason. pklith
+# v0.1.0 refuses an `## exempt` section ("unknown section"), so each
+# waiver is written here in that table's shape and moves into the table
+# once pklith or sherdwright reads one.
+#
+# id|reason
+# paradigm/V32|after the first release, which the owner approves, releases go out behind the required checks without per-release approval. What they publish can be undone: a cachix push (unpin, retention collects it) and a text-only GitHub release with its tag. No irreversible registry is used. Proposed for paradigm in pr0d1r2/paradigm#24; root T11 drops this row once that is decided (root §C, D37).
