@@ -18,7 +18,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 ## §C CONSTRAINTS
 
 - source: upstream tag via `fetchFromGitHub`, hash in `nix/sources.json` (D38).
-- JS deps: 1 fixed-output derivation from `pnpm-lock.yaml` w/ pin `pnpm` 11.27.0 (reads upstream pnpm 12 lockfile, `.:R4`); desktop package & its workspace deps only ?, ⊥ `mobile/` `cloud/` `native/` if filter works. path changes only when lockfile does.
+- JS deps: 1 fixed-output derivation via pin `fetchPnpmDeps` (`fetcherVersion = 4`, pnpm 11.27.0) from `pnpm-lock.yaml`; path changes only when lockfile does. ⊥ workspace filter: saves 0 (`.:R12`). store ∀ platforms (`--force`) 1.84 GB, build-time only, ⊥ in runtime closure, ⊥ cached (`.:V5`). pnpm ! stay 11.27.0, ⊥ self-switch to `packageManager` 12.8.1.
 - build: upstream scripts, `ELECTRON_SKIP_BINARY_DOWNLOAD=1`; `app.asar` launched by pin `electron_43` (D21). native modules `node-pty`, `@parcel/watcher` rebuilt vs pin Electron headers.
 - Electron major guard: upstream `package.json` Electron major ≠ pin `electron_43` major → build fails, message names `orca-ide-bin` (D21).
 - ripgrep: symlink pin `rg` at `resources/ripgrep/<host platform>/rg`; ⊥ other `rg` copies; keep `licenses/` (D23).
@@ -50,13 +50,14 @@ V9: `updater = false` → updater reports itself unusable (D26).
 ## §T TASKS
 
 id|status|task|cites
-T1|.|JS deps FOD from lockfile w/ pin pnpm 11; measure w/ & w/o workspace filter|-
+T1|.|JS deps FOD via `fetchPnpmDeps`; measured (`.:R12`)|-
 T2|.|source build x86_64-linux on `nix-builder.local`; Electron major guard|V4
 T3|.|ripgrep, agent-browser, sherpa swaps + guards|V2,V3
 T4|.|wrapper, desktop, AppArmor profile, overrides|V8,V9
 T5|.|closure hygiene, budget & rebuild checks|V1,V5,V6,V7
 T6|.|hands-on: unprivileged account runs `nix run`, window opens, ⊥ sudo prompt (D38)|V4
 T7|.|`aarch64-linux` in CI|V4
+T8|.|? narrow JS deps FOD to Linux via `supportedArchitectures` (own fetcher, `fetchPnpmDeps` passes `--force`); measure first, keep only if saving ≥ 25%|-
 
 ## §B BUGS
 
