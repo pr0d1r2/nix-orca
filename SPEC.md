@@ -41,7 +41,8 @@ self|.|-
 - release = text only, ⊥ binary assets (D22). tag `v<upstream version>-nix.<n>`: `n = 1` for the first release of each upstream version, whatever unblocked it (round 7 decision 4); packaging fix that changes a Linux output for the current upstream version → `-nix.<n+1>`, only by owner-run `workflow_dispatch` of the release job, ⊥ automatic (round 7; D19 stays the only automatic trigger).
 - cache `pr0d1r2.cachix.org`: cachix free tier, 5 GB shared w/ fleet (D40). push = Linux `orca-ide` closure only: ⊥ darwin (D41), ⊥ agents, ⊥ unfree (D43), ⊥ `orca-ide-bin` (D38). pins keep 2 Linux revisions / system (D40). ⊥ change cache retention, ⊥ delete path.
 - token `CACHIX_AUTH_TOKEN` repo secret; PR jobs from forks build w/o it (D18, D20).
-- outward acts ! explicit human approval: GitHub repo creation, first push, cachix token, first release. after first release, releases go out behind required checks w/o per-release approval: `.pklith` `exempt` row for `paradigm/V32` citing `pr0d1r2/paradigm#24` (D37). ⊥ publish to irreversible registry.
+- bump PRs opened by a GitHub App installation token (`actions/create-github-app-token`), ⊥ `GITHUB_TOKEN`: PRs & pushes made w/ `GITHUB_TOKEN` trigger no workflow, so `build.yml` would never run on them. App owned by owner, permissions `contents: write`, `pull-requests: write` on this repo only; secrets `BUMP_APP_ID`, `BUMP_APP_PRIVATE_KEY` (round 8).
+- outward acts ! explicit human approval: GitHub repo creation, first push, cachix token, bump GitHub App & its secrets (round 8), first release. after first release, releases go out behind required checks w/o per-release approval: `.pklith` `exempt` row for `paradigm/V32` citing `pr0d1r2/paradigm#24` (D37). ⊥ publish to irreversible registry.
 - Linux work from workstation → `nix-builder.local` (x86_64-linux, `kvm`, `nixos-test`, `big-parallel`); `aarch64-linux` CI only (D34). builder configured outside this repo; ⊥ push | release from builder.
 - first hands-on test: Linux, unprivileged account (⊥ sudo, ∉ `trusted-users`) (D38).
 - CI = GitHub Actions rendered by actlith from `.actlith`, same `hk.pkl` (`paradigm/V23`, `paradigm/V28`). hk from `nix-hk`.
@@ -64,7 +65,7 @@ self|.|-
 - cache: `https://pr0d1r2.cachix.org`, key `pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=`, in `nixConfig` of root & dev flakes. pins `orca-ide-<system>` (Linux).
 - release: tag `v<upstream>-nix.<n>`; notes per system: store path, NAR hash & size, closure size, nixpkgs rev, commit, closure diff, vulnix findings, `--rebuild` result; files: `SHA256SUMS` of upstream inputs, CycloneDX & SPDX SBOM, attestations over NAR hashes.
 - CI: `.github/workflows/build.yml`, `upstream.yml` from `.actlith`.
-- env: `CACHIX_AUTH_TOKEN` (CI secret).
+- env: `CACHIX_AUTH_TOKEN`, `BUMP_APP_ID`, `BUMP_APP_PRIVATE_KEY` (CI secrets).
 
 ## §R RESEARCH
 
