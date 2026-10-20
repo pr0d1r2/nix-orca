@@ -16,6 +16,34 @@
   inputs = {
     nixpkgs-lock.url = "github:pr0d1r2/nixpkgs-lock";
     nixpkgs.follows = "nixpkgs-lock/nixpkgs";
+
+    # Agent CLIs ahead of the pin (nix/agents). Source only: each package.nix
+    # is called with the pin's packages, so the lock keeps one nixpkgs. A
+    # consumer overrides one with `inputs.nix-orca.inputs.<name>.url`.
+    claude-code-nix = {
+      url = "github:sadjow/claude-code-nix";
+      flake = false;
+    };
+    codex-cli-nix = {
+      url = "github:sadjow/codex-cli-nix";
+      flake = false;
+    };
+    gemini-cli-nix = {
+      url = "github:sadjow/gemini-cli-nix";
+      flake = false;
+    };
+    pi-nix = {
+      url = "github:sadjow/pi-nix";
+      flake = false;
+    };
+    grok-build-nix = {
+      url = "github:AodhanHayter/grok-build-nix";
+      flake = false;
+    };
+    nix-mistral-vibe = {
+      url = "github:pr0d1r2/nix-mistral-vibe";
+      inputs.nixpkgs-lock.follows = "nixpkgs-lock";
+    };
   };
 
   outputs =
