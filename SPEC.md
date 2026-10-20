@@ -17,6 +17,7 @@ nix|flake outputs, `nix/sources.json`; packages & modules in children|scripts (`
 scripts|bash for bump, release notes, cachix pins, budgets, reports; mirrored bats|flake outputs (`nix`), workflows (`.actlith`)|-
 tests|VM & integration tests, stub model server|package builds (`nix`), unit bats (`scripts`, `gate`)|-
 dev|dev shell flake, hook install on entry|hk steps (`.pklith`), gate scripts (`gate`)|-
+gate|gate scripts: name guard, lock-graph guard; their bats|hk steps (`.pklith`, `hk.pkl`), dev shell (`dev`)|-
 
 ## §N NAV
 

@@ -12,6 +12,7 @@ self|tests|VM & integration tests, stub model server
 sib|nix|flake outputs, `nix/sources.json`; packages & modules in children
 sib|scripts|bash for bump, release notes, cachix pins, budgets, reports; mirrored bats
 sib|dev|dev shell flake, hook install on entry
+sib|gate|gate scripts: name guard, lock-graph guard; their bats
 
 ## §C CONSTRAINTS
 
