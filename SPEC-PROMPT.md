@@ -156,8 +156,8 @@ Sketch, not final:
   bundle's `Info.plist` reports the pinned version), a smoke run of the
   CLI entry point, and an assertion that `orcad-template` is byte-for-byte
   upstream's
-- `nix/sources.json`: version and one sha256 per system, the only file a
-  bump changes
+- `nix/sources.json`: version, the source and dependency hashes, and the
+  darwin zip hashes, the only file a bump changes
 - `nixConfig`: the `pr0d1r2.cachix.org` substituter and key
 - `dev/flake.nix`: the dev shell and gate tools, kept out of consumers'
   lock files; hk from `nix-hk`; entering the shell installs the hooks
@@ -169,7 +169,8 @@ Sketch, not final:
 Sketch, not final:
 - `upstream.yml`, daily cron: read upstream's latest stable release; if it
   is newer than `nix/sources.json`, run the bump script, which fetches the
-  four assets and writes their hashes; open a PR.
+  tag's source, its JS dependencies and the two darwin zips and writes
+  their hashes; open a PR.
 - `build.yml`, on the PR: build and check all four systems with nix, each
   on a native runner, push to cachix, and verify from a separate job that
   every pushed path is in the cache.
@@ -568,6 +569,44 @@ picks this flake over the others.
     and the Go module proxy), approval once for reversible channels. The
     row goes when paradigm decides. Nothing here publishes to an
     irreversible registry. Candidate (`pr0d1r2/paradigm#24`).
+38. Linux is built from source; darwin repackages upstream's signed app
+    (owner's answer, 2026-10-20; closes open question 1). The Linux size
+    work rests on source: decisions 21 and 23 to 25 stop being surgery on
+    a `.deb` and become build inputs, and what upstream packs by mistake
+    (`stablyai/orca#30993`, `#30999`) never enters the output. Sketch:
+    the upstream tag by `fetchFromGitHub`; the JS dependencies as one
+    fixed-output derivation from `pnpm-lock.yaml` with the pin's pnpm
+    11.27.0 (`elsirion` shows it reads upstream's pnpm 12 lockfile), so
+    that path changes only when the lockfile does; upstream's own build
+    scripts with Electron's download switched off; `app.asar` run by the
+    pin's `electron_43`; `node-pty` and `@parcel/watcher` rebuilt against
+    the pin's Electron headers; sherpa-onnx as decision 25 says. What
+    source cannot make, `orcad-template/targets` (daemons for other
+    platforms, which Orca checks by sha256 on the remote host), comes
+    from upstream's `.deb` as a fixed-output piece (decision 33), and the
+    decision 33 SSH upload test proves Orca accepts it. The `.deb`
+    repackage of decisions 21 and 33 stays as `orca-ide-bin`, built and
+    tested but not cached or released, in place of
+    `orca-ide-bundled-electron`: it is the fallback both for an Electron
+    major ahead of the pin and for a source build upstream breaks (a
+    lockfile pnpm 11 cannot read, a new build-time download). Linux
+    hashes are the tag's source hash and the dependencies' hash; decision
+    12's manifest cross-check stays for darwin and `orca-ide-bin`.
+    Darwin stays on upstream's signed `-mac.zip`: an unsigned source
+    build costs the signature, TCC grants and keychain items, as the
+    rejected nixpkgs Electron on darwin does. Darwin may lag: the first
+    release can be Linux only, with darwin in a later one, if source
+    work takes the time. First hands-on test: Linux, as an unprivileged
+    account (no sudo, not in `trusted-users`). For that user the flake's
+    `nixConfig` substituter is ignored (the cachix trust trap), so the
+    machine's admin adds `pr0d1r2.cachix.org` to `substituters` and
+    `trusted-public-keys`, or the user builds locally; and Chromium's
+    sandbox runs on unprivileged user namespaces, since the store holds
+    no setuid `chrome-sandbox` (decision 32 covers distributions that
+    restrict them). The test passes when that user runs the package with
+    `nix run`, the window opens (or `serve` answers when headless), and
+    nothing asks for sudo. Amends decisions 12, 21 and 33 and the build
+    order. Local.
 
 # Non-goals
 
@@ -590,7 +629,8 @@ picks this flake over the others.
   versioned and is what numtide patches.
 - The `.dmg` on darwin: mounting it needs `hdiutil`, which the nix sandbox
   does not have; the `-mac.zip` holds the same signed `Orca.app`.
-- Building from source now: rejected for version 1, open question 1.
+- Building darwin from source: an unsigned app, with the costs of
+  nixpkgs Electron on darwin below. Decision 38 builds Linux only.
 - nono (`always-further/nono`, Rust, Seatbelt and Landlock, `nono`
   0.61.1 in the pin) and Anthropic's `sandbox-runtime` (`srt`, npm,
   0.0.52 in the pin) for darwin service hardening: both drive the same
@@ -617,12 +657,7 @@ picks this flake over the others.
 
 Ask before guessing. A question marked blocking stops the node it names.
 
-1. Source or binaries. Version 1 repackages upstream's signed release
-   binaries, as all prior art does: a source build needs pnpm 12 (the pin
-   has 11.27.0; `elsirion` shows 11 can read the lockfile), Electron 43.7.8
-   against the pin's 43.7.11, native modules for four systems, and on
-   darwin an unsigned app. Lean: binaries in version 1, a source build as a
-   later node with its own spec round. Blocks the package node.
+1. Source or binaries. Closed by decision 38.
 2. Release asset format. Closed by decision 22.
 3. `x86_64-darwin` in CI: build on the arm64 macOS runner through Rosetta
    (`extra-platforms = x86_64-darwin`, which works for a no-compile
@@ -657,9 +692,11 @@ TDD, with RED commits red on purpose and tests on push; mirror bats tests
 for every script; federated SPEC-DAG built in sherd waves.
 
 Build order:
-1. `aarch64-darwin` and `x86_64-linux` packages and their checks, built
-   locally, the Linux one on `nix-builder.local` (decision 34).
-2. `aarch64-linux` and `x86_64-darwin`.
+1. `x86_64-linux` from source and its checks, built on
+   `nix-builder.local` (decision 34) and tried by an unprivileged user
+   (decision 38); `orca-ide-bin` beside it.
+2. `aarch64-linux`, then `aarch64-darwin` and `x86_64-darwin`; darwin may
+   come after the first release (decision 38).
 3. The bump script and `upstream.yml`.
 4. `build.yml`: build, cache, verify, for all four systems.
 5. The release job and the first `-nix.1` release.
