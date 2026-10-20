@@ -14,5 +14,6 @@ nix/bin                        4300
 nix/darwin                     4400
 nix/linux                      5200
 nix/modules                    4700
+release                        3800
 scripts                        3800
 tests                          3700

@@ -14,6 +14,7 @@ sib|scripts|bash for bump, release notes, cachix pins, budgets, reports; mirrore
 sib|tests|VM & integration tests, stub model server
 sib|dev|dev shell flake, hook install on entry
 sib|docs|human pages: README, SECURITY, CONTRIBUTING, LLM-DISCLAIMER
+sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, release job, tokens, permissions
 
 ## §C CONSTRAINTS
 
