@@ -150,6 +150,17 @@
           ids = agentIds pkgs;
           agents = agentsFor pkgs.stdenv.hostPlatform.system;
         }
+        // {
+          agents-stub-cli = import ./nix/tests/agents-stub-cli.nix {
+            inherit (pkgs)
+              lib
+              stdenv
+              runCommand
+              python3
+              ;
+            agents = agentsFor pkgs.stdenv.hostPlatform.system;
+          };
+        }
         // nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin (
           import ./nix/darwin/checks.nix {
             inherit (pkgs)
