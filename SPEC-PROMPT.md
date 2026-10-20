@@ -285,6 +285,22 @@ picks this flake over the others.
     in open question 4 is this shared cache's, so retention must not evict
     the rest of the fleet. Local.
 
+# Decisions, round 3 (2026-10-20): cadence and cost
+
+19. Build daily, release on upstream (owner's answer, 2026-10-20). The
+    daily run builds and checks all four systems from `main`; with no
+    input changed every path is a cachix hit, so it costs an evaluation
+    and a substitution, not a build or new cache space. A new upstream
+    stable version is the only thing that makes a release. A
+    `nixpkgs-lock` bump is built, checked and cached the day it lands, but
+    waits for the next upstream version to be released. Amends decisions 3,
+    4 and 17. Local.
+20. Build once (owner's answer, 2026-10-20). The bump PR comes from a
+    branch of this repository, so its build job pushes to cachix; the
+    release job on `main` asserts every path is already cached and builds
+    nothing. PRs from forks build without the token, as decision 18 says.
+    Amends decision 18. Local.
+
 # Non-goals
 
 - Windows, decision 2
