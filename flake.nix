@@ -86,6 +86,27 @@
       upstream = pkgs: (pkgs.callPackage ./nix/linux/sources.nix { inherit sources; }).src;
     in
     {
+      overlays.default = import ./nix/overlay.nix { inherit inputs sources; };
+
+      apps = forAll (
+        pkgs:
+        nixpkgs.lib.mapAttrs
+          (_: drv: {
+            type = "app";
+            program = "${drv}/bin/orca-ide";
+            meta.description = "Orca, an IDE that runs a fleet of coding agents";
+          })
+          (
+            let
+              own = ownPackages pkgs;
+            in
+            nixpkgs.lib.optionalAttrs (own ? orca-ide) {
+              inherit (own) orca-ide;
+              default = own.orca-ide;
+            }
+          )
+      );
+
       legacyPackages = forAll (pkgs: {
         agents = agentsFor pkgs.stdenv.hostPlatform.system;
       });
@@ -104,6 +125,18 @@
         {
           # Evaluating it runs nix/sources.nix's shape checks (nix T2).
           sources = pkgs.writeText "nix-orca-sources.json" (builtins.toJSON sources);
+          # The overlay adds exactly orca-ide and orca-ide-agents (nix V1).
+          overlay =
+            let
+              added = builtins.attrNames (import ./nix/overlay.nix { inherit inputs sources; } { } { });
+            in
+            assert nixpkgs.lib.assertMsg (
+              added == [
+                "orca-ide"
+                "orca-ide-agents"
+              ]
+            ) "overlays.default adds ${toString added}, want orca-ide orca-ide-agents (nix V1)";
+            pkgs.writeText "nix-orca-overlay" (toString added);
         }
         // import ./nix/agents/checks.nix {
           inherit (pkgs) lib runCommand;
