@@ -77,10 +77,17 @@
       # T8). A system without a package still evaluates (nix V2).
       ownPackages =
         pkgs:
-        nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin rec {
-          orca-ide = pkgs.callPackage ./nix/darwin/package.nix { inherit sources; };
+        let
+          inherit (pkgs.stdenv.hostPlatform) isDarwin system;
+        in
+        rec {
+          orca-ide =
+            if isDarwin then
+              pkgs.callPackage ./nix/darwin/package.nix { inherit sources; }
+            else
+              pkgs.callPackage ./nix/linux/package.nix { inherit sources; };
           orca-ide-agents = orca-ide.override {
-            agents = builtins.attrValues (agentsFor pkgs.stdenv.hostPlatform.system);
+            agents = builtins.attrValues (agentsFor system);
           };
         };
       upstream = pkgs: (pkgs.callPackage ./nix/linux/sources.nix { inherit sources; }).src;
@@ -161,6 +168,13 @@
             agents = agentsFor pkgs.stdenv.hostPlatform.system;
           };
         }
+        // nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux (
+          import ./nix/linux/checks.nix {
+            inherit (pkgs) lib runCommand jq;
+            inherit sources;
+            inherit (own) orca-ide;
+          }
+        )
         // nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin (
           import ./nix/darwin/checks.nix {
             inherit (pkgs)

@@ -14,7 +14,7 @@ let
     if isDarwin then
       final.callPackage ./darwin/package.nix { inherit sources; }
     else
-      throw "orca-ide: the Linux package lands with nix/linux T2";
+      final.callPackage ./linux/package.nix { inherit sources; };
 in
 {
   inherit orca-ide;
