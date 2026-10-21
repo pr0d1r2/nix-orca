@@ -25,7 +25,9 @@ substituteInPlace "$config" \
   --replace-fail "    '!src{,/**/*}'," \
   "    '!src{,/**/*}',
     // nix: runtime deps ship as extraResources only, as in upstream's .deb
-    '!node_modules{,/**/*}',"
+    '!node_modules{,/**/*}',
+    // nix: root configs no runtime path reads (stablyai/orca#30993)
+    '!{.oxfmtrc.json,.oxlintrc.json,components.json,opencode.json,orca.yaml,pnpm-workspace.yaml,vite.web.config.ts}',"
 
 # Paths NixOS does not have (V8): orca.yaml hooks, the PID-1 reaper of
 # `orca serve`, the tmux attachment probe.
