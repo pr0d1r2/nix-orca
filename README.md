@@ -79,6 +79,14 @@ cache holds:
 }
 ```
 
+`services.orca-ide.enable = true` runs `orca-ide serve` as a hardened
+system service: a dynamic user whose home is `/var/lib/orca-ide`, where
+the repositories it serves and the agents' credentials live, listening on
+`127.0.0.1:6768`. `listenAddress` and `openFirewall` expose it; past
+loopback, Orca's own pairing is the only gate. The package patches Orca's
+serve so it can bind one address (`ORCA_SERVE_BIND_HOST`); upstream's
+binds every interface.
+
 The same overlay works in a nix-darwin configuration and in home-manager
 (`home.packages = [ pkgs.orca-ide ];`). The flake follows `nixpkgs-lock`
 for its one nixpkgs; consumers who use another nixpkgs can make it follow
