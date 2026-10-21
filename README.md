@@ -5,9 +5,9 @@ agents, as a nix flake: `orca-ide`, on the fleet nixpkgs pin
 ([`nixpkgs-lock`](https://github.com/pr0d1r2/nixpkgs-lock)), for four
 systems.
 
-Status: pre-release. The darwin package builds and passes its checks; the
-Linux source build is specified and waits for a Linux builder. Nothing is
-published yet.
+Status: pre-release. The darwin package and the x86_64-linux source build
+build and pass their checks; aarch64-linux evaluates and waits for CI.
+Nothing is published yet.
 
 ## Platforms
 
@@ -15,7 +15,7 @@ published yet.
 | --- | --- | --- |
 | `aarch64-darwin` | upstream's signed `Orca.app`, from the release zip, untouched | no |
 | `x86_64-darwin` | the same, built in CI under Rosetta | no |
-| `x86_64-linux` | from source, on the pin's Electron (not built yet) | yes, once released |
+| `x86_64-linux` | from source, on the pin's Electron | yes, once released |
 | `aarch64-linux` | from source, on the pin's Electron (not built yet) | yes, once released |
 
 Darwin is never pushed to the cache: nix fetches upstream's zip from
@@ -27,7 +27,8 @@ GitHub and checks its sha512, its code signature and its signing team.
 nix run github:pr0d1r2/nix-orca
 ```
 
-`bin/orca-ide` is both the app and its CLI. Do not use Orca's own
+`bin/orca-ide` is upstream's launcher: its CLI verbs, and `orca-ide open`
+to start the app (on Linux the desktop entry starts it too). Do not use Orca's own
 Settings → CLI → "Register in PATH": it links a command to the launcher
 inside one store path, and that link dangles after an update and a garbage
 collection. Put the package on your `PATH` instead.
@@ -143,9 +144,12 @@ collected by the cache's retention.
   report itself unusable, which matters on distributions where it would
   otherwise offer a `.deb`. On darwin the app is upstream's own, signed,
   and nix does not change its updater; update through nix.
-- **Telemetry**: `orca-ide.override { telemetry = false; }` sets
-  `ORCA_TELEMETRY_DISABLED=1` for launches through `bin/orca-ide`. On
-  darwin, a launch from Finder or Spotlight does not go through it.
+- **Telemetry**: the Linux build compiles from source without upstream's
+  analytics key, so it sends no telemetry at all; upstream designed its
+  build that way for third-party builds. On darwin the app is upstream's
+  official build: `orca-ide.override { telemetry = false; }` sets
+  `ORCA_TELEMETRY_DISABLED=1` for launches through `bin/orca-ide`, and a
+  launch from Finder or Spotlight does not go through it.
 - **Spotlight**: on nix-darwin and home-manager the app shows up under
   `Nix Apps`.
 - **`PYTHONPATH`**: Orca passes your environment to the agents it
@@ -153,9 +157,15 @@ collected by the cache's retention.
   packages, a virtualenv) loads another Python's packages into the Python
   agents: Mistral Vibe stopped with "cannot import name 'sentinel' from
   'typing_extensions'". Launch Orca from an environment without it.
-- **Commands not on the wrapper's `PATH`**: the darwin wrapper adds `git`
-  only. Agent CLIs come from `orca-ide-agents` or your own `PATH`. The
-  Linux wrapper's list lands with the Linux build.
+- **Commands on the wrapper's `PATH`**: on Linux, after your own `PATH`:
+  `git`, `ps`, `xdg-open`, `xclip`, `wl-copy`, `xdotool` and `Xvfb`; the
+  darwin wrapper adds `git` only. Orca uses more when you have them, and
+  the package does not add these: `ssh` and `sftp` (remote hosts),
+  `tmux`, `systemd-run`, `systemctl` and `loginctl` (terminal scopes,
+  `orca serve install`), `secret-tool` and `gdbus` (keyring), `gh` and
+  `glab` (pull requests), `python3` with PyGObject and AT-SPI (Linux
+  computer use), and the Android SDK. Agent CLIs come from
+  `orca-ide-agents` or your own `PATH`.
 
 ## Repository
 

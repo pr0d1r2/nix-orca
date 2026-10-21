@@ -26,7 +26,8 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 - `agent-browser`: symlink pin 0.27.0 at `resources/agent-browser-linux-<arch>`; version ≠ upstream bundled → keep bundled, check reports (D24).
 - sherpa-onnx: keep upstream `sherpa-onnx.node` addon; RUNPATH → pin `sherpa-onnx` 1.12.38 (→ `onnxruntime` 1.24.4) & cc runtime libs; ⊥ bundled `.so` (D25; +83 MiB closure). `c-api.h` changed between bundled & pin version → keep bundled libs, check reports.
 - `orcad-template`: `nix/bin` fixed-output piece, linked; ⊥ rebuilt, ⊥ patched, ⊥ stripped (D33, D38).
-- wrapper: GApps env of pin `electron` wrapper ⊥ gtk4 (Electron runs GTK 3; gtk4 = 1 GB closure); `CHROME_DEVEL_SANDBOX` → own non-setuid `chrome-sandbox` (unset → SIGILL at start; set → user-namespace sandbox); `PATH --suffix` pin `git xclip xdotool xdg-utils xvfb xvfb-run` (D28); Wayland flags behind `NIXOS_OZONE_WL`; ⊥ setuid `chrome-sandbox`.
+- runtime: `PATH --suffix` pin `gitMinimal procps xclip xdotool xdg-utils xvfb wl-clipboard` (D28 + R6); hard-coded `/bin/bash` (hooks, PID-1 reaper) & `/bin/ps` (tmux probe) → store's; rest named in README (V8).
+- wrapper: GApps env of pin `electron` wrapper ⊥ gtk4 (Electron runs GTK 3; gtk4 = 1 GB closure); `CHROME_DEVEL_SANDBOX` → own non-setuid `chrome-sandbox` (unset → SIGILL at start; set → user-namespace sandbox); Wayland flags behind `NIXOS_OZONE_WL`, ⊥ in node mode; ⊥ setuid `chrome-sandbox`.
 - override `updater = false` → `resources/package-type` value ∉ {`AppImage`, `deb`, `rpm`} (D26); `telemetry = false` → `ORCA_TELEMETRY_DISABLED=1` (D27). defaults = upstream behaviour.
 - desktop: `.desktop` w/ `StartupWMClass=orca`, icons, `orca://` handler; upstream `resources/apparmor-profile` installed under `share/` w/ paths rewritten to store (D32).
 
@@ -34,7 +35,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 
 - pkg: `orca-ide` (Linux) — `bin/orca-ide` → upstream launcher `resources/bin/orca-ide` (CLI verbs; `open` starts app), `libexec/orca-ide/` (app, wrapped Electron), `share/applications/orca-ide.desktop`, `share/icons/`, `share/apparmor/orca-ide`.
 - override: `{ updater ? true, telemetry ? true, agents ? [ ] }`.
-- check: `checks.<linux>.{orca-ide-version,electron-major,sherpa-load,ripgrep,agent-browser,runtime-commands,closure-hygiene,closure-budget,rebuild}`.
+- check: `checks.<linux>.{orca-ide-version,electron-major,sherpa-load,ripgrep,agent-browser,runtime-commands,updater-off,closure-hygiene,closure-budget,rebuild}`.
 
 ## §R RESEARCH
 
@@ -44,6 +45,7 @@ R2|JS deps measured 2026-10-20|root `pnpm-lock.yaml` (v9.0, 548 KB) covers app, 
 R3|`mobile/` deps measured 2026-10-21|desktop ships `out/mobile-web` (8.5 MB, esbuild of `mobile/`), so build needs `mobile/` deps: own `pnpm-lock.yaml` ∴ 2nd `fetchPnpmDeps` (`preInstall = "cd mobile"`), 736 MiB, 25 s; its postinstall generators skipped by `--ignore-scripts` → run in build|`nix build` on nix-builder.local
 R4|source build 2026-10-21, `v1.4.232`, nix-builder.local (Ryzen 7 3800X)|sandbox, offline: upstream rebuild script downloads Electron, AppImage step downloads Node, clipboard helper builds in Docker, `git rev-parse` needs `.git`; each replaced (`scripts/build/linux-*.sh`). pnpm 11 collector packed deps into `app.asar` (39 MB vs .deb 7 MB) → excluded. file set = amd64 `.deb`'s minus 4 renamed renderer chunks. closure 1.4 GiB; onboarding renders under Xvfb as unprivileged user|`nix build`, `diff` of file lists, Xvfb screenshot
 R5|ripgrep in `v1.4.232` 2026-10-21|`resources/ripgrep` holds `rg` for 6 platforms; template targets for Linux & Windows carry empty `ripgrep/` dirs (upstream `compact-packaged-orcad-ripgrep.cjs`), darwin ones own signed copies; `orcad-template.json` lists `ripgrep/<platform>/rg` sha256; `src/main/ripgrep/bundled-ripgrep-path.ts` hashes them to gate SSH upload ∴ swap or removal breaks remote deploy|`find`, `grep` of manifest & source
+R6|runtime commands & telemetry 2026-10-21|survey of `src/main`, `src/shared`, `src/cli` (⊥ tests): core `git`, `ps`; `/bin/bash` hard-coded for orca.yaml hooks, `/bin/ps` for tmux probe; optional `xdg-open` (via Electron), `xclip`/`wl-copy`, `xdotool`, `Xvfb`, `ssh`, `tmux`, `systemd-run`, `secret-tool`, `gdbus`, `gh`, `glab`, `python3`+gi; `xvfb-run` only in test fixtures. `electron.vite.config.ts`: PostHog key & build identity injected by upstream CI only → source build never sends telemetry|Explore agent survey, `grep`
 
 ## §V INVARIANTS
 
@@ -63,7 +65,7 @@ id|status|task|cites
 T1|x|JS deps FOD via `fetchPnpmDeps`; measured (R2)|-
 T2|x|source build x86_64-linux on `nix-builder.local`; Electron major guard|V4
 T3|x|agent-browser, sherpa swaps + guards; ripgrep kept (R5) w/ V2 check|V2,V3
-T4|.|wrapper, desktop, AppArmor profile, overrides|V8,V9
+T4|x|wrapper, desktop, AppArmor profile, overrides|V8,V9
 T5|.|closure hygiene, budget & rebuild checks|V1,V5,V6,V7
 T6|.|hands-on: unprivileged account runs `nix run`, window opens, ⊥ sudo prompt (D38)|V4
 T7|.|`aarch64-linux` in CI|V4
