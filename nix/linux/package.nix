@@ -13,6 +13,9 @@
   jq,
   electron_43,
   wayland,
+  agent-browser,
+  sherpa-onnx,
+  patchelf,
   wrapGAppsHook3,
   makeWrapper,
   writableTmpDirAsHomeHook,
@@ -39,6 +42,7 @@ stdenv.mkDerivation {
     node-gyp
     python3
     jq
+    patchelf
     wrapGAppsHook3
     makeWrapper
     writableTmpDirAsHomeHook
@@ -80,6 +84,12 @@ stdenv.mkDerivation {
     ORCA_HELPER_RPATH = lib.makeLibraryPath [
       wayland
       gtk3
+    ];
+    ORCA_AGENT_BROWSER = lib.getExe agent-browser;
+    ORCA_AGENT_BROWSER_VERSION = agent-browser.version;
+    ORCA_SHERPA_RPATH = lib.makeLibraryPath [
+      sherpa-onnx
+      stdenv.cc.cc.lib
     ];
   };
 
