@@ -195,6 +195,11 @@
             inherit (own) orca-ide;
             inherit (sources) version;
           };
+          service-nixos = import ./nix/tests/service-nixos.nix {
+            inherit (pkgs) testers;
+            module = inputs.self.nixosModules.orca-ide;
+            inherit (own) orca-ide;
+          };
           launch = import ./nix/tests/launch.nix {
             inherit (pkgs) testers xvfb jq;
             module = inputs.self.nixosModules.orca-ide;

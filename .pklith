@@ -72,6 +72,7 @@ path:SPEC-PROMPT.md|-|-|frozen HISTORICAL INPUT (root T3); hk still runs every s
 json|json|-|-
 awk|-|-|awk program run by its shell script; that script's bats test runs it
 path:.closure-budget|-|-|budget data; scripts/closure-budget.sh and its bats test read it
+path:.exposure|-|-|exposure ratchet (nix/modules V1); scripts/check/vm-orca.sh exposure reads it
 path:.github/workflows/*.yml|actionlint, zizmor, yamllint, actlith-check|-|-
 actlith|actlith-check|-|-
 path:nix/agents/no-package.txt|-|-|agent id list; scripts/agents/unknown.sh reads it

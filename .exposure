@@ -1,0 +1,5 @@
+# Exposure ratchet (nix/modules V1, paradigm/V25): systemd-analyze security
+# overall score per unit, at most. Lowering one is welcome; raising one is
+# its own reviewed commit that says what needed it.
+# orca-ide.service: 2.2 measured at v1.4.232 on 2026-10-21 (NixOS VM).
+orca-ide.service 2.2
