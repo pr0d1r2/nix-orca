@@ -20,14 +20,14 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 - fetch `.deb` w/ SRI `sha512` from `latest-linux*.yml`; missing entry | size ≠ → bump refuses (D12).
 - `autoPatchelf` ∀ except `orcad-template`; ⊥ `chrome-sandbox` (D21, numtide notes).
 - stable subtrees as fixed-output derivations, recursive NAR hash by bump (`nix hash path`) in `nix/sources.json`: `orcad-template/targets`, `node_modules` w/o sherpa, `onboarding`, `app.asar.unpacked/resources` (D33). symlinked into `resources/`; piece failing a `realpath` containment check → copied instead.
-- `orcad-template/targets` piece also used by `nix/linux` (D38), taken from each Linux system's own `.deb` (hash per system in `nix/sources.json`). amd64 `.deb` `v1.4.230` carries 9 targets (`darwin-{arm64,x64}`, `linux-arm64-{glibc,musl}`, `linux-x64-{glibc,glibc217,musl}`, `win32-{arm64,x64}`); check reports when amd64 & arm64 trees differ (round 7).
+- `orcad-template` piece (whole template: its `orcad-template.json` sha256 manifest covers the built JS too) also used by `nix/linux` (D38), cut by `scripts/build/deb-piece.sh` from each Linux system's own `.deb` (hash per system in `nix/sources.json`). amd64 `.deb` carries 9 targets (`darwin-{arm64,x64}`, `linux-arm64-{glibc,musl}`, `linux-x64-{glibc,glibc217,musl}`, `win32-{arm64,x64}`); amd64 & arm64 trees identical at `v1.4.232` (1 store path); check reports when they differ (round 7).
 - built & checked in CI, ⊥ cached, ⊥ released (D38).
 - size swaps of `nix/linux` §C apply here too (ripgrep, agent-browser, sherpa).
 
 ## §I INTERFACES
 
 - pkg: `orca-ide-bin` (Linux).
-- pkg: `orcad-targets` (internal, fixed-output piece).
+- pkg: `orcad-template` (internal, fixed-output piece, `nix/bin/orcad-template.nix`).
 
 ## §R RESEARCH
 

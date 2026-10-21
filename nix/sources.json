@@ -17,6 +17,9 @@
         "name": "orca-ide_1.4.232_amd64.deb",
         "size": 177819612,
         "hash": "sha512-i1YV3yt3mxeeMClovFOB+cNAbafxf2PBFR9R7C8+qfmK2xX4qaiYCMl/T7UUG5kVBEj07V6kMg/h0/XUsK0myQ=="
+      },
+      "orcadTemplate": {
+        "hash": "sha256-NlRqcRqNRsA7z6jtog9wMTmTn1IDlW6jqA5dX55jzBE="
       }
     },
     "aarch64-linux": {
@@ -24,6 +27,9 @@
         "name": "orca-ide_1.4.232_arm64.deb",
         "size": 173616908,
         "hash": "sha512-5JCAe+DinwloZRW4AjSJ1ZrBirxG65iBDbhAnRLKd9FPsx0st5s24z7RSzvsscn7bV451uiBgvvP93zP2d881A=="
+      },
+      "orcadTemplate": {
+        "hash": "sha256-NlRqcRqNRsA7z6jtog9wMTmTn1IDlW6jqA5dX55jzBE="
       }
     }
   },

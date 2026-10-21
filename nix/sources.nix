@@ -34,6 +34,13 @@ let
     && sri "sha256" "pnpmDeps.hash" (sources.pnpmDeps.hash or "")
     && sri "sha256" "mobilePnpmDeps.hash" (sources.mobilePnpmDeps.hash or "")
     && perSystem "linux" [ "aarch64-linux" "x86_64-linux" ] "deb"
+    &&
+      lib.all
+        (s: sri "sha256" "linux.${s}.orcadTemplate.hash" (sources.linux.${s}.orcadTemplate.hash or ""))
+        [
+          "aarch64-linux"
+          "x86_64-linux"
+        ]
     && lib.assertMsg (builtins.isString (
       sources.darwin.teamIdentifier or null
     )) "nix/sources.json: darwin.teamIdentifier missing (nix/darwin V5)"
