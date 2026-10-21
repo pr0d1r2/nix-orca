@@ -65,7 +65,8 @@ jobs:
             ${{ matrix.system == 'x86_64-darwin' && 'extra-platforms = x86_64-darwin' || '' }}
       - run: nix develop ./dev --command bash scripts/ci/build-system.sh ${{ matrix.system }}
       # The package rebuilds bit-identical (nix/darwin V4, nix/linux V7).
-      - if: matrix.system == 'aarch64-darwin'
+      # x86_64-darwin, under Rosetta, is upstream's zip like aarch64-darwin.
+      - if: matrix.system != 'x86_64-darwin'
         run: nix build .#packages.${{ matrix.system }}.orca-ide --rebuild --no-link
       # Linux orca-ide closures only, pushed and pinned (root V5, D40); the
       # bump PR from this repository's own branch pushes, so the release
