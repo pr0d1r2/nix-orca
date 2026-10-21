@@ -25,7 +25,8 @@ if [ "$now" != "$pinned_commit" ]; then
   echo "bump: $pinned_tag now points at $now, pinned $pinned_commit; upstream moved a released tag (round 9)" >&2
   exit 4
 fi
-assets=$(jq -r '[.linux[], .darwin[] | objects | .[] | "\(.name) \(.hash)"] | .[]' "$sources")
+# Released assets only: the piece hashes beside them name no asset.
+assets=$(jq -r '[.linux[], .darwin[] | objects | .[] | select(has("name")) | "\(.name) \(.hash)"] | .[]' "$sources")
 while read -r name hash; do
   case "$name" in
   *_amd64.deb) manifest=latest-linux.yml ;;
@@ -46,15 +47,22 @@ version=${tag#v}
 
 src=$(bash "$tools/source.sh" "$tag")
 deps=$(bash "$tools/deps-hash.sh" "$tag" "$(jq -r .hash <<<"$src")")
+mobile=$(bash "$tools/deps-hash.sh" "$tag" "$(jq -r .hash <<<"$src")" mobilePnpmDeps)
 amd64=$(bash "$tools/manifest.sh" "$tag" latest-linux.yml "orca-ide_${version}_amd64.deb")
 arm64=$(bash "$tools/manifest.sh" "$tag" latest-linux-arm64.yml "orca-ide_${version}_arm64.deb")
+template() {
+  bash "$tools/template-hash.sh" "$tag" "$1" "$(jq -r .name <<<"$2")" "$(jq -r .hash <<<"$2")"
+}
+amd64_template=$(template x86_64-linux "$amd64")
+arm64_template=$(template aarch64-linux "$arm64")
 mac_arm64=$(bash "$tools/manifest.sh" "$tag" latest-mac.yml "Orca-${version}-arm64-mac.zip")
 mac_x64=$(bash "$tools/manifest.sh" "$tag" latest-mac.yml "Orca-${version}-mac.zip")
 
 next=$(jq \
   --arg version "$version" --arg tag "$tag" \
-  --argjson src "$src" --arg deps "$deps" \
+  --argjson src "$src" --arg deps "$deps" --arg mobile "$mobile" \
   --argjson amd64 "$amd64" --argjson arm64 "$arm64" \
+  --arg amd64_template "$amd64_template" --arg arm64_template "$arm64_template" \
   --argjson mac_arm64 "$mac_arm64" --argjson mac_x64 "$mac_x64" \
   -f "$here/bump/sources.jq" "$sources")
 printf '%s\n' "$next" >"$sources"
