@@ -28,10 +28,15 @@ sib|nix/agents|agent CLI set, `orca-ide-agents`, agent inputs
 
 ## §I INTERFACES
 
-- module: `nixosModules.{orca-ide,default}` — `programs.orca-ide.{enable,package}`, `services.orca-ide.{enable,package,port,stateDir}`.
+- module: `nixosModules.{orca-ide,default}` — `programs.orca-ide.{enable,package}`, `services.orca-ide.{enable,package,port,listenAddress,openFirewall,stateDir}`.
 - module: `darwinModules.{orca-ide,default}` — same + `services.orca-ide.sandbox.enable` (default `true`).
 - module: `homeManagerModules.{orca-ide,default}` — `programs.orca-ide.{enable,package}`.
 - file: `nix/modules/orca-ide.sb`, `.exposure`.
+
+## §R RESEARCH
+
+id|topic|finding|src
+R1|unit hardening 2026-10-21|each D35 directive bisected w/ `systemd-run` in NixOS VM: 19 pass as is; `SystemCallFilter=@system-service` (+ `unshare`/`setns`/`@mount`/`@privileged`) → Chromium zygote EINVAL ∴ deny list `~@clock ~@cpu-emulation ~@debug ~@module ~@obsolete ~@raw-io ~@reboot ~@swap`; `RestrictNamespaces` needs all but cgroup (`~cgroup`); `MemoryDenyWriteExecute` ⊥ (JS engine JIT). Electron serve binds `0.0.0.0` → patched `ORCA_SERVE_BIND_HOST` → `pinnedBindHost` (owner choice). exposure 2.2|`nix/tests/service-nixos.nix`, bisect on nix-builder.local
 
 ## §V INVARIANTS
 
@@ -46,10 +51,11 @@ V6: home-manager activation puts `orca-ide` on `PATH`; ⊥ module writes into Or
 
 id|status|task|cites
 T1|x|`nixosModules.orca-ide` + VM test (`checks.x86_64-linux.module-nixos`)|V6
-T2|.|`services.orca-ide` hardened + exposure ratchet + container test on `nix-builder.local`|V1,V2,V3
+T2|x|`services.orca-ide` hardened + exposure ratchet (`checks.x86_64-linux.service-nixos`, score 2.2)|V1
 T3|.|`darwinModules.orca-ide` + `orca-ide.sb` + probes (macOS runner, Tart reference)|V4,V5
 T4|.|`homeManagerModules.orca-ide` + activation check|V6
 T5|.|darwin app placement: nix-darwin `/Applications/Nix Apps`, home-manager its own apps dir; Tart probe: TCC grant (Accessibility, Screen Recording) given to version N still holds after update to N+1 at a new store path; result → §R & README (round 10)|V4
+T6|.|under full hardening: paired client session runs agent command via `serve`; same service in NixOS container inside VM|V2,V3
 
 ## §B BUGS
 
