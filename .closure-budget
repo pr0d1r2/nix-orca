@@ -3,3 +3,5 @@
 # commit that says why the closure grew.
 # aarch64-darwin: 863429056 measured at v1.4.232 on 2026-10-20.
 aarch64-darwin 906600000
+# x86_64-linux: 1739365392 measured at v1.4.232 on 2026-10-21.
+x86_64-linux 1826400000
