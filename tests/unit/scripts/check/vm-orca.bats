@@ -40,6 +40,15 @@ serve)
   ;;
 esac
 STUB
+  cat >stubs/ss <<'STUB'
+#!/usr/bin/env bash
+printf 'LISTEN 0 511 %s:6768 0.0.0.0:*\n' ${STUB_LISTEN:-127.0.0.1}
+STUB
+  cat >stubs/systemd-analyze <<'STUB'
+#!/usr/bin/env bash
+echo "→ Overall exposure level for $2: ${STUB_EXPOSURE:-2.2} OK :-)"
+STUB
+  printf '# unit score\norca-ide.service 2.2\n' >exposure
   chmod +x stubs/*
   export PATH="$BATS_TEST_TMPDIR/stubs:$PATH"
   export ORCA_VM_PROFILE=$BATS_TEST_TMPDIR/profile ORCA_VM_TIMEOUT=3 ORCA_VM_LOGS=$BATS_TEST_TMPDIR
@@ -98,8 +107,32 @@ STUB
   [[ "$stderr" == *"vm-orca: bob's orca-ide serve not ready on 6769 after 3 s"* ]]
 }
 
+@test "listening: the port is bound on the address alone" {
+  run --separate-stderr "$vm" listening 6768 127.0.0.1
+  [ "$status" -eq 0 ]
+}
+
+@test "listening: another bound address fails" {
+  export STUB_LISTEN="127.0.0.1 0.0.0.0"
+  run --separate-stderr "$vm" listening 6768 127.0.0.1
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: port 6768 is bound on 0.0.0.0, want 127.0.0.1 only" ]
+}
+
+@test "exposure: systemd's score within the ratchet passes" {
+  run --separate-stderr "$vm" exposure orca-ide.service exposure
+  [ "$status" -eq 0 ]
+}
+
+@test "exposure: a higher score fails and names V1" {
+  export STUB_EXPOSURE=2.3
+  run --separate-stderr "$vm" exposure orca-ide.service exposure
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: orca-ide.service exposure 2.3, ratchet 2.2 in exposure; raise it in its own reviewed commit (nix/modules V1)" ]
+}
+
 @test "anything else is a usage error, exit 2" {
   run --separate-stderr "$vm" launch alice
   [ "$status" -eq 2 ]
-  [ "$stderr" = "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT" ]
+  [ "$stderr" = "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE" ]
 }
