@@ -46,3 +46,24 @@ STUB
   [ "$status" -eq 2 ]
   [ "$stderr" = "usage: closure-budget.sh SYSTEM STORE-PATH" ]
 }
+
+@test "in a check derivation the size comes from closureInfo's total-nar-size" {
+  echo 650000000 >total-nar-size
+  export CLOSURE_SIZE_FILE=$BATS_TEST_TMPDIR/total-nar-size
+  run --separate-stderr "$budget" x86_64-linux /nix/store/y-orca-ide
+  [ "$status" -eq 0 ]
+  [ "$output" = "closure-budget: x86_64-linux 650000000 of 700000000 bytes (92%)" ]
+  [ ! -e nix.log ]
+}
+
+@test "a pass writes \$out when it is set, a failure does not" {
+  export out=$BATS_TEST_TMPDIR/out
+  run --separate-stderr "$budget" aarch64-darwin /nix/store/x-orca-ide
+  [ "$status" -eq 0 ]
+  [ -e "$out" ]
+  rm "$out"
+  export STUB_SIZE=900000001
+  run --separate-stderr "$budget" aarch64-darwin /nix/store/x-orca-ide
+  [ "$status" -eq 1 ]
+  [ ! -e "$out" ]
+}
