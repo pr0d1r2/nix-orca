@@ -1,8 +1,10 @@
 #!/usr/bin/env bats
 # scripts/build/linux-install.sh (nix/linux T2): the install phase of the
 # Linux source build, sourced by stdenv under its `set -eu -o pipefail`.
-# wrapProgram, patchShebangs, gappsWrapperArgsHook and runHook are stubs;
-# the unpacked app is a small fake.
+# wrapProgram, patchShebangs, gappsWrapperArgsHook, runHook and patchelf
+# are stubs; the unpacked app is a small fake.
+# Each @test runs in its own subshell, so its exports are meant to be local.
+# shellcheck disable=SC2030,SC2031
 
 bats_require_minimum_version 1.5.0
 
@@ -19,11 +21,29 @@ setup() {
     printf '#!/nix/store/0abc-nodejs-24.21.0/bin/node\nrequire("x")\n' \
       >"$unpacked/resources/node_modules/qrcode/bin/qrcode"
     printf '#!/usr/bin/env node\n' >"$unpacked/resources/relay/wsl/relay.js"
+    for arch in x64 arm64; do
+      echo bundled >"$unpacked/resources/agent-browser-linux-$arch"
+      sherpa=$unpacked/resources/node_modules/sherpa-onnx-linux-$arch
+      mkdir -p "$sherpa"
+      touch "$sherpa/sherpa-onnx.node" "$sherpa/index.js" "$sherpa/libonnxruntime.so" \
+        "$sherpa/libsherpa-onnx-c-api.so" "$sherpa/libsherpa-onnx-cxx-api.so"
+    done
   done
+  mkdir -p node_modules/agent-browser stubs
+  echo '{"name": "agent-browser", "version": "0.27.0"}' >node_modules/agent-browser/package.json
+  cat >stubs/patchelf <<'STUB'
+#!/usr/bin/env bash
+echo "patchelf $*" >>"$BATS_TEST_TMPDIR/log"
+STUB
+  chmod +x stubs/patchelf
+  export PATH="$BATS_TEST_TMPDIR/stubs:$PATH"
   export out=$BATS_TEST_TMPDIR/out
   export ORCA_ARCH=x64
   export ORCA_TEMPLATE=/store/orcad-template
   export ORCA_PATH=/store/agent/bin
+  export ORCA_AGENT_BROWSER=/store/agent-browser/bin/agent-browser
+  export ORCA_AGENT_BROWSER_VERSION=0.27.0
+  export ORCA_SHERPA_RPATH=/store/sherpa-onnx/lib:/store/gcc-lib/lib
 }
 
 runHook() {
@@ -96,6 +116,36 @@ install_phase() {
   [ "$(readlink "$out/bin/orca-ide")" = "$app/resources/bin/orca-ide" ]
   [ "$(grep -c patchShebangs "$log")" -eq 1 ]
   grep -qxF "patchShebangs $app/resources/bin/orca-ide" "$log"
+}
+
+@test "agent-browser is the pin's when it is upstream's version" {
+  run install_phase
+  [ "$status" -eq 0 ]
+  [ "$(readlink "$out/libexec/orca-ide/resources/agent-browser-linux-x64")" = /store/agent-browser/bin/agent-browser ]
+}
+
+@test "arm64 swaps the arm64 agent-browser" {
+  export ORCA_ARCH=arm64
+  run install_phase
+  [ "$status" -eq 0 ]
+  [ "$(readlink "$out/libexec/orca-ide/resources/agent-browser-linux-arm64")" = /store/agent-browser/bin/agent-browser ]
+}
+
+@test "another agent-browser version keeps upstream's and says so" {
+  export ORCA_AGENT_BROWSER_VERSION=0.28.0
+  run --separate-stderr install_phase
+  [ "$status" -eq 0 ]
+  [ "$(cat "$out/libexec/orca-ide/resources/agent-browser-linux-x64")" = bundled ]
+  [[ "$stderr" == *"agent-browser: upstream bundles 0.27.0, the pin has 0.28.0; keeping upstream's"* ]]
+}
+
+@test "sherpa-onnx's addon loads the pin's libraries; the bundled ones are gone" {
+  run install_phase
+  [ "$status" -eq 0 ]
+  sherpa=$out/libexec/orca-ide/resources/node_modules/sherpa-onnx-linux-x64
+  grep -qxF "patchelf --set-rpath /store/sherpa-onnx/lib:/store/gcc-lib/lib $sherpa/sherpa-onnx.node" "$log"
+  [ -z "$(cd "$sherpa" && find . -name '*.so')" ]
+  [ -e "$sherpa/index.js" ]
 }
 
 @test "pre and post install hooks run around it" {
