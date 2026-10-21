@@ -5,7 +5,9 @@
 # budget fails; raising a budget is its own reviewed commit.
 # Usage: closure-budget.sh SYSTEM STORE-PATH
 # Env: NIX names nix (default nix); CLOSURE_BUDGET the budget file
-# (default .closure-budget at the repository root).
+# (default .closure-budget at the repository root); CLOSURE_SIZE_FILE,
+# when set, holds the size instead (closureInfo's total-nar-size, in a
+# check derivation with no nix daemon); out is written on a pass.
 set -euo pipefail
 
 if [ "$#" -ne 2 ]; then
@@ -22,9 +24,16 @@ if [ -z "$limit" ]; then
   echo "closure-budget: no budget for $system in $file" >&2
   exit 1
 fi
-size=$("$nix" path-info -S "$path" | awk '{ print $2 }')
+if [ -n "${CLOSURE_SIZE_FILE:-}" ]; then
+  size=$(<"$CLOSURE_SIZE_FILE")
+else
+  size=$("$nix" path-info -S "$path" | awk '{ print $2 }')
+fi
 if [ "$size" -gt "$limit" ]; then
   echo "closure-budget: $system $size bytes, budget $limit; raise it in its own reviewed commit (D14)" >&2
   exit 1
 fi
 echo "closure-budget: $system $size of $limit bytes ($((size * 100 / limit))%)"
+if [ -n "${out:-}" ]; then
+  : >"$out"
+fi

@@ -19,6 +19,8 @@ STUB
   chmod +x stubs/nix
   printf '# system bytes\naarch64-darwin 900000000\nx86_64-linux 700000000\n' >budget
   export NIX="$BATS_TEST_TMPDIR/stubs/nix" CLOSURE_BUDGET="$BATS_TEST_TMPDIR/budget"
+  # The dev shell exports mkShell's `out`; only a check derivation sets it.
+  unset out
 }
 
 @test "a closure within budget passes and says how much room is left" {
