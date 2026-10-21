@@ -195,6 +195,11 @@
             inherit (own) orca-ide;
             inherit (sources) version;
           };
+          launch = import ./nix/tests/launch.nix {
+            inherit (pkgs) testers xvfb jq;
+            module = inputs.self.nixosModules.orca-ide;
+            inherit (own) orca-ide;
+          };
         }
         // nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin (
           import ./nix/darwin/checks.nix {
