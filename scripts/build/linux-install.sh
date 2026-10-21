@@ -33,6 +33,9 @@ cp -r "$unpacked" "$app"
 # Chromium finds it unusable and takes its user-namespace sandbox. Unnamed,
 # Electron traps at start.
 rm "$app/resources/default_app.asar"
+# ssh2's Windows pageant bridge and its build files (V1,
+# stablyai/orca#30999); -f, so an upstream fix does not break the build.
+rm -f "$app/resources/node_modules/ssh2/util/"{pagent.exe,pagent.c,build_pagent.bat}
 # pnpmConfigHook pointed node_modules' scripts at the build's Node; they ship
 # with upstream's interpreter line, as in upstream's .deb.
 grep -rlE '^#!/nix/store/[^ ]+/bin/node' "$app/resources/node_modules" |
