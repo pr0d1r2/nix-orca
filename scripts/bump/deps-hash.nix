@@ -1,8 +1,10 @@
-# The JS deps fetch for TAG with a fake hash (scripts/bump/deps-hash.sh):
+# A JS deps fetch for TAG with a fake hash (scripts/bump/deps-hash.sh):
 # building it fails with a hash mismatch whose `got:` is the real hash.
+# `fetch` names it: pnpmDeps (the root's) or mobilePnpmDeps (mobile/'s).
 {
   tag,
   srcHash,
+  fetch ? "pnpmDeps",
   root ? ../..,
 }:
 let
@@ -15,5 +17,6 @@ in
     version = pkgs.lib.removePrefix "v" tag;
     src.hash = srcHash;
     pnpmDeps.hash = pkgs.lib.fakeHash;
+    mobilePnpmDeps.hash = pkgs.lib.fakeHash;
   };
-}).pnpmDeps
+}).${fetch}
