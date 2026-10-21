@@ -33,6 +33,13 @@ in
   ripgrep = check "ripgrep" orca-ide "-";
   agent-browser = check "agent-browser" orca-ide agent-browser.version;
   runtime-commands = check "runtime-commands" orca-ide "git ps xdg-open xclip xdotool Xvfb wl-copy";
+  # The size is closureInfo's total-nar-size: no nix daemon in a check.
+  closure-budget = runCommand "orca-ide-closure-budget" {
+    env = {
+      CLOSURE_SIZE_FILE = "${closureInfo { rootPaths = [ orca-ide ]; }}/total-nar-size";
+      CLOSURE_BUDGET = "${../../.closure-budget}";
+    };
+  } "bash ${../../scripts/closure-budget.sh} ${orca-ide.stdenv.hostPlatform.system} ${orca-ide}";
   closure-hygiene = checkWith {
     ORCA_CLOSURE = "${closureInfo { rootPaths = [ orca-ide ]; }}/store-paths";
   } "hygiene" orca-ide "${./closure-allow.txt}";
