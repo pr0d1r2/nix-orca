@@ -31,6 +31,8 @@ EOF
   mkdir -p src/main src/shared src/cli/runtime
   printf "function getHookShell() {\n  return '/bin/bash'\n}\n" >src/main/hooks.ts
   printf "    program: '/bin/ps',\n" >src/shared/tmux-host-attachment-probe.ts
+  mkdir -p src/main/startup
+  printf "    exposeNetworkByDefault: Boolean(serveOptions) || isE2E,\n" >src/main/startup/main-process-runtime-launch.ts
   printf "const BASH_CANDIDATES = ['/bin/bash', '/usr/bin/bash']\n" >src/cli/runtime/serve-pid1-init-reaper.ts
   export ORCA_COMMIT=49109f362f057cd2dc3d81cd378cb84d140c3dc5
   export ORCA_BASH=/store/bash/bin/bash ORCA_PS=/store/procps/bin/ps
@@ -85,6 +87,14 @@ patch_phase() {
   run patch_phase
   [ "$status" -eq 0 ]
   grep -qF "'!{.oxfmtrc.json,.oxlintrc.json,components.json,opencode.json,orca.yaml,pnpm-workspace.yaml,vite.web.config.ts}'," config/electron-builder.config.cjs
+}
+
+@test "serve's listener can be pinned through ORCA_SERVE_BIND_HOST" {
+  run patch_phase
+  [ "$status" -eq 0 ]
+  f=src/main/startup/main-process-runtime-launch.ts
+  grep -qxF "    exposeNetworkByDefault: Boolean(serveOptions) || isE2E," "$f"
+  grep -qxF "    ...(serveOptions && process.env.ORCA_SERVE_BIND_HOST ? { pinnedBindHost: process.env.ORCA_SERVE_BIND_HOST } : {})," "$f"
 }
 
 @test "hooks run the store's bash: NixOS has no /bin/bash" {
