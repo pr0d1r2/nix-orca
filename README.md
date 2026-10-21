@@ -68,6 +68,17 @@ The overlay adds exactly `orca-ide` and `orca-ide-agents`:
 }
 ```
 
+On NixOS the module does the same with this flake's package, the one the
+cache holds:
+
+```nix
+{
+  imports = [ nix-orca.nixosModules.default ];
+  programs.orca-ide.enable = true;
+  # programs.orca-ide.package = nix-orca.packages.x86_64-linux.orca-ide-agents;
+}
+```
+
 The same overlay works in a nix-darwin configuration and in home-manager
 (`home.packages = [ pkgs.orca-ide ];`). The flake follows `nixpkgs-lock`
 for its one nixpkgs; consumers who use another nixpkgs can make it follow
@@ -150,6 +161,11 @@ collected by the cache's retention.
   official build: `orca-ide.override { telemetry = false; }` sets
   `ORCA_TELEMETRY_DISABLED=1` for launches through `bin/orca-ide`, and a
   launch from Finder or Spotlight does not go through it.
+- **`orca-ide serve` on Linux** runs Orca's Electron server: its lighter
+  orcad server needs upstream's own Node binary, which Orca downloads
+  and checks by hash, and the nix package has none. It listens on every
+  address unless told otherwise, and installs `~/.local/bin/orca-ide`
+  pointing at the current store path.
 - **Spotlight**: on nix-darwin and home-manager the app shows up under
   `Nix Apps`.
 - **`PYTHONPATH`**: Orca passes your environment to the agents it

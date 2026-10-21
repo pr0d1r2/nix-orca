@@ -20,7 +20,7 @@ sib|nix/agents|agent CLI set, `orca-ide-agents`, agent inputs
 - order: `nixosModules.orca-ide` (package) → its `services.orca-ide` (`serve`, hardened) → `darwinModules.orca-ide` (launchd + Seatbelt) → `homeManagerModules.orca-ide`. next ⊥ start before previous green.
 - NixOS service (D35): `DynamicUser`, `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`, `PrivateDevices`, `NoNewPrivileges`, `CapabilityBoundingSet=`, `RestrictAddressFamilies`, `SystemCallFilter=@system-service`, `MemoryDenyWriteExecute` where JS JIT allows; `RestrictNamespaces` & `PrivateUsers` settled by test; ∀ relaxation commented w/ what breaks.
 - service state: `DynamicUser` + `StateDirectory=orca-ide` → `/var/lib/orca-ide` (`stateDir` default); `serve` works on repos under `stateDir` only, ⊥ `/home` (`ProtectHome`); agent CLI creds also under `stateDir`; unit sets `HOME = stateDir` so Electron `userData` lands there too (round 10).
-- `serve` binds `127.0.0.1` by default on NixOS & nix-darwin (Seatbelt inbound rule follows `listenAddress` & port, D36); option `listenAddress`; `openFirewall = false` default; exposing beyond loopback ! explicit option & README names Orca's own pairing/auth as the only gate (round 10).
+- `serve` binds `127.0.0.1` by default on NixOS & nix-darwin (upstream default `0.0.0.0`, `nix/linux` R7) (Seatbelt inbound rule follows `listenAddress` & port, D36); option `listenAddress`; `openFirewall = false` default; exposing beyond loopback ! explicit option & README names Orca's own pairing/auth as the only gate (round 10).
 - exposure ratchet in `.exposure` (⊥ `.coverage`, `paradigm/V25`).
 - darwin (D36): `launchd.daemons` job, dedicated user from `users.users`, launchd limits; `/usr/bin/sandbox-exec` w/ `orca-ide.sb` in repo: deny default, read `/nix/store` & system paths Electron needs, rw state dir only, inbound TCP only on serve port, exec only from `/nix/store`; store path, state dir, port as `-D` params. opt-out `services.orca-ide.sandbox.enable = false` keeps user & limits.
 - prior art for profile: nix `sandbox-defaults.sb`, Chromium `.sb`. network rules by address & port, ⊥ domain.
@@ -45,7 +45,7 @@ V6: home-manager activation puts `orca-ide` on `PATH`; ⊥ module writes into Or
 ## §T TASKS
 
 id|status|task|cites
-T1|.|`nixosModules.orca-ide` + VM test|V6
+T1|x|`nixosModules.orca-ide` + VM test (`checks.x86_64-linux.module-nixos`)|V6
 T2|.|`services.orca-ide` hardened + exposure ratchet + container test on `nix-builder.local`|V1,V2,V3
 T3|.|`darwinModules.orca-ide` + `orca-ide.sb` + probes (macOS runner, Tart reference)|V4,V5
 T4|.|`homeManagerModules.orca-ide` + activation check|V6

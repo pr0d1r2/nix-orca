@@ -18,7 +18,7 @@ sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, rele
 
 ## §C CONSTRAINTS
 
-- `runNixOSTest`; reference runner `nix-builder.local` (kvm, nixos-test) (D34, D35). CI: required VM checks (launch, layers 1 & 2) on `ubuntu-24.04` x64 w/ `/dev/kvm` opened by udev rule; job asserts `/dev/kvm` first & fails loudly, ⊥ silent skip | TCG fallback. aarch64-linux VM checks ⊥ required until KVM proven on `ubuntu-24.04-arm` (round 8).
+- `runNixOSTest`; driver Python = boot + calls; checks in `scripts/check/vm-orca.sh` (bats-tested); reference runner `nix-builder.local` (kvm, nixos-test) (D34, D35). CI: required VM checks (launch, layers 1 & 2) on `ubuntu-24.04` x64 w/ `/dev/kvm` opened by udev rule; job asserts `/dev/kvm` first & fails loudly, ⊥ silent skip | TCG fallback. aarch64-linux VM checks ⊥ required until KVM proven on `ubuntu-24.04-arm` (round 8).
 - launch: `orca-ide` under Xvfb; `orca-ide serve` headless answers; speech worker loads (D16, D25).
 - non-NixOS launch: `nix run` of `orca-ide` on plain `ubuntu-24.04` runner under `xvfb-run`, window up w/ software GL, as unprivileged runner user (round 10; D38 hands-on test, automated). runner restricts unprivileged userns via AppArmor ∴ job first loads the package's `share/apparmor/orca-ide` (D32) w/ `apparmor_parser`, then launches w/o sudo & ⊥ `--no-sandbox`: proves the shipped profile. required check.
 - integration layers (D44), each a VM w/ `orca-ide-agents` & `serve`:
@@ -50,7 +50,7 @@ V4: launch test passes on `orca-ide` & `orca-ide-bin`.
 ## §T TASKS
 
 id|status|task|cites
-T1|.|launch VM test|V4
+T1|x|launch VM test; speech worker load = `checks.<linux>.sherpa-load`|V4
 T2|.|detection layer|V2
 T3|x|stub server + recorded scripts per protocol|V1
 T4|.|stub layer, endpoint matrix as finding|V3
