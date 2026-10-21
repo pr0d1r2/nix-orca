@@ -1,7 +1,8 @@
 #!/usr/bin/env bats
 # scripts/build/linux-patch.sh (nix/linux T2): the patch phase of the Linux
-# source build, sourced by stdenv. substituteInPlace is a stand-in for
-# stdenv's with --replace-fail: a missing pattern fails.
+# source build, sourced by stdenv under its `set -eu -o pipefail`.
+# substituteInPlace is a stand-in for stdenv's with --replace-fail: a
+# missing pattern fails.
 
 bats_require_minimum_version 1.5.0
 
@@ -46,9 +47,10 @@ substituteInPlace() {
   printf '%s\n' "$text" >"$file"
 }
 
+# Its own shell: bats runs a function inside `||`, where errexit is off.
 patch_phase() {
-  # shellcheck source=/dev/null
-  . "$script"
+  export -f substituteInPlace
+  bash -eu -o pipefail -c '. "$1"' _ "$script"
 }
 
 @test "the source commit is the tag's, not git's" {
@@ -79,6 +81,13 @@ patch_phase() {
   run patch_phase
   [ "$status" -ne 0 ]
   [[ "$output" == *"pattern not found"* ]]
+}
+
+@test "a moved commit line fails before the config is touched" {
+  sed -i.bak 's/rev-parse/describe/' config/scripts/build-source-commit.mjs
+  run patch_phase
+  [ "$status" -ne 0 ]
+  run ! grep -q "// nix:" config/electron-builder.config.cjs
 }
 
 @test "without ORCA_COMMIT the phase fails" {
