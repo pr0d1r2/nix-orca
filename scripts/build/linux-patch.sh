@@ -37,3 +37,11 @@ substituteInPlace src/cli/runtime/serve-pid1-init-reaper.ts \
   --replace-fail "const BASH_CANDIDATES = ['/bin/bash'," "const BASH_CANDIDATES = ['$ORCA_BASH', '/bin/bash',"
 substituteInPlace src/shared/tmux-host-attachment-probe.ts \
   --replace-fail "    program: '/bin/ps'," "    program: '$ORCA_PS',"
+
+# serve binds every interface; ORCA_SERVE_BIND_HOST pins it to one, through
+# the runtime's own pinnedBindHost, which pairing never widens. The NixOS
+# service sets it to loopback (nix/modules T2).
+substituteInPlace src/main/startup/main-process-runtime-launch.ts \
+  --replace-fail "    exposeNetworkByDefault: Boolean(serveOptions) || isE2E," \
+  "    exposeNetworkByDefault: Boolean(serveOptions) || isE2E,
+    ...(serveOptions && process.env.ORCA_SERVE_BIND_HOST ? { pinnedBindHost: process.env.ORCA_SERVE_BIND_HOST } : {}),"
