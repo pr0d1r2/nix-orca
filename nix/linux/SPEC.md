@@ -18,7 +18,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 ## §C CONSTRAINTS
 
 - source: upstream tag via `fetchFromGitHub`, hash in `nix/sources.json` (D38).
-- JS deps: 1 fixed-output derivation via pin `fetchPnpmDeps` (`fetcherVersion = 4`, pnpm 11.27.0) from `pnpm-lock.yaml`; path changes only when lockfile does. ⊥ workspace filter: saves 0 (R2). store ∀ platforms (`--force`) 1.84 GB, build-time only, ⊥ in runtime closure, ⊥ cached (`.:V5`). pnpm ! stay 11.27.0, ⊥ self-switch to `packageManager` 12.8.1.
+- JS deps: 1 fixed-output derivation (+ `mobile/`'s, R3) via pin `fetchPnpmDeps` (`fetcherVersion = 4`, pnpm 11.27.0) from `pnpm-lock.yaml`; path changes only when lockfile does. ⊥ workspace filter: saves 0 (R2). store ∀ platforms (`--force`) 1.84 GB, build-time only, ⊥ in runtime closure, ⊥ cached (`.:V5`). pnpm ! stay 11.27.0, ⊥ self-switch to `packageManager` 12.8.1.
 - pnpm major follows the pin: fetcher uses pin `pnpm`; once pin offers pnpm major = upstream `packageManager` major (12 today), switch in own PR w/ new deps hash; check reports while they differ (round 11).
 - build: upstream scripts, `ELECTRON_SKIP_BINARY_DOWNLOAD=1`; `app.asar` launched by pin `electron_43` (D21). native modules `node-pty`, `@parcel/watcher` rebuilt vs pin Electron headers.
 - Electron major guard: upstream `package.json` Electron major ≠ pin `electron_43` major → build fails, message names `orca-ide-bin` (D21).
@@ -41,6 +41,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 id|topic|finding|src
 R1|upstream packaging bugs filed 2026-10-20|`stablyai/orca#30993`: `app.asar` ships `cloud/` + 7 root configs, 652 files 6.5 MB, byte-identical to tag; `stablyai/orca#30999`: ssh2 `pagent.exe`, `pagent.c`, `build_pagent.bat` in Linux package|`gh issue view -R stablyai/orca`
 R2|JS deps measured 2026-10-20|root `pnpm-lock.yaml` (v9.0, 548 KB) covers app, `src/packages/*`, `native/windows-{registry,security}`; `mobile/` & `cloud/` own lockfiles ∴ ⊥ fetched. `--filter 'orca...'` → same 1311 host packages ∴ filter saves 0. pin `fetchPnpmDeps` (`fetcherVersion = 4`, pnpm 11.27.0, `--force` ∀ platforms): 1524 packages, `pnpm-store.tar.zst` 1.84 GB NAR, 21 s install, 62 s total on aarch64-darwin. outside nix, pnpm 11 self-switches to `packageManager` 12.8.1; inside fetcher stays 11.27.0. largest: `mermaid` 84 MB, `monaco-editor` 73, `agent-browser` 72, `sherpa-onnx-<platform>` 72, `@oven/bun-<platform>` 67, `node-pty` 62|`nix build` of `fetchPnpmDeps` on pin, `nix path-info -S`, `nix log`
+R3|`mobile/` deps measured 2026-10-21|desktop ships `out/mobile-web` (8.5 MB, esbuild of `mobile/`), so build needs `mobile/` deps: own `pnpm-lock.yaml` ∴ 2nd `fetchPnpmDeps` (`preInstall = "cd mobile"`), 736 MiB, 25 s; its postinstall generators skipped by `--ignore-scripts` → run in build|`nix build` on nix-builder.local
 
 ## §V INVARIANTS
 

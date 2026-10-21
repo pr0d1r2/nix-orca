@@ -8,6 +8,9 @@
   "pnpmDeps": {
     "hash": "sha256-CbrScEguIUyo1lVAfCYvhczmERcZrwGmfmOK+FuYxI0="
   },
+  "mobilePnpmDeps": {
+    "hash": "sha256-ghOPbJgOg2HvS/wb1s4uBiy8iuZajESljaeq8yh9pfc="
+  },
   "linux": {
     "x86_64-linux": {
       "deb": {

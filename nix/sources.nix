@@ -32,6 +32,7 @@ let
     ) "nix/sources.json: commit must be the tag's 40-hex commit (round 9)"
     && sri "sha256" "src.hash" (sources.src.hash or "")
     && sri "sha256" "pnpmDeps.hash" (sources.pnpmDeps.hash or "")
+    && sri "sha256" "mobilePnpmDeps.hash" (sources.mobilePnpmDeps.hash or "")
     && perSystem "linux" [ "aarch64-linux" "x86_64-linux" ] "deb"
     && lib.assertMsg (builtins.isString (
       sources.darwin.teamIdentifier or null

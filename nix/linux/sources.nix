@@ -30,4 +30,15 @@ rec {
     # upstream's own CI runs it.
     ORCA_PNPM_GLOBAL_VIRTUAL_STORE = "0";
   };
+
+  # `mobile/` has its own lockfile; the desktop app ships its web build
+  # (`out/mobile-web`), so its deps are a second fetch (R3).
+  mobilePnpmDeps = fetchPnpmDeps {
+    pname = "orca-ide-mobile";
+    inherit (sources) version;
+    inherit src pnpm;
+    inherit (sources.mobilePnpmDeps) hash;
+    fetcherVersion = 4;
+    preInstall = "cd mobile";
+  };
 }
