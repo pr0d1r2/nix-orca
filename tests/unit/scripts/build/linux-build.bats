@@ -57,6 +57,7 @@ STUB
   export ELECTRON_VERSION=43.7.11
   export ELECTRON_MAJOR_CHECK=$BATS_TEST_TMPDIR/stubs/guard
   export mobilePnpmDeps=/store/mobile-deps
+  export ORCA_HELPER_RPATH=/store/wayland/lib:/store/gtk3/lib
 }
 
 runHook() {
@@ -142,6 +143,18 @@ build_phase() {
   [ "$status" -eq 0 ]
   [ -e native/wayland-clipboard/.build/x64/orca-wayland-clipboard ]
   grep -q "cc .*-o native/wayland-clipboard/.build/x64/orca-wayland-clipboard" "$log"
+}
+
+@test "the helper finds the libraries it dlopens through its RUNPATH" {
+  run build_phase
+  [ "$status" -eq 0 ]
+  grep -q "cc .*-Wl,-rpath,/store/wayland/lib:/store/gtk3/lib .*-o native/wayland-clipboard" "$log"
+}
+
+@test "without the helper's RUNPATH the phase fails" {
+  unset ORCA_HELPER_RPATH
+  run build_phase
+  [ "$status" -ne 0 ]
 }
 
 @test "electron-builder packages a writable copy of the pin's Electron, outside the checkout" {
