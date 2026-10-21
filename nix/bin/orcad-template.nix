@@ -8,10 +8,11 @@
   fetchurl,
   dpkg,
   sources,
-  system ? stdenvNoCC.hostPlatform.system,
+  # Not `system`: callPackage would fill that from pkgs' deprecated alias.
+  debSystem ? stdenvNoCC.hostPlatform.system,
 }:
 let
-  linux = sources.linux.${system};
+  linux = sources.linux.${debSystem};
 in
 stdenvNoCC.mkDerivation {
   pname = "orcad-template";

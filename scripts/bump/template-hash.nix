@@ -14,7 +14,7 @@ let
   pkgs = flake.inputs.nixpkgs.legacyPackages.${builtins.currentSystem};
 in
 pkgs.callPackage (root + "/nix/bin/orcad-template.nix") {
-  inherit system;
+  debSystem = system;
   sources = {
     inherit tag;
     version = pkgs.lib.removePrefix "v" tag;
