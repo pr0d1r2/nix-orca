@@ -7,11 +7,12 @@
 # shell options; a failing step fails the phase.
 # Env: ORCA_ARCH (x64 | arm64), ELECTRON_DIST, ELECTRON_HEADERS,
 # ELECTRON_VERSION, ELECTRON_MAJOR_CHECK (scripts/check/electron-major.sh),
-# mobilePnpmDeps (the mobile/ deps fetch).
+# mobilePnpmDeps (the mobile/ deps fetch), ORCA_HELPER_RPATH (where the
+# clipboard helper finds what it dlopens).
 
 # shellcheck disable=SC2154 # set by the derivation.
 : "${ORCA_ARCH:?}" "${ELECTRON_DIST:?}" "${ELECTRON_HEADERS:?}" "${ELECTRON_VERSION:?}" \
-  "${ELECTRON_MAJOR_CHECK:?}" "${mobilePnpmDeps:?}"
+  "${ELECTRON_MAJOR_CHECK:?}" "${mobilePnpmDeps:?}" "${ORCA_HELPER_RPATH:?}"
 
 runHook preBuild
 
@@ -53,11 +54,12 @@ node config/scripts/verify-web-build.mjs
 node config/scripts/build-mobile-web-app-bundle.mjs
 node config/scripts/verify-mobile-web-app-bundle.mjs
 
-# The helper dlopens libwayland-client and GTK; upstream's flags.
+# Upstream's flags. The helper dlopens libwayland-client and GTK by name,
+# which on NixOS only its RUNPATH can find.
 helper=native/wayland-clipboard/.build/$ORCA_ARCH
 mkdir -p "$helper"
 cc -O2 -Wall -Wextra -Werror -fstack-protector-strong -D_FORTIFY_SOURCE=2 \
-  -fPIE -pie -Wl,-z,relro,-z,now \
+  -fPIE -pie -Wl,-z,relro,-z,now -Wl,-rpath,"$ORCA_HELPER_RPATH" \
   native/wayland-clipboard/wayland-clipboard.c \
   native/wayland-clipboard/x11-clipboard-publisher.c \
   -ldl -o "$helper/orca-wayland-clipboard"

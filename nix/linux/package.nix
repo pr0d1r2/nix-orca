@@ -77,6 +77,10 @@ stdenv.mkDerivation {
     ELECTRON_VERSION = electron.version;
     ELECTRON_MAJOR_CHECK = "${../../scripts/check/electron-major.sh}";
     ORCA_PATH = lib.makeBinPath agents;
+    ORCA_HELPER_RPATH = lib.makeLibraryPath [
+      wayland
+      gtk3
+    ];
   };
 
   postPatch = ". ${../../scripts/build/linux-patch.sh}";
