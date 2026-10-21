@@ -4,10 +4,10 @@
 # the build when upstream changes a line this relies on. Sourced, so it
 # sets no shell options.
 # Env: ORCA_COMMIT (the tag's commit, nix/sources.json), ORCA_BASH and
-# ORCA_PS (the store's bash and ps).
+# ORCA_PS (the store's bash and ps), ORCA_COREUTILS (its bin directory).
 
 # shellcheck disable=SC2154 # set by the derivation.
-: "${ORCA_COMMIT:?}" "${ORCA_BASH:?}" "${ORCA_PS:?}"
+: "${ORCA_COMMIT:?}" "${ORCA_BASH:?}" "${ORCA_PS:?}" "${ORCA_COREUTILS:?}"
 
 # The skills an Orca build installs pin to its source commit, which upstream
 # reads from git; the tag's commit is in nix/sources.json (round 9).
@@ -35,6 +35,12 @@ substituteInPlace src/main/hooks.ts \
   --replace-fail "  return '/bin/bash'" "  return '$ORCA_BASH'"
 substituteInPlace src/cli/runtime/serve-pid1-init-reaper.ts \
   --replace-fail "const BASH_CANDIDATES = ['/bin/bash'," "const BASH_CANDIDATES = ['$ORCA_BASH', '/bin/bash',"
+# The launcher resolves its own symlinks with dirname and readlink; a
+# systemd unit's PATH may hold neither.
+# shellcheck disable=SC2016 # the launcher's own shell text, literal.
+substituteInPlace resources/linux/bin/orca-ide \
+  --replace-fail '$(dirname "$SOURCE")' '$('"$ORCA_COREUTILS"'/dirname "$SOURCE")' \
+  --replace-fail '$(readlink "$SOURCE")' '$('"$ORCA_COREUTILS"'/readlink "$SOURCE")'
 substituteInPlace src/shared/tmux-host-attachment-probe.ts \
   --replace-fail "    program: '/bin/ps'," "    program: '$ORCA_PS',"
 
