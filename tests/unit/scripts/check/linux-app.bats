@@ -20,7 +20,11 @@ STUB
     "$resources/ripgrep/linux-x64" "$resources/ripgrep/win32-x64" pin/bin
   cat >pkg/libexec/orca-ide/orca-ide <<'STUB'
 #!/usr/bin/env bash
-[ "$ELECTRON_RUN_AS_NODE" = 1 ] && [ "$1" = -e ] && echo "${STUB_SHERPA:-1.12.38}"
+[ "$ELECTRON_RUN_AS_NODE" = 1 ] && [ "$1" = -e ] || exit 9
+case "$2" in
+*sherpa*|*require\(process.argv*) echo "${STUB_SHERPA:-1.12.38}" ;;
+*command\ -v*) [ -n "${PATH:-}" ] && exit 8; printf '%s\n' ${STUB_MISSING:-} ;;
+esac
 STUB
   touch "$resources/node_modules/sherpa-onnx-linux-x64/sherpa-onnx.node"
   echo linux >"$resources/ripgrep/linux-x64/rg"
@@ -119,6 +123,34 @@ STUB
   [ "$stderr" = "linux-app: agent-browser-linux-x64 is upstream's, not the pin's 0.27.0; the versions differ (D24)" ]
 }
 
+@test "runtime-commands: each command resolves with an empty PATH" {
+  run --separate-stderr "$check" runtime-commands pkg "git ps xdg-open"
+  [ "$status" -eq 0 ]
+  [ -e "$out" ]
+}
+
+@test "runtime-commands: a missing command fails and names V8" {
+  export STUB_MISSING="xdg-open Xvfb"
+  run --separate-stderr "$check" runtime-commands pkg "git xdg-open Xvfb"
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "linux-app: not on the wrapper's PATH: xdg-open Xvfb (nix/linux V8)" ]
+}
+
+@test "updater-off: a package type Orca reports as unusable" {
+  echo nix >pkg/libexec/orca-ide/resources/package-type
+  run --separate-stderr "$check" updater-off pkg -
+  [ "$status" -eq 0 ]
+}
+
+@test "updater-off: deb, rpm or AppImage fail and name V9" {
+  for type in deb rpm AppImage; do
+    echo "$type" >pkg/libexec/orca-ide/resources/package-type
+    run --separate-stderr "$check" updater-off pkg -
+    [ "$status" -eq 1 ]
+    [ "$stderr" = "linux-app: package-type is $type, which Orca's updater uses (nix/linux V9)" ]
+  done
+}
+
 @test "without out set, a pass writes nothing" {
   unset out
   run --separate-stderr "$check" version pkg 1.4.232
@@ -128,7 +160,7 @@ STUB
 @test "an unknown mode or wrong arguments are a usage error, exit 2" {
   run --separate-stderr "$check" colour pkg 1
   [ "$status" -eq 2 ]
-  [ "$stderr" = "usage: linux-app.sh version|electron-major|sherpa-load|ripgrep|agent-browser PATH EXPECTED" ]
+  [ "$stderr" = "usage: linux-app.sh version|electron-major|sherpa-load|ripgrep|agent-browser|runtime-commands|updater-off PATH EXPECTED" ]
   run --separate-stderr "$check" version pkg
   [ "$status" -eq 2 ]
 }
