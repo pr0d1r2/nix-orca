@@ -4,6 +4,8 @@
   lib,
   runCommand,
   jq,
+  agent-browser,
+  sherpa-onnx,
   orca-ide,
   sources,
 }:
@@ -18,4 +20,7 @@ in
 {
   orca-ide-version = check "version" orca-ide sources.version;
   electron-major = check "electron-major" orca-ide.src orca-ide.electron.version;
+  sherpa-load = check "sherpa-load" orca-ide sherpa-onnx.version;
+  ripgrep = check "ripgrep" orca-ide "-";
+  agent-browser = check "agent-browser" orca-ide agent-browser.version;
 }

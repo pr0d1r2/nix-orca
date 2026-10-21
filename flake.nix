@@ -170,7 +170,13 @@
         }
         // nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux (
           import ./nix/linux/checks.nix {
-            inherit (pkgs) lib runCommand jq;
+            inherit (pkgs)
+              lib
+              runCommand
+              jq
+              agent-browser
+              sherpa-onnx
+              ;
             inherit sources;
             inherit (own) orca-ide;
           }
