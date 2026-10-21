@@ -160,6 +160,16 @@ install_phase() {
   done
 }
 
+@test "the desktop entry is upstream's, starting the store's Electron" {
+  run install_phase
+  [ "$status" -eq 0 ]
+  entry=$out/share/applications/orca-ide.desktop
+  grep -qxF "Exec=$out/libexec/orca-ide/orca-ide %U" "$entry"
+  grep -qxF "StartupWMClass=orca" "$entry"
+  grep -qxF "Icon=orca-ide" "$entry"
+  grep -qxF "MimeType=text/markdown;text/csv;text/tab-separated-values;x-scheme-handler/orca;" "$entry"
+}
+
 @test "the AppArmor profile names the store's Electron and allows user namespaces" {
   run install_phase
   [ "$status" -eq 0 ]

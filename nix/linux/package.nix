@@ -22,7 +22,10 @@
   gsettings-desktop-schemas,
   glib,
   gtk3,
+  libicns,
   sources,
+  updater ? true,
+  telemetry ? true,
   agents ? [ ],
 }:
 let
@@ -43,6 +46,7 @@ stdenv.mkDerivation {
     python3
     jq
     patchelf
+    libicns
     wrapGAppsHook3
     makeWrapper
     writableTmpDirAsHomeHook
@@ -85,6 +89,9 @@ stdenv.mkDerivation {
       wayland
       gtk3
     ];
+    # D26: any value but deb, rpm or AppImage makes the updater unusable.
+    ORCA_PACKAGE_TYPE = if updater then "deb" else "nix";
+    ORCA_TELEMETRY = lib.boolToString telemetry;
     ORCA_AGENT_BROWSER = lib.getExe agent-browser;
     ORCA_AGENT_BROWSER_VERSION = agent-browser.version;
     ORCA_SHERPA_RPATH = lib.makeLibraryPath [
