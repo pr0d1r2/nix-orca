@@ -23,4 +23,6 @@ in
   sherpa-load = check "sherpa-load" orca-ide sherpa-onnx.version;
   ripgrep = check "ripgrep" orca-ide "-";
   agent-browser = check "agent-browser" orca-ide agent-browser.version;
+  runtime-commands = check "runtime-commands" orca-ide "git ps xdg-open xclip xdotool Xvfb wl-copy";
+  updater-off = check "updater-off" (orca-ide.override { updater = false; }) "-";
 }

@@ -23,7 +23,10 @@ STUB
 [ "$ELECTRON_RUN_AS_NODE" = 1 ] && [ "$1" = -e ] || exit 9
 case "$2" in
 *sherpa*|*require\(process.argv*) echo "${STUB_SHERPA:-1.12.38}" ;;
-*command\ -v*) [ -n "${PATH:-}" ] && exit 8; printf '%s\n' ${STUB_MISSING:-} ;;
+*command\ -v*)
+  [ -z "${HOME_FROM_CALLER:-}" ] || exit 8
+  for c in "${@:3}"; do case "$c" in missing-*) echo "$c" ;; esac; done
+  ;;
 esac
 STUB
   touch "$resources/node_modules/sherpa-onnx-linux-x64/sherpa-onnx.node"
@@ -124,16 +127,16 @@ STUB
 }
 
 @test "runtime-commands: each command resolves with an empty PATH" {
+  export HOME_FROM_CALLER=leaked
   run --separate-stderr "$check" runtime-commands pkg "git ps xdg-open"
   [ "$status" -eq 0 ]
   [ -e "$out" ]
 }
 
 @test "runtime-commands: a missing command fails and names V8" {
-  export STUB_MISSING="xdg-open Xvfb"
-  run --separate-stderr "$check" runtime-commands pkg "git xdg-open Xvfb"
+  run --separate-stderr "$check" runtime-commands pkg "git missing-xdg-open missing-Xvfb"
   [ "$status" -eq 1 ]
-  [ "$stderr" = "linux-app: not on the wrapper's PATH: xdg-open Xvfb (nix/linux V8)" ]
+  [ "$stderr" = "linux-app: not on the wrapper's PATH: missing-xdg-open missing-Xvfb (nix/linux V8)" ]
 }
 
 @test "updater-off: a package type Orca reports as unusable" {

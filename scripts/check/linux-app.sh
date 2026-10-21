@@ -12,13 +12,17 @@
 #                   the orcad template's manifest names matches it (V2)
 #   agent-browser:  PATH is the package; EXPECTED the pin's agent-browser
 #                   version (D24)
+#   runtime-commands: PATH is the package; EXPECTED the commands, space
+#                   separated, that must resolve with an empty PATH (V8)
+#   updater-off:    PATH is the package; EXPECTED is unused (-):
+#                   package-type is one Orca's updater refuses (V9)
 # Env: ELECTRON_MAJOR_CHECK names the guard (default electron-major.sh
 # beside this script; a store copy of this script stands alone); out is
 # written on a pass.
 set -euo pipefail
 
 usage() {
-  echo "usage: linux-app.sh version|electron-major|sherpa-load|ripgrep|agent-browser PATH EXPECTED" >&2
+  echo "usage: linux-app.sh version|electron-major|sherpa-load|ripgrep|agent-browser|runtime-commands|updater-off PATH EXPECTED" >&2
   exit 2
 }
 if [ "$#" -ne 3 ]; then
@@ -77,6 +81,29 @@ agent-browser)
     echo "linux-app: $(basename "$binary") prints $got, want agent-browser $want (D24)" >&2
     exit 1
   fi
+  ;;
+runtime-commands)
+  # An empty environment: only the wrapper's PATH counts.
+  # shellcheck disable=SC2016,SC2086 # JavaScript for node; one word per command.
+  missing=$(env -i HOME="${TMPDIR:-/tmp}" ELECTRON_RUN_AS_NODE=1 "$app/orca-ide" -e '
+    const { execFileSync } = require("child_process")
+    for (const c of process.argv.slice(1)) {
+      try { execFileSync("/bin/sh", ["-c", "command -v \"$1\"", "sh", c], { stdio: "ignore" }) }
+      catch { console.log(c) }
+    }' $want)
+  if [ -n "$missing" ]; then
+    echo "linux-app: not on the wrapper's PATH: ${missing//$'\n'/ } (nix/linux V8)" >&2
+    exit 1
+  fi
+  ;;
+updater-off)
+  type=$(cat "$resources/package-type")
+  case "$type" in
+  deb | rpm | AppImage)
+    echo "linux-app: package-type is $type, which Orca's updater uses (nix/linux V9)" >&2
+    exit 1
+    ;;
+  esac
   ;;
 *)
   usage
