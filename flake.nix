@@ -101,6 +101,11 @@
     {
       overlays.default = import ./nix/overlay.nix { inherit inputs sources; };
 
+      nixosModules = rec {
+        orca-ide = import ./nix/modules/nixos.nix { inherit (inputs.self) packages; };
+        default = orca-ide;
+      };
+
       apps = forAll (
         pkgs:
         nixpkgs.lib.mapAttrs
@@ -183,6 +188,14 @@
             inherit (own) orca-ide;
           }
         )
+        // nixpkgs.lib.optionalAttrs (pkgs.stdenv.hostPlatform.system == "x86_64-linux") {
+          module-nixos = import ./nix/tests/module-nixos.nix {
+            inherit (pkgs) testers;
+            module = inputs.self.nixosModules.orca-ide;
+            inherit (own) orca-ide;
+            inherit (sources) version;
+          };
+        }
         // nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin (
           import ./nix/darwin/checks.nix {
             inherit (pkgs)
