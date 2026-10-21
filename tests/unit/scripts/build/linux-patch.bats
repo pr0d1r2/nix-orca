@@ -31,11 +31,15 @@ EOF
   mkdir -p src/main src/shared src/cli/runtime
   printf "function getHookShell() {\n  return '/bin/bash'\n}\n" >src/main/hooks.ts
   printf "    program: '/bin/ps',\n" >src/shared/tmux-host-attachment-probe.ts
+  mkdir -p resources/linux/bin
+  # shellcheck disable=SC2016 # the launcher's own lines, tab-indented.
+  printf '\tDIR="$(cd "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"\n\tSOURCE="$(readlink "$SOURCE")"\nSCRIPT_DIR="$(cd "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"\n' \
+    >resources/linux/bin/orca-ide
   mkdir -p src/main/startup
   printf "    exposeNetworkByDefault: Boolean(serveOptions) || isE2E,\n" >src/main/startup/main-process-runtime-launch.ts
   printf "const BASH_CANDIDATES = ['/bin/bash', '/usr/bin/bash']\n" >src/cli/runtime/serve-pid1-init-reaper.ts
   export ORCA_COMMIT=49109f362f057cd2dc3d81cd378cb84d140c3dc5
-  export ORCA_BASH=/store/bash/bin/bash ORCA_PS=/store/procps/bin/ps
+  export ORCA_BASH=/store/bash/bin/bash ORCA_PS=/store/procps/bin/ps ORCA_COREUTILS=/store/coreutils/bin
 }
 
 substituteInPlace() {
@@ -95,6 +99,15 @@ patch_phase() {
   f=src/main/startup/main-process-runtime-launch.ts
   grep -qxF "    exposeNetworkByDefault: Boolean(serveOptions) || isE2E," "$f"
   grep -qxF "    ...(serveOptions && process.env.ORCA_SERVE_BIND_HOST ? { pinnedBindHost: process.env.ORCA_SERVE_BIND_HOST } : {})," "$f"
+}
+
+@test "the launcher runs the store's dirname and readlink, whatever PATH holds" {
+  run patch_phase
+  [ "$status" -eq 0 ]
+  # shellcheck disable=SC2016 # the launcher's own shell text, literal.
+  [ "$(grep -c '/store/coreutils/bin/dirname "$SOURCE"' resources/linux/bin/orca-ide)" -eq 2 ]
+  # shellcheck disable=SC2016
+  grep -qF '$(/store/coreutils/bin/readlink "$SOURCE")' resources/linux/bin/orca-ide
 }
 
 @test "hooks run the store's bash: NixOS has no /bin/bash" {
