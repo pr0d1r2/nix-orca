@@ -35,7 +35,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 
 - pkg: `orca-ide` (Linux) — `bin/orca-ide` → upstream launcher `resources/bin/orca-ide` (CLI verbs; `open` starts app), `libexec/orca-ide/` (app, wrapped Electron), `share/applications/orca-ide.desktop`, `share/icons/`, `share/apparmor/orca-ide`.
 - override: `{ updater ? true, telemetry ? true, agents ? [ ] }`.
-- check: `checks.<linux>.{orca-ide-version,electron-major,sherpa-load,ripgrep,agent-browser,runtime-commands,updater-off,closure-hygiene,closure-budget,rebuild}`.
+- check: `checks.<linux>.{orca-ide-version,electron-major,sherpa-load,ripgrep,agent-browser,runtime-commands,updater-off,closure-hygiene,closure-budget}`; rebuild = `build.yml` `--rebuild` step (⊥ flake check).
 
 ## §R RESEARCH
 
@@ -66,9 +66,9 @@ T1|x|JS deps FOD via `fetchPnpmDeps`; measured (R2)|-
 T2|x|source build x86_64-linux on `nix-builder.local`; Electron major guard|V4
 T3|x|agent-browser, sherpa swaps + guards; ripgrep kept (R5) w/ V2 check|V2,V3
 T4|x|wrapper, desktop, AppArmor profile, overrides|V8,V9
-T5|.|closure hygiene, budget & rebuild checks|V1,V5,V6,V7
+T5|x|closure hygiene, budget & rebuild checks|V1,V5,V6,V7
 T6|.|hands-on: unprivileged account runs `nix run`, window opens, ⊥ sudo prompt (D38)|V4
-T7|.|`aarch64-linux` in CI|V4
+T7|.|`aarch64-linux` in CI: first build measures `.closure-budget` line & checks names vs `closure-allow.txt` (from x86_64)|V4,V5,V6
 T8|.|? narrow JS deps FOD to Linux via `supportedArchitectures` (own fetcher, `fetchPnpmDeps` passes `--force`); measure first, keep only if saving ≥ 25%|-
 
 ## §B BUGS
