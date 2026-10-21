@@ -53,6 +53,7 @@ STUB
   export ORCA_AGENT_BROWSER_VERSION=0.27.0
   export ORCA_SHERPA_RPATH=/store/sherpa-onnx/lib:/store/gcc-lib/lib
   export ORCA_PACKAGE_TYPE=deb ORCA_TELEMETRY=true
+  export ORCA_RUNTIME_PATH=/store/git/bin:/store/procps/bin
 }
 
 runHook() {
@@ -116,6 +117,12 @@ install_phase() {
   [ "$status" -eq 0 ]
   app=$out/libexec/orca-ide
   grep -qF "wrapProgram $app/orca-ide --prefix XDG_DATA_DIRS : /store/schemas --set CHROME_DEVEL_SANDBOX $app/chrome-sandbox --prefix PATH : /store/agent/bin" "$log"
+}
+
+@test "Orca's runtime commands come after the user's own PATH" {
+  run install_phase
+  [ "$status" -eq 0 ]
+  grep "^wrapProgram " "$log" | grep -qF -- "--suffix PATH : /store/git/bin:/store/procps/bin"
 }
 
 @test "Wayland flags behind NIXOS_OZONE_WL, never in Electron's node mode" {
