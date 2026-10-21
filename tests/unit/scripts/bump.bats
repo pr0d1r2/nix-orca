@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 # scripts/bump.sh (scripts T1, V1, V2, D12, round 9): the upstream bump.
-# Its tools (latest-tag, source, deps-hash, manifest) are stubs in
+# Its tools (latest-tag, source, deps-hash, template-hash, manifest) are
+# stubs in
 # BUMP_TOOLS; nix/sources.json is a fixture copy.
 # Each @test runs in its own subshell, so its exports are meant to be local.
 # shellcheck disable=SC2030,SC2031
@@ -27,7 +28,15 @@ STUB
   cat >tools/deps-hash.sh <<'STUB'
 #!/usr/bin/env bash
 echo "deps-hash $*" >>"$BATS_TEST_TMPDIR/tools.log"
-echo "sha256-newdeps"
+case "${3:-pnpmDeps}" in
+pnpmDeps) echo "sha256-newdeps" ;;
+mobilePnpmDeps) echo "sha256-newmobile" ;;
+esac
+STUB
+  cat >tools/template-hash.sh <<'STUB'
+#!/usr/bin/env bash
+echo "template-hash $*" >>"$BATS_TEST_TMPDIR/tools.log"
+echo "sha256-template-$2"
 STUB
   cat >tools/manifest.sh <<'STUB'
 #!/usr/bin/env bash
@@ -82,6 +91,25 @@ STUB
   [ "$(jq -r '.darwin."x86_64-darwin".zip.name' sources.json)" = "Orca-1.4.232-mac.zip" ]
   [ "$(jq -r .darwin.teamIdentifier sources.json)" = "6CX3WHS9HZ" ]
   grep -q "deps-hash v1.4.232 sha256-newsrc" tools.log
+}
+
+@test "a new version pins mobile/'s deps and each system's template piece" {
+  export STUB_LATEST=v1.4.232
+  run --separate-stderr "$bump"
+  [ "$status" -eq 0 ]
+  [ "$(jq -r .mobilePnpmDeps.hash sources.json)" = "sha256-newmobile" ]
+  [ "$(jq -r '.linux."x86_64-linux".orcadTemplate.hash' sources.json)" = "sha256-template-x86_64-linux" ]
+  [ "$(jq -r '.linux."aarch64-linux".orcadTemplate.hash' sources.json)" = "sha256-template-aarch64-linux" ]
+  grep -qxF "deps-hash v1.4.232 sha256-newsrc mobilePnpmDeps" tools.log
+  grep -qxF "template-hash v1.4.232 x86_64-linux orca-ide_1.4.232_amd64.deb sha512-new-orca-ide_1.4.232_amd64.deb" tools.log
+  grep -qxF "template-hash v1.4.232 aarch64-linux orca-ide_1.4.232_arm64.deb sha512-new-orca-ide_1.4.232_arm64.deb" tools.log
+}
+
+@test "a pin that carries piece hashes still checks only its released assets" {
+  jq '.linux[].orcadTemplate = {hash: "sha256-template"}' before.json >sources.json
+  run --separate-stderr "$bump"
+  [ "$status" -eq 3 ]
+  run ! grep -q "manifest v1.4.230 .* null" tools.log
 }
 
 @test "an asset missing from the new manifest leaves nix/sources.json alone" {
