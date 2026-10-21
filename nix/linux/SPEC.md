@@ -24,7 +24,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 - Electron major guard: upstream `package.json` Electron major ≠ pin `electron_43` major → build fails, message names `orca-ide-bin` (D21).
 - ripgrep: `resources/ripgrep` = upstream's bytes, ∀ platform: each `rg` is the SSH relay upload for its platform, checked vs `orcad-template.json` sha256 (R5; amends D23 2026-10-21, owner review root T17).
 - `agent-browser`: symlink pin 0.27.0 at `resources/agent-browser-linux-<arch>`; version ≠ upstream bundled → keep bundled, check reports (D24).
-- sherpa-onnx: keep upstream `sherpa-onnx.node` addon; RUNPATH → pin `sherpa-onnx` 1.12.38 & `onnxruntime` 1.24.4; ⊥ bundled `.so` (D25). `c-api.h` changed between bundled & pin version → keep bundled libs, check reports.
+- sherpa-onnx: keep upstream `sherpa-onnx.node` addon; RUNPATH → pin `sherpa-onnx` 1.12.38 (→ `onnxruntime` 1.24.4) & cc runtime libs; ⊥ bundled `.so` (D25; +83 MiB closure). `c-api.h` changed between bundled & pin version → keep bundled libs, check reports.
 - `orcad-template`: `nix/bin` fixed-output piece, linked; ⊥ rebuilt, ⊥ patched, ⊥ stripped (D33, D38).
 - wrapper: GApps env of pin `electron` wrapper ⊥ gtk4 (Electron runs GTK 3; gtk4 = 1 GB closure); `CHROME_DEVEL_SANDBOX` → own non-setuid `chrome-sandbox` (unset → SIGILL at start; set → user-namespace sandbox); `PATH --suffix` pin `git xclip xdotool xdg-utils xvfb xvfb-run` (D28); Wayland flags behind `NIXOS_OZONE_WL`; ⊥ setuid `chrome-sandbox`.
 - override `updater = false` → `resources/package-type` value ∉ {`AppImage`, `deb`, `rpm`} (D26); `telemetry = false` → `ORCA_TELEMETRY_DISABLED=1` (D27). defaults = upstream behaviour.
@@ -34,7 +34,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 
 - pkg: `orca-ide` (Linux) — `bin/orca-ide` → upstream launcher `resources/bin/orca-ide` (CLI verbs; `open` starts app), `libexec/orca-ide/` (app, wrapped Electron), `share/applications/orca-ide.desktop`, `share/icons/`, `share/apparmor/orca-ide`.
 - override: `{ updater ? true, telemetry ? true, agents ? [ ] }`.
-- check: `checks.<linux>.{orca-ide-version,electron-major,sherpa-load,runtime-commands,closure-hygiene,closure-budget,rebuild}`.
+- check: `checks.<linux>.{orca-ide-version,electron-major,sherpa-load,ripgrep,agent-browser,runtime-commands,closure-hygiene,closure-budget,rebuild}`.
 
 ## §R RESEARCH
 
@@ -62,7 +62,7 @@ V9: `updater = false` → updater reports itself unusable (D26).
 id|status|task|cites
 T1|x|JS deps FOD via `fetchPnpmDeps`; measured (R2)|-
 T2|x|source build x86_64-linux on `nix-builder.local`; Electron major guard|V4
-T3|.|agent-browser, sherpa swaps + guards; ripgrep kept (R5) w/ V2 check|V2,V3
+T3|x|agent-browser, sherpa swaps + guards; ripgrep kept (R5) w/ V2 check|V2,V3
 T4|.|wrapper, desktop, AppArmor profile, overrides|V8,V9
 T5|.|closure hygiene, budget & rebuild checks|V1,V5,V6,V7
 T6|.|hands-on: unprivileged account runs `nix run`, window opens, ⊥ sudo prompt (D38)|V4
