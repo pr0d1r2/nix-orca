@@ -28,7 +28,12 @@ EOF
       finalizePackagedWaylandClipboard(resourcesDir)
       verifyLinuxGlibcFloor(context.appOutDir, { targetArch })
 EOF
+  mkdir -p src/main src/shared src/cli/runtime
+  printf "function getHookShell() {\n  return '/bin/bash'\n}\n" >src/main/hooks.ts
+  printf "    program: '/bin/ps',\n" >src/shared/tmux-host-attachment-probe.ts
+  printf "const BASH_CANDIDATES = ['/bin/bash', '/usr/bin/bash']\n" >src/cli/runtime/serve-pid1-init-reaper.ts
   export ORCA_COMMIT=49109f362f057cd2dc3d81cd378cb84d140c3dc5
+  export ORCA_BASH=/store/bash/bin/bash ORCA_PS=/store/procps/bin/ps
 }
 
 substituteInPlace() {
@@ -74,6 +79,19 @@ patch_phase() {
   run patch_phase
   [ "$status" -eq 0 ]
   grep -A2 -F "'!src{,/**/*}'," config/electron-builder.config.cjs | tail -1 | grep -qF "'!node_modules{,/**/*}',"
+}
+
+@test "hooks run the store's bash: NixOS has no /bin/bash" {
+  run patch_phase
+  [ "$status" -eq 0 ]
+  grep -qxF "  return '/store/bash/bin/bash'" src/main/hooks.ts
+  grep -qxF "const BASH_CANDIDATES = ['/store/bash/bin/bash', '/bin/bash', '/usr/bin/bash']" src/cli/runtime/serve-pid1-init-reaper.ts
+}
+
+@test "the tmux probe runs the store's ps" {
+  run patch_phase
+  [ "$status" -eq 0 ]
+  grep -qxF "    program: '/store/procps/bin/ps'," src/shared/tmux-host-attachment-probe.ts
 }
 
 @test "an upstream line that moved fails the phase" {
