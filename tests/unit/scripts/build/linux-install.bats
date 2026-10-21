@@ -21,6 +21,8 @@ setup() {
     printf '#!/nix/store/0abc-nodejs-24.21.0/bin/node\nrequire("x")\n' \
       >"$unpacked/resources/node_modules/qrcode/bin/qrcode"
     printf '#!/usr/bin/env node\n' >"$unpacked/resources/relay/wsl/relay.js"
+    mkdir -p "$unpacked/resources/node_modules/ssh2/util"
+    touch "$unpacked/resources/node_modules/ssh2/util/"{pagent.exe,pagent.c,build_pagent.bat,agent.js}
     for arch in x64 arm64; do
       echo bundled >"$unpacked/resources/agent-browser-linux-$arch"
       sherpa=$unpacked/resources/node_modules/sherpa-onnx-linux-$arch
@@ -223,6 +225,13 @@ install_phase() {
   grep -qxF "patchelf --set-rpath /store/sherpa-onnx/lib:/store/gcc-lib/lib $sherpa/sherpa-onnx.node" "$log"
   [ -z "$(cd "$sherpa" && find . -name '*.so')" ]
   [ -e "$sherpa/index.js" ]
+}
+
+@test "ssh2's Windows pageant helper does not ship" {
+  run install_phase
+  [ "$status" -eq 0 ]
+  util=$out/libexec/orca-ide/resources/node_modules/ssh2/util
+  [ "$(ls "$util")" = agent.js ]
 }
 
 @test "pre and post install hooks run around it" {
