@@ -33,7 +33,8 @@ status)
   printf '{"result":{"app":{"desktopWindowStatus":"available"},"runtime":{"connectionState":"%s"}}}\n' "$state"
   ;;
 serve)
-  [ -n "${STUB_NO_SERVE:-}" ] && exit 1
+  # Like Orca: a set DISPLAY that is not live stops it.
+  [ -n "${STUB_NO_SERVE:-}${DISPLAY:-}" ] && exit 1
   echo "Orca server ready"
   echo "Bound endpoint: ws://0.0.0.0:$3"
   ;;
@@ -41,7 +42,7 @@ esac
 STUB
   chmod +x stubs/*
   export PATH="$BATS_TEST_TMPDIR/stubs:$PATH"
-  export ORCA_VM_PROFILE=$BATS_TEST_TMPDIR/profile ORCA_VM_TIMEOUT=3
+  export ORCA_VM_PROFILE=$BATS_TEST_TMPDIR/profile ORCA_VM_TIMEOUT=3 ORCA_VM_LOGS=$BATS_TEST_TMPDIR
 }
 
 @test "module: the user's orca-ide prints the version; entry and icon in the profile" {
@@ -82,6 +83,12 @@ STUB
   run --separate-stderr "$vm" serve bob 6769
   [ "$status" -eq 0 ]
   grep -qx "su bob" su.log
+}
+
+@test "serve: headless, whatever DISPLAY root's environment carries" {
+  export DISPLAY=:0.0
+  run --separate-stderr "$vm" serve bob 6769
+  [ "$status" -eq 0 ]
 }
 
 @test "serve: a server that never gets ready fails with its log" {
