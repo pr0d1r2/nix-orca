@@ -6,7 +6,8 @@
 # patchShebangs and runHook are stdenv's, gappsWrapperArgsHook
 # wrapGAppsHook3's. Sourced, so it sets no shell options.
 # Env: ORCA_ARCH (x64 | arm64), ORCA_TEMPLATE (the orcad template piece),
-# ORCA_PATH (runtime PATH prefix), ORCA_AGENT_BROWSER and
+# ORCA_PATH (runtime PATH prefix: agents), ORCA_RUNTIME_PATH (suffix: the
+# commands Orca runs, V8), ORCA_AGENT_BROWSER and
 # ORCA_AGENT_BROWSER_VERSION (the pin's binary and its version),
 # ORCA_SHERPA_RPATH (the sherpa-onnx addon's RUNPATH), ORCA_PACKAGE_TYPE
 # (resources/package-type: deb, or anything else for an unusable updater,
@@ -14,7 +15,7 @@
 # gappsWrapperArgs (wrapGAppsHook3's array, filled by gappsWrapperArgsHook).
 
 # shellcheck disable=SC2154 # set by stdenv and the derivation.
-: "${out:?}" "${ORCA_ARCH:?}" "${ORCA_TEMPLATE:?}" "${ORCA_PATH?}" \
+: "${out:?}" "${ORCA_ARCH:?}" "${ORCA_TEMPLATE:?}" "${ORCA_PATH?}" "${ORCA_RUNTIME_PATH:?}" \
   "${ORCA_AGENT_BROWSER:?}" "${ORCA_AGENT_BROWSER_VERSION:?}" "${ORCA_SHERPA_RPATH:?}" \
   "${ORCA_PACKAGE_TYPE:?}" "${ORCA_TELEMETRY:?}"
 
@@ -67,6 +68,7 @@ wrap=(
   "${gappsWrapperArgs[@]}"
   --set CHROME_DEVEL_SANDBOX "$app/chrome-sandbox"
   --prefix PATH : "$ORCA_PATH"
+  --suffix PATH : "$ORCA_RUNTIME_PATH"
   --run 'orca_wayland_flags=; if [ -z "${ELECTRON_RUN_AS_NODE-}" ] && [ -n "${NIXOS_OZONE_WL-}" ] && [ -n "${WAYLAND_DISPLAY-}" ]; then orca_wayland_flags="--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true"; fi'
   --add-flags '$orca_wayland_flags'
 )

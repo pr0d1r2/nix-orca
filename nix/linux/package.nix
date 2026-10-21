@@ -23,6 +23,13 @@
   glib,
   gtk3,
   libicns,
+  gitMinimal,
+  procps,
+  xclip,
+  xdotool,
+  xdg-utils,
+  xvfb,
+  wl-clipboard,
   sources,
   updater ? true,
   telemetry ? true,
@@ -85,6 +92,18 @@ stdenv.mkDerivation {
     ELECTRON_VERSION = electron.version;
     ELECTRON_MAJOR_CHECK = "${../../scripts/check/electron-major.sh}";
     ORCA_PATH = lib.makeBinPath agents;
+    # What Orca runs itself (V8, D28): git for every repo view, ps for
+    # process trees, xdg-open, clipboards, xdotool for computer use, Xvfb
+    # for a headless `orca serve`. gitMinimal: no perl or python verbs.
+    ORCA_RUNTIME_PATH = lib.makeBinPath [
+      gitMinimal
+      procps
+      xclip
+      xdotool
+      xdg-utils
+      xvfb
+      wl-clipboard
+    ];
     ORCA_HELPER_RPATH = lib.makeLibraryPath [
       wayland
       gtk3
