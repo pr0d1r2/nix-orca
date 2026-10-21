@@ -3,10 +3,11 @@
 # the unpacked tag: substituteInPlace is stdenv's, and --replace-fail stops
 # the build when upstream changes a line this relies on. Sourced, so it
 # sets no shell options.
-# Env: ORCA_COMMIT (the tag's commit, nix/sources.json).
+# Env: ORCA_COMMIT (the tag's commit, nix/sources.json), ORCA_BASH and
+# ORCA_PS (the store's bash and ps).
 
-# shellcheck disable=SC2154 # ORCA_COMMIT: set by the derivation.
-: "${ORCA_COMMIT:?}"
+# shellcheck disable=SC2154 # set by the derivation.
+: "${ORCA_COMMIT:?}" "${ORCA_BASH:?}" "${ORCA_PS:?}"
 
 # The skills an Orca build installs pin to its source commit, which upstream
 # reads from git; the tag's commit is in nix/sources.json (round 9).
@@ -25,3 +26,12 @@ substituteInPlace "$config" \
   "    '!src{,/**/*}',
     // nix: runtime deps ship as extraResources only, as in upstream's .deb
     '!node_modules{,/**/*}',"
+
+# Paths NixOS does not have (V8): orca.yaml hooks, the PID-1 reaper of
+# `orca serve`, the tmux attachment probe.
+substituteInPlace src/main/hooks.ts \
+  --replace-fail "  return '/bin/bash'" "  return '$ORCA_BASH'"
+substituteInPlace src/cli/runtime/serve-pid1-init-reaper.ts \
+  --replace-fail "const BASH_CANDIDATES = ['/bin/bash'," "const BASH_CANDIDATES = ['$ORCA_BASH', '/bin/bash',"
+substituteInPlace src/shared/tmux-host-attachment-probe.ts \
+  --replace-fail "    program: '/bin/ps'," "    program: '$ORCA_PS',"

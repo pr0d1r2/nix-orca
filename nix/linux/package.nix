@@ -82,6 +82,8 @@ stdenv.mkDerivation {
 
   env = {
     ORCA_COMMIT = sources.commit;
+    ORCA_BASH = lib.getExe bash;
+    ORCA_PS = lib.getExe' procps "ps";
     ORCA_ARCH = if stdenv.hostPlatform.isAarch64 then "arm64" else "x64";
     ORCA_TEMPLATE = orcadTemplate;
     ORCA_PNPM_GLOBAL_VIRTUAL_STORE = "0";
