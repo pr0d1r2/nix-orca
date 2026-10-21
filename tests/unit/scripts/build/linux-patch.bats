@@ -81,6 +81,12 @@ patch_phase() {
   grep -A2 -F "'!src{,/**/*}'," config/electron-builder.config.cjs | tail -1 | grep -qF "'!node_modules{,/**/*}',"
 }
 
+@test "upstream's root configs stay out of app.asar" {
+  run patch_phase
+  [ "$status" -eq 0 ]
+  grep -qF "'!{.oxfmtrc.json,.oxlintrc.json,components.json,opencode.json,orca.yaml,pnpm-workspace.yaml,vite.web.config.ts}'," config/electron-builder.config.cjs
+}
+
 @test "hooks run the store's bash: NixOS has no /bin/bash" {
   run patch_phase
   [ "$status" -eq 0 ]
