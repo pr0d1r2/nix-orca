@@ -4,3 +4,5 @@
 # ssh2's Windows helper `pagent.exe` (stablyai/orca#30999), named as
 # shipped; "pageant" is PuTTY's agent it talks to, not the file.
 pagent = "pagent"
+# sord, the RDF store library in the pin (nix/linux/closure-allow.txt).
+sord = "sord"

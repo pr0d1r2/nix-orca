@@ -3,19 +3,28 @@
 {
   lib,
   runCommand,
+  closureInfo,
   jq,
+  patchelf,
   agent-browser,
   sherpa-onnx,
   orca-ide,
   sources,
 }:
 let
-  check =
-    mode: path: want:
+  checkWith =
+    env: mode: path: want:
     runCommand "orca-ide-${mode}" {
-      nativeBuildInputs = [ jq ];
-      env.ELECTRON_MAJOR_CHECK = "${../../scripts/check/electron-major.sh}";
+      nativeBuildInputs = [
+        jq
+        patchelf
+      ];
+      env = {
+        ELECTRON_MAJOR_CHECK = "${../../scripts/check/electron-major.sh}";
+      }
+      // env;
     } "bash ${../../scripts/check/linux-app.sh} ${mode} ${path} ${lib.escapeShellArg want}";
+  check = checkWith { };
 in
 {
   orca-ide-version = check "version" orca-ide sources.version;
@@ -24,5 +33,8 @@ in
   ripgrep = check "ripgrep" orca-ide "-";
   agent-browser = check "agent-browser" orca-ide agent-browser.version;
   runtime-commands = check "runtime-commands" orca-ide "git ps xdg-open xclip xdotool Xvfb wl-copy";
+  closure-hygiene = checkWith {
+    ORCA_CLOSURE = "${closureInfo { rootPaths = [ orca-ide ]; }}/store-paths";
+  } "hygiene" orca-ide "${./closure-allow.txt}";
   updater-off = check "updater-off" (orca-ide.override { updater = false; }) "-";
 }

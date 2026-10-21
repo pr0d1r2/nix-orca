@@ -75,6 +75,7 @@ path:.closure-budget|-|-|budget data; scripts/closure-budget.sh and its bats tes
 path:.github/workflows/*.yml|actionlint, zizmor, yamllint, actlith-check|-|-
 actlith|actlith-check|-|-
 path:nix/agents/no-package.txt|-|-|agent id list; scripts/agents/unknown.sh reads it
+path:nix/linux/closure-allow.txt|-|-|closure allow list (nix/linux V5); scripts/check/linux-app.sh hygiene reads it
 LICENSE|-|-|license text, no linter reads it
 py|ruff-check, ruff-format, py-unit|-|-
 

@@ -173,7 +173,9 @@
             inherit (pkgs)
               lib
               runCommand
+              closureInfo
               jq
+              patchelf
               agent-browser
               sherpa-onnx
               ;
