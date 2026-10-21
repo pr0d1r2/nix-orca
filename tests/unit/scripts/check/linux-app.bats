@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# scripts/check/linux-app.sh (nix/linux T2, T3): checks on the Linux orca-ide.
+# scripts/check/linux-app.sh (nix/linux T2-T5): checks on the Linux orca-ide.
 # Each mode compares one fact with its pinned value and writes $out on a
 # pass, so a check derivation is one call. The package is a small fake.
 
@@ -22,6 +22,7 @@ STUB
 #!/usr/bin/env bash
 [ "$ELECTRON_RUN_AS_NODE" = 1 ] && [ "$1" = -e ] || exit 9
 case "$2" in
+*readdirSync*) printf '%s\n' ${STUB_ASAR:-LICENSE out package.json resources} ;;
 *sherpa*|*require\(process.argv*) echo "${STUB_SHERPA:-1.12.38}" ;;
 *command\ -v*)
   [ -z "${HOME_FROM_CALLER:-}" ] || exit 8
@@ -42,6 +43,24 @@ echo "agent-browser ${STUB_BROWSER:-0.27.0}"
 STUB
   chmod +x pkg/libexec/orca-ide/orca-ide pin/bin/agent-browser
   ln -s "$PWD/pin/bin/agent-browser" "$resources/agent-browser-linux-x64"
+  # hygiene: a fake ELF, patchelf reading its sidecar files, a closure.
+  mkdir -p stubs
+  printf '\177ELFfake' >"$resources/bin-elf"
+  echo /nix/store/aaaa-glibc-2.42/lib/ld-linux-x86-64.so.2 >"$resources/bin-elf.interp"
+  # shellcheck disable=SC2016 # $ORIGIN is literal in a RUNPATH.
+  echo '$ORIGIN:/nix/store/bbbb-gcc-15.3.0-lib/lib' >"$resources/bin-elf.rpath"
+  cat >stubs/patchelf <<'STUB'
+#!/usr/bin/env bash
+case "$1" in
+--print-interpreter) [ -e "$2.interp" ] && cat "$2.interp" || exit 1 ;;
+--print-rpath) cat "$2.rpath" 2>/dev/null ;;
+esac
+STUB
+  chmod +x stubs/patchelf
+  export PATH="$BATS_TEST_TMPDIR/stubs:$PATH"
+  printf '/nix/store/aaaa-glibc-2.42\n/nix/store/bbbb-gcc-15.3.0-lib\n/nix/store/cccc-orca-ide-1.4.232\n' >closure
+  printf 'glibc\ngcc\norca-ide\n' >allow
+  export ORCA_CLOSURE=$BATS_TEST_TMPDIR/closure
   export out=$BATS_TEST_TMPDIR/out
 }
 
@@ -154,6 +173,70 @@ STUB
   done
 }
 
+@test "hygiene: a clean package passes" {
+  run --separate-stderr "$check" hygiene pkg allow
+  [ "$status" -eq 0 ]
+  [ -e "$out" ]
+}
+
+@test "hygiene: upstream root configs in app.asar fail V1" {
+  export STUB_ASAR="LICENSE orca.yaml out package.json resources"
+  run --separate-stderr "$check" hygiene pkg allow
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "linux-app: app.asar carries orca.yaml (nix/linux V1)" ]
+}
+
+@test "hygiene: ssh2's Windows pageant helper fails V1" {
+  mkdir -p pkg/libexec/orca-ide/resources/node_modules/ssh2/util
+  touch pkg/libexec/orca-ide/resources/node_modules/ssh2/util/pagent.exe
+  run --separate-stderr "$check" hygiene pkg allow
+  [ "$status" -eq 1 ]
+  [[ "$stderr" == *"node_modules/ssh2/util/pagent.exe ships (nix/linux V1)" ]]
+}
+
+@test "hygiene: a world-writable file fails V5" {
+  chmod 0666 pkg/libexec/orca-ide/resources/ripgrep/linux-x64/rg
+  run --separate-stderr "$check" hygiene pkg allow
+  [ "$status" -eq 1 ]
+  [[ "$stderr" == *"ripgrep/linux-x64/rg is setuid, setgid or world-writable (nix/linux V5)" ]]
+}
+
+@test "hygiene: a dangling symlink fails V5" {
+  ln -s nowhere pkg/libexec/orca-ide/resources/gone
+  run --separate-stderr "$check" hygiene pkg allow
+  [ "$status" -eq 1 ]
+  [[ "$stderr" == *"resources/gone points nowhere (nix/linux V5)" ]]
+}
+
+@test "hygiene: a build host path in a file fails V5" {
+  echo "rpath /home/runner/work/x/lib" >pkg/libexec/orca-ide/resources/leak.node # nolocalpath
+  run --separate-stderr "$check" hygiene pkg allow
+  [ "$status" -eq 1 ]
+  [[ "$stderr" == *"resources/leak.node names a build host path (nix/linux V5)" ]]
+}
+
+@test "hygiene: an ELF interpreter outside the store fails V5" {
+  echo /lib64/ld-linux-x86-64.so.2 >pkg/libexec/orca-ide/resources/bin-elf.interp
+  run --separate-stderr "$check" hygiene pkg allow
+  [ "$status" -eq 1 ]
+  [[ "$stderr" == *"resources/bin-elf: interpreter /lib64/ld-linux-x86-64.so.2 is outside the store (nix/linux V5)" ]]
+}
+
+@test "hygiene: a RUNPATH entry outside the store fails V5" {
+  # shellcheck disable=SC2016 # $ORIGIN is literal in a RUNPATH.
+  echo '$ORIGIN:/usr/lib' >pkg/libexec/orca-ide/resources/bin-elf.rpath
+  run --separate-stderr "$check" hygiene pkg allow
+  [ "$status" -eq 1 ]
+  [[ "$stderr" == *"resources/bin-elf: RUNPATH entry /usr/lib is outside the store (nix/linux V5)" ]]
+}
+
+@test "hygiene: a closure path off the allow list fails V5" {
+  echo /nix/store/dddd-nodejs-24.21.0 >>closure
+  run --separate-stderr "$check" hygiene pkg allow
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "linux-app: nodejs-24.21.0 is in the closure, not on the allow list (nix/linux V5)" ]
+}
+
 @test "without out set, a pass writes nothing" {
   unset out
   run --separate-stderr "$check" version pkg 1.4.232
@@ -163,7 +246,7 @@ STUB
 @test "an unknown mode or wrong arguments are a usage error, exit 2" {
   run --separate-stderr "$check" colour pkg 1
   [ "$status" -eq 2 ]
-  [ "$stderr" = "usage: linux-app.sh version|electron-major|sherpa-load|ripgrep|agent-browser|runtime-commands|updater-off PATH EXPECTED" ]
+  [ "$stderr" = "usage: linux-app.sh version|electron-major|sherpa-load|ripgrep|agent-browser|runtime-commands|updater-off|hygiene PATH EXPECTED" ]
   run --separate-stderr "$check" version pkg
   [ "$status" -eq 2 ]
 }
