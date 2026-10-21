@@ -35,7 +35,15 @@ setup() {
 #!/usr/bin/env bash
 echo "patchelf $*" >>"$BATS_TEST_TMPDIR/log"
 STUB
-  chmod +x stubs/patchelf
+  cat >stubs/icns2png <<'STUB'
+#!/usr/bin/env bash
+echo "icns2png $*" >>"$BATS_TEST_TMPDIR/log"
+while [ "$#" -gt 1 ]; do [ "$1" = -o ] && dir=$2; shift; done
+for s in 32 64 128 256 512 1024; do echo "$s" >"$dir/icon_${s}x${s}x32.png"; done
+STUB
+  chmod +x stubs/patchelf stubs/icns2png
+  mkdir -p resources/build
+  touch resources/build/icon.icns
   export PATH="$BATS_TEST_TMPDIR/stubs:$PATH"
   export out=$BATS_TEST_TMPDIR/out
   export ORCA_ARCH=x64
@@ -44,6 +52,7 @@ STUB
   export ORCA_AGENT_BROWSER=/store/agent-browser/bin/agent-browser
   export ORCA_AGENT_BROWSER_VERSION=0.27.0
   export ORCA_SHERPA_RPATH=/store/sherpa-onnx/lib:/store/gcc-lib/lib
+  export ORCA_PACKAGE_TYPE=deb ORCA_TELEMETRY=true
 }
 
 runHook() {
@@ -106,7 +115,58 @@ install_phase() {
   run install_phase
   [ "$status" -eq 0 ]
   app=$out/libexec/orca-ide
-  grep -qxF "wrapProgram $app/orca-ide --prefix XDG_DATA_DIRS : /store/schemas --set CHROME_DEVEL_SANDBOX $app/chrome-sandbox --prefix PATH : /store/agent/bin" "$log"
+  grep -qF "wrapProgram $app/orca-ide --prefix XDG_DATA_DIRS : /store/schemas --set CHROME_DEVEL_SANDBOX $app/chrome-sandbox --prefix PATH : /store/agent/bin" "$log"
+}
+
+@test "Wayland flags behind NIXOS_OZONE_WL, never in Electron's node mode" {
+  run install_phase
+  [ "$status" -eq 0 ]
+  wrap=$(grep "^wrapProgram " "$log")
+  [[ "$wrap" == *"--run "*'ELECTRON_RUN_AS_NODE'*'NIXOS_OZONE_WL'*'WAYLAND_DISPLAY'*"--ozone-platform-hint=auto"* ]]
+  # shellcheck disable=SC2016 # the wrapper expands it, not this test.
+  [[ "$wrap" == *'--add-flags $orca_wayland_flags'* ]]
+}
+
+@test "telemetry off sets ORCA_TELEMETRY_DISABLED on Electron" {
+  export ORCA_TELEMETRY=false
+  run install_phase
+  [ "$status" -eq 0 ]
+  grep "^wrapProgram " "$log" | grep -qF -- "--set ORCA_TELEMETRY_DISABLED 1"
+}
+
+@test "telemetry on leaves it unset" {
+  run install_phase
+  [ "$status" -eq 0 ]
+  run ! grep -q ORCA_TELEMETRY_DISABLED "$log"
+}
+
+@test "resources/package-type says what ORCA_PACKAGE_TYPE says" {
+  run install_phase
+  [ "$status" -eq 0 ]
+  [ "$(cat "$out/libexec/orca-ide/resources/package-type")" = deb ]
+  export ORCA_PACKAGE_TYPE=nix
+  rm -rf "$out"
+  run install_phase
+  [ "$status" -eq 0 ]
+  [ "$(cat "$out/libexec/orca-ide/resources/package-type")" = nix ]
+}
+
+@test "hicolor icons at every size upstream's icns holds" {
+  run install_phase
+  [ "$status" -eq 0 ]
+  grep -q "icns2png -x -o .* resources/build/icon.icns" "$log"
+  for s in 32 64 128 256 512 1024; do
+    [ "$(cat "$out/share/icons/hicolor/${s}x${s}/apps/orca-ide.png")" = "$s" ]
+  done
+}
+
+@test "the AppArmor profile names the store's Electron and allows user namespaces" {
+  run install_phase
+  [ "$status" -eq 0 ]
+  profile=$out/share/apparmor/orca-ide
+  grep -qxF "profile \"orca-ide\" \"$out/libexec/orca-ide/.orca-ide-wrapped\" flags=(unconfined) {" "$profile"
+  grep -qxF "  userns," "$profile"
+  grep -qxF "abi <abi/4.0>," "$profile"
 }
 
 @test "bin/orca-ide is upstream's launcher, the only shebang patched" {
