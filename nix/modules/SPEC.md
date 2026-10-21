@@ -36,7 +36,7 @@ sib|nix/agents|agent CLI set, `orca-ide-agents`, agent inputs
 ## §R RESEARCH
 
 id|topic|finding|src
-R1|unit hardening 2026-10-21|each D35 directive bisected w/ `systemd-run` in NixOS VM: 19 pass as is; `SystemCallFilter=@system-service` (+ `unshare`/`setns`/`@mount`/`@privileged`) → Chromium zygote EINVAL ∴ deny list `~@clock ~@cpu-emulation ~@debug ~@module ~@obsolete ~@raw-io ~@reboot ~@swap`; `RestrictNamespaces` needs all but cgroup (`~cgroup`); `MemoryDenyWriteExecute` ⊥ (JS engine JIT). Electron serve binds `0.0.0.0` → patched `ORCA_SERVE_BIND_HOST` → `pinnedBindHost` (owner choice). exposure 2.2|`nix/tests/service-nixos.nix`, bisect on nix-builder.local
+R1|unit hardening 2026-10-21|each D35 directive bisected w/ `systemd-run` in NixOS VM: 19 pass as is; `SystemCallFilter=@system-service` (+ `unshare`/`setns`/`@mount`/`@privileged`) → Chromium zygote EINVAL ∴ deny list `~@clock ~@cpu-emulation ~@debug ~@module ~@obsolete ~@raw-io ~@reboot ~@swap`; `RestrictNamespaces` needs all but cgroup (`~cgroup`); `MemoryDenyWriteExecute` ⊥ (JS engine JIT). Electron serve binds `0.0.0.0` → patched `ORCA_SERVE_BIND_HOST` → `pinnedBindHost` (owner choice); loopback default asked upstream in `stablyai/orca#31387` (drop patch when it lands). exposure 2.2|`nix/tests/service-nixos.nix`, bisect on nix-builder.local
 
 ## §V INVARIANTS
 

@@ -46,7 +46,7 @@ substituteInPlace src/shared/tmux-host-attachment-probe.ts \
 
 # serve binds every interface; ORCA_SERVE_BIND_HOST pins it to one, through
 # the runtime's own pinnedBindHost, which pairing never widens. The NixOS
-# service sets it to loopback (nix/modules T2).
+# service sets it to loopback (nix/modules T2). Upstream: stablyai/orca#31387.
 substituteInPlace src/main/startup/main-process-runtime-launch.ts \
   --replace-fail "    exposeNetworkByDefault: Boolean(serveOptions) || isE2E," \
   "    exposeNetworkByDefault: Boolean(serveOptions) || isE2E,
