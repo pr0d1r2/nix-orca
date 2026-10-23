@@ -116,6 +116,10 @@ steps: Mapping<String, Config.Step> = new {
     check = #"command -v ctrm >/dev/null 2>&1 || { echo 'ctrm: ctrm is not on PATH; re-enter the dev shell. A MISSING TOOL, not a finding.' >&2; exit 1; }; ctrm check {{files}} || { echo 'ctrm: a character is outside its file type'\''s set in .ctrm; `ctrm explain <path>` names the rule' >&2; exit 1; }"#
     fix = "ctrm fix {{files}}"
   }
+  ["xnl-check"] {
+    glob = List("**/*.nix", "xenolith.toml")
+    check = "command -v xnl >/dev/null 2>&1 || { echo 'xnl-check: xnl is not on PATH; re-enter the dev shell. A MISSING TOOL, not a finding.' >&2; exit 1; }; xnl check || { echo 'xnl-check: non-trivial shell inline in nix; a script belongs in its own file (xenolith.toml: what stays inline)' >&2; exit 1; }"
+  }
   ["ruff-check"] {
     glob = List("**/*.py", "ruff.toml")
     check = "command -v ruff >/dev/null 2>&1 || { echo 'ruff-check: ruff is not on PATH; re-enter the dev shell. A MISSING TOOL, not a finding.' >&2; exit 1; }; ruff check {{files}} || { echo 'ruff-check: Python lint finding; ruff names the rule' >&2; exit 1; }"

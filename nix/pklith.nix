@@ -22,6 +22,7 @@ catalog: [
   catalog.statix
   catalog.taplo
   catalog.typos
+  catalog.xenolith
   catalog.yamllint
   catalog.zizmor
 ]

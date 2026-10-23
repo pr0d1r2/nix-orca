@@ -119,6 +119,7 @@
             microlith = microlith.packages.${system}.default;
             sherd = sherd.packages.${system}.default;
             characterminator = characterminator.packages.${system}.default;
+            xenolith = xenolith.packages.${system}.default;
           };
         in
         if missing system != [ ] || !builtins.pathExists file then [ ] else import file catalog;

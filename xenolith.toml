@@ -1,0 +1,7 @@
+version = 1
+
+# One-line runCommand builders (`cd ... && ... && touch $out`, `> $out`)
+# stay inline: a script file per output would add a file and its bats
+# test for one command. Anything more is a script of its own.
+[threshold.shell]
+allow = ["and-or", "redirect"]
