@@ -41,7 +41,15 @@ agent)
   ;;
 terminal)
   echo "$*" >>"$BATS_TEST_TMPDIR/orca.log"
-  [ -z "${STUB_NOT_IDLE:-}" ]
+  case "$2" in
+  create)
+    # Like the gate command: hooks on, then the gate commit.
+    dir=${4#path:}
+    [ -n "${STUB_NO_GATE:-}" ] ||
+      { git -C "$dir" config core.hooksPath .githooks && git -C "$dir" commit -q --allow-empty -m "chore: the gate, from .pklith"; }
+    ;;
+  wait) [ -z "${STUB_NOT_IDLE:-}" ] ;;
+  esac
   ;;
 serve)
   # Like Orca: a set DISPLAY that is not live stops it.
@@ -225,11 +233,11 @@ STUB
   [ "$stderr" = "vm-orca: recorder still running after 3 s" ]
 }
 
-@test "agent: the repo is added, the agent launched focused, writes the file and goes idle" {
+@test "agent: the agent launched focused on the added repo, writes the file and goes idle" {
   run --separate-stderr "$vm" agent alice opencode "$BATS_TEST_TMPDIR/demo" "write hello.txt" hello.txt
   [ "$status" -eq 0 ]
   grep -qx "su alice" su.log
-  grep -qx "repo add --path $BATS_TEST_TMPDIR/demo --json" orca.log
+  run ! grep -q "^repo add" orca.log
   grep -qx "agent launch --agent opencode --worktree path:$BATS_TEST_TMPDIR/demo --prompt write hello.txt --focus --json" orca.log
   grep -q "^terminal wait --terminal term_1 --for tui-idle " orca.log
 }
@@ -292,8 +300,59 @@ STUB
   [ "$stderr" = "vm-orca: $HOME/demo already exists" ]
 }
 
+@test "stub: a script given by absolute path is used as it is" {
+  run --separate-stderr "$vm" stub alice 8787 /etc/demo/opencode.json "$BATS_TEST_TMPDIR/demo"
+  [ "$status" -eq 0 ]
+  grep -q -- "--script /etc/demo/opencode.json --port 8787 " systemd-run.log
+}
+
+@test "add: the user's Orca adds DIR as a repository" {
+  run --separate-stderr "$vm" add alice "$BATS_TEST_TMPDIR/demo"
+  [ "$status" -eq 0 ]
+  grep -qx "su alice" su.log
+  grep -qx "repo add --path $BATS_TEST_TMPDIR/demo --json" orca.log
+}
+
+@test "gate: the vendored schema in place, pklith materializes the gate in an Orca terminal, committed" {
+  git -C demo init -q
+  git -C demo -c user.email=t@l -c user.name=t commit -q --allow-empty -m init
+  git -C demo config user.email t@l
+  git -C demo config user.name t
+  echo schema >Config.pkl
+  run --separate-stderr "$vm" gate alice "$BATS_TEST_TMPDIR/demo" "$BATS_TEST_TMPDIR/Config.pkl"
+  [ "$status" -eq 0 ]
+  [ "$(cat demo/pkl/Config.pkl)" = schema ]
+  grep -qx "terminal create --worktree path:$BATS_TEST_TMPDIR/demo --title gate --focus --json --command pklith seed --init && pklith gen && pklith confirm && git config core.hooksPath .githooks && git add -A && git commit -qm 'chore: the gate, from .pklith'" orca.log
+}
+
+@test "gate: no gate commit fails within the timeout" {
+  git -C demo init -q
+  git -C demo -c user.email=t@l -c user.name=t commit -q --allow-empty -m init
+  echo schema >Config.pkl
+  export STUB_NO_GATE=1
+  run --separate-stderr "$vm" gate alice "$BATS_TEST_TMPDIR/demo" "$BATS_TEST_TMPDIR/Config.pkl"
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: no gate commit in $BATS_TEST_TMPDIR/demo after 3 s" ]
+}
+
+@test "commits: DIR reaches N commits" {
+  git -C demo init -q
+  git -C demo -c user.email=t@l -c user.name=t commit -q --allow-empty -m one
+  git -C demo -c user.email=t@l -c user.name=t commit -q --allow-empty -m two
+  run --separate-stderr "$vm" commits alice "$BATS_TEST_TMPDIR/demo" 2
+  [ "$status" -eq 0 ]
+}
+
+@test "commits: fewer than N after the timeout fails" {
+  git -C demo init -q
+  git -C demo -c user.email=t@l -c user.name=t commit -q --allow-empty -m one
+  run --separate-stderr "$vm" commits alice "$BATS_TEST_TMPDIR/demo" 3
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: $BATS_TEST_TMPDIR/demo has 1 commits after 3 s, want 3" ]
+}
+
 @test "anything else is a usage error, exit 2" {
   run --separate-stderr "$vm" launch alice
   [ "$status" -eq 2 ]
-  [ "$stderr" = "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...]" ]
+  [ "$stderr" = "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA | commits USER DIR N" ]
 }
