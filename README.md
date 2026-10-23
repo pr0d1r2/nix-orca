@@ -9,9 +9,13 @@ Status: pre-release. The darwin package and the x86_64-linux source build
 build and pass their checks; aarch64-linux evaluates and waits for CI.
 Nothing is published yet.
 
-[`docs/DEMO.md`](docs/DEMO.md) shows it at work: in a NixOS VM, Orca
-launches OpenCode, which writes a file against a local stub model, with no
-network and no key.
+![Orca: pklith lays a gate, OpenCode commits, the gate refuses, OpenCode fixes it](docs/demo/preview.webp)
+
+Orca runs the agent; the gate decides what lands. In a NixOS VM, with no
+network and no key, [pklith](https://github.com/pr0d1r2/pklith) lays a
+repository's gate in an Orca terminal, OpenCode commits a script, the
+gate refuses it (shellcheck), and OpenCode fixes it and commits again.
+[`docs/DEMO.md`](docs/DEMO.md) says how it runs and how to re-record it.
 
 ## Platforms
 
