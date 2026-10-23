@@ -270,10 +270,10 @@ STUB
   [ "$stderr" = "vm-orca: ffmpeg wrote no demo.mp4" ]
 }
 
-@test "preview: an animated WebP of the video, looping, under the size limit" {
+@test "preview: an animated WebP of the video, its frames timed as they are, looping, under the size limit" {
   run --separate-stderr "$vm" preview demo.mp4 preview.webp
   [ "$status" -eq 0 ]
-  grep -q -- "-i demo.mp4 .*-c:v libwebp .*-loop 0 .*preview.webp\$" ffmpeg.log
+  grep -qF -- "-i demo.mp4 -vf scale=960:-1 -fps_mode vfr -c:v libwebp_anim -quality 60 -loop 0 -an preview.webp" ffmpeg.log
 }
 
 @test "preview: over the size limit fails" {
