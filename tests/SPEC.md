@@ -39,6 +39,7 @@ sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, rele
 id|topic|finding|src
 R1|stub layer probe, aarch64-darwin 2026-10-20|`claude` 2.1.304: `ANTHROPIC_BASE_URL` + any `ANTHROPIC_API_KEY`, `-p ... --permission-mode acceptEdits --allowedTools Write` → `Write` tool, file written (`tests/stub/scripts/claude.json`). `codex` 0.163.0 ignores `OPENAI_BASE_URL` (hit `api.openai.com`, 401 w/ fake key); works via `-c model_provider=stub` + `model_providers.stub={base_url,env_key,wire_api="responses"}`, `exec -s workspace-write` → `exec_command` tool (`tests/stub/scripts/codex.json`)|run agent vs `tests/stub/server.py`, empty `HOME`
 R2|stub layer matrix, aarch64-darwin 2026-10-20|11 agents pass `tests/stub/run.py`: `claude` (Anthropic messages), `codex` & `grok` (OpenAI responses), `gemini` (Gemini API, `-m` skips flash-lite router), `aider` (chat, text `whole` edit format, no tools), `qwen-code`, `goose`, `opencode`, `crush`, `pi`, `mistral-vibe` (chat). recipes in `tests/stub/runs.json`. opencode reads `PWD`; python agents break on a foreign `PYTHONPATH`; codex fails in darwin nix build (MDM prefs). `amp`, `cursor`, `copilot`, `kiro`, `rovo`: layer 1 only|`python3 -m tests.stub.run --all`, `checks.aarch64-darwin.agents-stub-cli`
+R3|layer 2 in Orca, x86_64-linux VM 2026-10-23|`opencode` launched by `orca-ide agent launch --focus` vs stub writes the file in 77 s, ~65 s of it a blank TUI after OpenCode's first-run DB migration (`OPENCODE_DISABLE_MODELS_FETCH`, `OPENCODE_DISABLE_AUTOUPDATE`, `autoupdate: false` no help). first-run surfaces (onboarding, tips, tours, telemetry banner) skipped by seeding `~/.config/orca/orca-data.json` (lowercase: userData from package name); a seeded file reads as pre-telemetry install ∴ telemetry opt-out set|`checks.x86_64-linux.agents-stub`, `scripts/check/vm-orca.sh seed`
 
 ## §V INVARIANTS
 
@@ -53,7 +54,7 @@ id|status|task|cites
 T1|x|launch VM test; speech worker load = `checks.<linux>.sherpa-load`|V4
 T2|.|detection layer|V2
 T3|x|stub server + recorded scripts per protocol|V1
-T4|.|stub layer, endpoint matrix as finding|V3
+T4|.|stub layer, endpoint matrix as finding; `opencode` done (`agents-stub`, recorded), rest open|V3
 T5|.|ollama nightly layer, model pick|V2
 
 ## §B BUGS
