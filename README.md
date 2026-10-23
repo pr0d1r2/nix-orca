@@ -9,6 +9,10 @@ Status: pre-release. The darwin package and the x86_64-linux source build
 build and pass their checks; aarch64-linux evaluates and waits for CI.
 Nothing is published yet.
 
+[`docs/DEMO.md`](docs/DEMO.md) shows it at work: in a NixOS VM, Orca
+launches OpenCode, which writes a file against a local stub model, with no
+network and no key.
+
 ## Platforms
 
 | system | how it is built | binary cache |
