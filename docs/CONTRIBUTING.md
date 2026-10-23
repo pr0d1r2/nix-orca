@@ -8,7 +8,10 @@ Enter the dev shell with `direnv allow` (the `.envrc` runs
 `use flake ./dev`) or `nix develop ./dev`. Every tool the gate runs comes
 from it, pinned by `dev/flake.lock`, and the shell points git at the
 tracked hooks in `.githooks/`. Linux builds from a Mac go to a remote
-Linux builder; the shell says so when nix has none.
+Linux builder; the shell says so when nix has none. The reference one,
+`nix-builder.local`, is a
+[nixos-nix-builder](https://github.com/pr0d1r2/nixos-nix-builder)
+appliance: x86_64-linux with KVM, so it also runs the NixOS VM checks.
 
 ## The gate
 
