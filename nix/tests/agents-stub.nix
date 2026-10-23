@@ -3,7 +3,8 @@
 # launches OpenCode on it; OpenCode asks the stub model server
 # (tests/stub) and its tool call writes hello.txt. No network, no key
 # (V2). The display is recorded: the output holds run.mp4, its compacted
-# demo.mp4 and the last frame, shot.png. The checks are
+# demo.mp4, demo.mp4 as animated WebP, preview.webp, and the last frame,
+# shot.png (docs/DEMO.md, scripts/demo-assets.sh). The checks are
 # scripts/check/vm-orca.sh; Python only drives the VM.
 {
   testers,
@@ -96,7 +97,8 @@ testers.runNixOSTest {
     machine.succeed("su - alice -c 'DISPLAY=:99 import -window root /tmp/shot.png'")
     machine.succeed("bash ${vm} record-stop")
     machine.succeed("bash ${vm} compact /tmp/run.mp4 /tmp/demo.mp4")
-    for f in ["run.mp4", "demo.mp4", "shot.png"]:
+    machine.succeed("bash ${vm} preview /tmp/demo.mp4 /tmp/preview.webp")
+    for f in ["run.mp4", "demo.mp4", "preview.webp", "shot.png"]:
         machine.copy_from_vm(f"/tmp/{f}", "")
   '';
 }
