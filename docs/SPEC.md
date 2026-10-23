@@ -26,7 +26,7 @@ sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, rele
 
 ## §I INTERFACES
 
-- file: `README.md`, `docs/SECURITY.md`, `docs/CONTRIBUTING.md`, `docs/LLM-DISCLAIMER.md`.
+- file: `README.md`, `docs/SECURITY.md`, `docs/CONTRIBUTING.md`, `docs/LLM-DISCLAIMER.md`, `docs/DEMO.md`; `docs/demo/` holds the demo files, written by `scripts/demo-assets.sh` only.
 
 ## §V INVARIANTS
 

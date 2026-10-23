@@ -54,6 +54,7 @@ T2|x|`cachix-pin.sh`|V3
 T3|x|`release-notes.sh` w/ nvd, vulnix, Electron lag; SBOM via `scripts/sbom.sh`|V4
 T4|x|`closure-budget.sh`|V5
 T5|x|`agents-update.sh`|V5
+T6|x|`demo-assets.sh [STORE]` → `docs/demo/`|V5
 
 ## §B BUGS
 
