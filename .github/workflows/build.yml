@@ -41,8 +41,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # /dev/kvm for the NixOS VM checks (tests SPEC, constraints).
           - system: x86_64-linux
-            os: ubuntu-latest
+            os: ubuntu-24.04
           - system: aarch64-linux
             os: ubuntu-24.04-arm
           - system: aarch64-darwin
@@ -57,12 +58,16 @@ jobs:
           persist-credentials: false
       - if: matrix.system == 'x86_64-darwin'
         run: softwareupdate --install-rosetta --agree-to-license
+      # The VM checks run under KVM or the job fails here (tests SPEC, constraints).
+      - if: matrix.system == 'x86_64-linux'
+        run: bash scripts/ci/kvm.sh
       - uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342  # v31.11.0
         with:
           extra_nix_config: |
             extra-substituters = https://pr0d1r2.cachix.org
             extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
             ${{ matrix.system == 'x86_64-darwin' && 'extra-platforms = x86_64-darwin' || '' }}
+            ${{ matrix.system == 'x86_64-linux' && 'system-features = nixos-test benchmark big-parallel kvm' || '' }}
       - run: nix develop ./dev --command bash scripts/ci/build-system.sh ${{ matrix.system }}
       # The package rebuilds bit-identical (nix/darwin V4, nix/linux V7).
       # x86_64-darwin, under Rosetta, is upstream's zip like aarch64-darwin.
