@@ -171,5 +171,49 @@
           };
         }
       );
+
+      # The demo (tests T4): a check here, not in the root flake, because it
+      # needs pklith and hk, dev inputs that must stay out of consumers'
+      # locks (D8). Both flakes lock the same nixpkgs, so its Orca is the
+      # root flake's own build.
+      checks.x86_64-linux.agents-gate =
+        let
+          pkgs = nixpkgs.legacyPackages.x86_64-linux.extend nix-hk.overlays.default;
+          sources = import ../nix/sources.nix { inherit (pkgs) lib; };
+          orca-ide = pkgs.callPackage ../nix/linux/package.nix { inherit sources; };
+        in
+        import ../nix/tests/agents-gate.nix {
+          inherit (pkgs)
+            testers
+            linkFarm
+            xvfb
+            jq
+            git
+            python3
+            ffmpeg-full
+            imagemagick
+            hk
+            pkl
+            opencode
+            ;
+          pklith = pklith.packages.x86_64-linux.default;
+          # The tools `pklith gen` names for the demo repository's files.
+          gateTools = with pkgs; [
+            deadnix
+            editorconfig-checker
+            gnugrep
+            markdownlint-cli
+            nixfmt
+            ripsecrets
+            shellcheck
+            shfmt
+            statix
+            typos
+          ];
+          module = import ../nix/modules/nixos.nix {
+            packages.x86_64-linux = { inherit orca-ide; };
+          };
+          inherit orca-ide;
+        };
     };
 }
