@@ -184,8 +184,8 @@
         in
         import ../nix/tests/agents-gate.nix {
           inherit (pkgs)
+            lib
             testers
-            linkFarm
             xvfb
             jq
             git

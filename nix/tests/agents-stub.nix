@@ -7,8 +7,8 @@
 # shot.png (docs/DEMO.md, scripts/demo-assets.sh). The checks are
 # scripts/check/vm-orca.sh; Python only drives the VM.
 {
+  lib,
   testers,
-  linkFarm,
   xvfb,
   jq,
   git,
@@ -21,13 +21,17 @@
 }:
 let
   vm = ../../scripts/check/vm-orca.sh;
-  # tests.stub.server runs as a module from the directory holding tests/.
-  src = linkFarm "orca-stub-src" [
-    {
-      name = "tests";
-      path = ../../tests;
-    }
-  ];
+  # tests.stub.server runs as a module from the directory holding tests/;
+  # the server and its script alone, so other test edits leave it built.
+  src = lib.fileset.toSource {
+    root = ../..;
+    fileset = lib.fileset.unions [
+      ../../tests/__init__.py
+      ../../tests/stub/__init__.py
+      ../../tests/stub/server.py
+      ../../tests/stub/scripts/opencode.json
+    ];
+  };
   orca = orca-ide.override {
     agents = [ opencode ];
     updater = false;

@@ -208,8 +208,8 @@
           };
           agents-stub = import ./nix/tests/agents-stub.nix {
             inherit (pkgs)
+              lib
               testers
-              linkFarm
               xvfb
               jq
               git

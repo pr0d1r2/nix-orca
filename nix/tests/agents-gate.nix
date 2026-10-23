@@ -8,8 +8,8 @@
 # and shot.png (docs/DEMO.md, scripts/demo-assets.sh). In the dev flake:
 # pklith and hk are dev inputs and stay out of consumers' locks (D8).
 {
+  lib,
   testers,
-  linkFarm,
   xvfb,
   jq,
   git,
@@ -26,13 +26,16 @@
 }:
 let
   vm = ../../scripts/check/vm-orca.sh;
-  # tests.stub.server runs as a module from the directory holding tests/.
-  src = linkFarm "orca-stub-src" [
-    {
-      name = "tests";
-      path = ../../tests;
-    }
-  ];
+  # tests.stub.server runs as a module from the directory holding tests/;
+  # the server alone, so a test edit elsewhere does not re-record the demo.
+  src = lib.fileset.toSource {
+    root = ../..;
+    fileset = lib.fileset.unions [
+      ../../tests/__init__.py
+      ../../tests/stub/__init__.py
+      ../../tests/stub/server.py
+    ];
+  };
   orca = orca-ide.override {
     agents = [ opencode ];
     updater = false;
