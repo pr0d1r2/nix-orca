@@ -262,8 +262,21 @@ STUB
   [ "$stderr" = "vm-orca: ffmpeg wrote no demo.mp4" ]
 }
 
+@test "preview: an animated WebP of the video, looping, under the size limit" {
+  run --separate-stderr "$vm" preview demo.mp4 preview.webp
+  [ "$status" -eq 0 ]
+  grep -q -- "-i demo.mp4 .*-c:v libwebp .*-loop 0 .*preview.webp\$" ffmpeg.log
+}
+
+@test "preview: over the size limit fails" {
+  export ORCA_VM_PREVIEW_MAX=3
+  run --separate-stderr "$vm" preview demo.mp4 preview.webp
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: preview.webp is 7 bytes, over 3" ]
+}
+
 @test "anything else is a usage error, exit 2" {
   run --separate-stderr "$vm" launch alice
   [ "$status" -eq 2 ]
-  [ "$stderr" = "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT" ]
+  [ "$stderr" = "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT" ]
 }
