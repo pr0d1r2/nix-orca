@@ -275,8 +275,25 @@ STUB
   [ "$stderr" = "vm-orca: preview.webp is 7 bytes, over 3" ]
 }
 
+@test "repo: a git repository in DIR holding the files, one commit" {
+  printf '{}\n' >opencode.json
+  run --separate-stderr "$vm" repo alice "$HOME/demo" opencode.json
+  [ "$status" -eq 0 ]
+  grep -qx "su alice" su.log
+  [ "$(git -C home/demo ls-files | tr '\n' ' ')" = "README opencode.json " ]
+  [ "$(git -C home/demo rev-list --count HEAD)" -eq 1 ]
+  [ -z "$(git -C home/demo status --porcelain)" ]
+}
+
+@test "repo: an existing DIR fails" {
+  mkdir -p home/demo
+  run --separate-stderr "$vm" repo alice "$HOME/demo"
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: $HOME/demo already exists" ]
+}
+
 @test "anything else is a usage error, exit 2" {
   run --separate-stderr "$vm" launch alice
   [ "$status" -eq 2 ]
-  [ "$stderr" = "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT" ]
+  [ "$stderr" = "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...]" ]
 }
