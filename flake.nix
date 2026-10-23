@@ -205,6 +205,22 @@
             module = inputs.self.nixosModules.orca-ide;
             inherit (own) orca-ide;
           };
+          agents-stub = import ./nix/tests/agents-stub.nix {
+            inherit (pkgs)
+              testers
+              linkFarm
+              writeShellScript
+              xvfb
+              jq
+              git
+              python3
+              ffmpeg-full
+              imagemagick
+              opencode
+              ;
+            module = inputs.self.nixosModules.orca-ide;
+            inherit (own) orca-ide;
+          };
         }
         // nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin (
           import ./nix/darwin/checks.nix {
