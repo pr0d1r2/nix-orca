@@ -25,7 +25,7 @@ sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, rele
 - 1 detection: Orca detects ∀ agent on `PATH`, each `--version` → required.
 - 2 stub: `tests/stub` python stdlib server, OpenAI chat completions & responses + Anthropic messages, streaming; replays script: 1 tool call writing a file, then final message. ∀ agent w/ settable endpoint started by Orca via `serve` in worktree → required.
 - agents w/o settable endpoint (R2) stop at layer 1.
-- ⊥ hosted free tier in tests (D44); ollama layer dropped 2026-10-23.
+- ⊥ hosted free tier in tests (D44); ollama layer dropped (owner).
 - dogfood demo (owner 2026-10-23; ⊥ test ∴ `.:V8` holds; D44 amended for demos): after root T10 (repo goes to 3rd party). VM w/ network: Orca + OpenCode on Big Pickle does 1 sherd task here via hooks, recorded; commits → branch for owner; clone ⊥ `.private/`.
 - unit bats of scripts live under `tests/unit/` mirroring `scripts/` & `gate/`, owned by those nodes.
 
@@ -54,7 +54,7 @@ id|status|task|cites
 T1|x|launch VM test; speech worker load = `checks.<linux>.sherpa-load`|V4
 T2|.|detection layer|V2
 T3|x|stub server + recorded scripts per protocol|V1
-T4|.|stub layer, endpoint matrix as finding; `opencode` done (`agents-stub`, recorded), rest open|V3
+T4|.|stub layer, endpoint matrix; `opencode` done (`agents-stub`; demo: dev `agents-gate`)|V3
 T5|.|dogfood demo; 1st task: `demo-assets.sh` unstages on gate refusal|-
 
 ## §B BUGS
