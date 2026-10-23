@@ -209,7 +209,6 @@
             inherit (pkgs)
               testers
               linkFarm
-              writeShellScript
               xvfb
               jq
               git

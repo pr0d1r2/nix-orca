@@ -9,7 +9,6 @@
 {
   testers,
   linkFarm,
-  writeShellScript,
   xvfb,
   jq,
   git,
@@ -33,34 +32,6 @@ let
     agents = [ opencode ];
     updater = false;
   };
-  # The repository the agent works in; opencode.json points OpenCode at
-  # the stub.
-  repo = writeShellScript "agents-stub-repo" ''
-    set -eu
-    mkdir ~/demo
-    cd ~/demo
-    git init -q
-    git config user.email demo@localhost
-    git config user.name demo
-    cat >opencode.json <<'EOF'
-    {
-      "$schema": "https://opencode.ai/config.json",
-      "model": "stub/stub",
-      "autoupdate": false,
-      "provider": {
-        "stub": {
-          "npm": "@ai-sdk/openai-compatible",
-          "name": "stub",
-          "options": { "baseURL": "http://127.0.0.1:8787/v1", "apiKey": "stub" },
-          "models": { "stub": { "name": "stub" } }
-        }
-      }
-    }
-    EOF
-    echo demo >README
-    git add -A
-    git commit -qm init
-  '';
 in
 testers.runNixOSTest {
   name = "orca-ide-agents-stub";
@@ -88,7 +59,9 @@ testers.runNixOSTest {
   };
   testScript = ''
     machine.wait_for_unit("multi-user.target")
-    machine.succeed("su - alice -c ${repo}")
+    # The repository the agent works in; opencode.json points OpenCode at
+    # the stub.
+    machine.succeed("bash ${vm} repo alice /home/alice/demo ${./agents-stub}/opencode.json")  # nolocalpath
     machine.succeed("bash ${vm} seed alice")
     machine.succeed("ORCA_VM_SRC=${src} bash ${vm} stub alice 8787 opencode.json /home/alice/demo")  # nolocalpath
     machine.succeed("bash ${vm} app alice")
