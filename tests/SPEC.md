@@ -24,22 +24,22 @@ sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, rele
 - integration layers (D44), each a VM w/ `orca-ide-agents` & `serve`:
 - 1 detection: Orca detects ∀ agent on `PATH`, each `--version` → required.
 - 2 stub: `tests/stub` python stdlib server, OpenAI chat completions & responses + Anthropic messages, streaming; replays script: 1 tool call writing a file, then final message. ∀ agent w/ settable endpoint started by Orca via `serve` in worktree → required.
-- 3 local model: pin `ollama` 0.40.3, small open-weight model as fixed-output derivation; nightly, `nix-builder.local` only, ⊥ required.
-- agents w/o settable endpoint (`cursor-agent`, `copilot`, `amp`, `kiro-cli`, `acli`, …) stop at layer 1.
-- ⊥ hosted free tier: ∀ known need account & key (D44).
+- agents w/o settable endpoint (R2) stop at layer 1.
+- ⊥ hosted free tier in tests (D44); ollama layer dropped 2026-10-23.
+- dogfood demo (owner 2026-10-23; ⊥ test ∴ `.:V8` holds; D44 amended for demos): after root T10 (repo goes to 3rd party). VM w/ network: Orca + OpenCode on Big Pickle does 1 sherd task here via hooks, recorded; commits → branch for owner; clone ⊥ `.private/`.
 - unit bats of scripts live under `tests/unit/` mirroring `scripts/` & `gate/`, owned by those nodes.
 
 ## §I INTERFACES
 
-- check: `checks.x86_64-linux.{launch,agents-detect,agents-stub}`; `checks.<system>.agents-stub-cli` (agents vs stub, ⊥ Orca); `ollama` layer as `legacyPackages.x86_64-linux.nightly.agents-ollama`.
+- check: `checks.x86_64-linux.{launch,agents-detect,agents-stub}`; `checks.<system>.agents-stub-cli` (agents vs stub, ⊥ Orca).
 - cmd: `python3 -m tests.stub.server --script <file> --port <n> [--workdir <dir>]`; `python3 -m tests.stub.run <id>... | --all`.
 
 ## §R RESEARCH
 
 id|topic|finding|src
 R1|stub layer probe, aarch64-darwin 2026-10-20|`claude` 2.1.304: `ANTHROPIC_BASE_URL` + any `ANTHROPIC_API_KEY`, `-p ... --permission-mode acceptEdits --allowedTools Write` → `Write` tool, file written (`tests/stub/scripts/claude.json`). `codex` 0.163.0 ignores `OPENAI_BASE_URL` (hit `api.openai.com`, 401 w/ fake key); works via `-c model_provider=stub` + `model_providers.stub={base_url,env_key,wire_api="responses"}`, `exec -s workspace-write` → `exec_command` tool (`tests/stub/scripts/codex.json`)|run agent vs `tests/stub/server.py`, empty `HOME`
-R2|stub layer matrix, aarch64-darwin 2026-10-20|11 agents pass `tests/stub/run.py`: `claude` (Anthropic messages), `codex` & `grok` (OpenAI responses), `gemini` (Gemini API, `-m` skips flash-lite router), `aider` (chat, text `whole` edit format, no tools), `qwen-code`, `goose`, `opencode`, `crush`, `pi`, `mistral-vibe` (chat). recipes in `tests/stub/runs.json`. opencode reads `PWD`; python agents break on a foreign `PYTHONPATH`; codex fails in darwin nix build (MDM prefs). `amp`, `cursor`, `copilot`, `kiro`, `rovo`: layer 1 only|`python3 -m tests.stub.run --all`, `checks.aarch64-darwin.agents-stub-cli`
-R3|layer 2 in Orca, x86_64-linux VM 2026-10-23|`opencode` launched by `orca-ide agent launch --focus` vs stub writes the file in 77 s, ~65 s of it a blank TUI after OpenCode's first-run DB migration (`OPENCODE_DISABLE_MODELS_FETCH`, `OPENCODE_DISABLE_AUTOUPDATE`, `autoupdate: false` no help). first-run surfaces (onboarding, tips, tours, telemetry banner) skipped by seeding `~/.config/orca/orca-data.json` (lowercase: userData from package name); a seeded file reads as pre-telemetry install ∴ telemetry opt-out set|`checks.x86_64-linux.agents-stub`, `scripts/check/vm-orca.sh seed`
+R2|stub layer matrix, aarch64-darwin 2026-10-20|11 agents pass `tests/stub/run.py`, recipes & protocols in `tests/stub/runs.json`. `opencode` reads `PWD`; python agents break on a foreign `PYTHONPATH`; `codex` fails in darwin nix build (MDM prefs). `amp`, `cursor`, `copilot`, `kiro`, `rovo`, `acli`: layer 1 only|`python3 -m tests.stub.run --all`, `checks.aarch64-darwin.agents-stub-cli`
+R3|layer 2 in Orca, x86_64-linux VM 2026-10-23|`opencode` via `agent launch --focus` writes the file in 77 s, ~65 s blank TUI after its 1st-run DB migration; its disable flags ⊥ help. seeding `~/.config/orca/orca-data.json` skips 1st-run surfaces; seeded file = pre-telemetry install ∴ opt-out set|`checks.x86_64-linux.agents-stub`
 
 ## §V INVARIANTS
 
@@ -55,7 +55,7 @@ T1|x|launch VM test; speech worker load = `checks.<linux>.sherpa-load`|V4
 T2|.|detection layer|V2
 T3|x|stub server + recorded scripts per protocol|V1
 T4|.|stub layer, endpoint matrix as finding; `opencode` done (`agents-stub`, recorded), rest open|V3
-T5|.|ollama nightly layer, model pick|V2
+T5|.|dogfood demo; 1st task: `demo-assets.sh` unstages on gate refusal|-
 
 ## §B BUGS
 
