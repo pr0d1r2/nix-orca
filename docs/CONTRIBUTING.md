@@ -23,17 +23,20 @@ working, and its message says what to do. The checks are listed in
 - One change per commit.
 - Subject `type(scope): claim`, at most 72 characters; the body says why
   and what was checked.
-- Shell lives in `scripts/` and `gate/`, never inside `.nix` files or
-  workflows, and every script has its bats test in `tests/unit/`,
-  mirrored by path. The test lands first, failing, then the script.
+- Shell lives in `scripts/` and `gate/`, not inside `.nix` files or
+  workflows (`xnl check` gates it; `xenolith.toml` names the one-line
+  forms that stay inline), and every script has its bats test in
+  `tests/unit/`, mirrored by path. The test lands first, failing, then
+  the script.
 - A new gate step comes with proof, in its commit body, that it rejects a
   planted violation.
 
 ## Design
 
 The design is a federated spec: `SPEC.md` at the root and one `SPEC.md`
-per node (`nix/`, `nix/linux/`, `nix/darwin/`, `nix/agents/`, `scripts/`,
-`tests/`, `gate/`, `docs/`, `release/`, `dev/`). Change the spec with the
+per node (`nix/`, `nix/linux/`, `nix/darwin/`, `nix/agents/`, `nix/bin/`,
+`nix/modules/`, `scripts/`, `tests/`, `gate/`, `docs/`, `release/`,
+`dev/`). Change the spec with the
 code it describes. `SPEC-PROMPT.md` is the frozen input of the first spec
 run and is never edited.
 
