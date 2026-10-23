@@ -1,8 +1,8 @@
 #!/usr/bin/env bats
 # scripts/demo-assets.sh (scripts T6, tests T4): re-record the demo with
 # the agents-stub check and commit its files into docs/demo/, alone. nix
-# is a stub whose build prints a fake check output; git is real, in a
-# scratch repository.
+# is a stub whose build prints a fake check output and whose store cat
+# reads it; git is real, in a scratch repository.
 
 bats_require_minimum_version 1.5.0
 
@@ -16,8 +16,10 @@ setup() {
   cat >stubs/nix <<'STUB'
 #!/usr/bin/env bash
 echo "$*" >>"$BATS_TEST_TMPDIR/nix.log"
-[ "$1" = build ] && echo "$BATS_TEST_TMPDIR/out"
-true
+case "$1 $2" in
+build*) echo "$BATS_TEST_TMPDIR/out" ;;
+"store cat") cat "${*: -1}" ;;
+esac
 STUB
   chmod +x stubs/nix
   export NIX="$BATS_TEST_TMPDIR/stubs/nix"
@@ -40,11 +42,13 @@ STUB
   [ "$(cat docs/demo/shot.png)" = "shot.png 1" ]
 }
 
-@test "a store builds remotely, the output is copied back" {
+@test "a store builds remotely; the files are read from it, nothing imported" {
   run --separate-stderr "$assets" ssh-ng://root@builder
   [ "$status" -eq 0 ]
   grep -qx "build --no-link --print-out-paths --store ssh-ng://root@builder --eval-store auto .#checks.x86_64-linux.agents-stub" ../nix.log
-  grep -qx "copy --no-check-sigs --from ssh-ng://root@builder $BATS_TEST_TMPDIR/out" ../nix.log
+  grep -qx "store cat --store ssh-ng://root@builder $BATS_TEST_TMPDIR/out/shot.png" ../nix.log
+  run ! grep -q "^copy" ../nix.log
+  [ "$(cat docs/demo/shot.png)" = "shot.png 1" ]
 }
 
 @test "the same recording again commits nothing, exit 3" {
