@@ -169,6 +169,7 @@
               stdenv
               runCommand
               python3
+              cacert
               ;
             agents = agentsFor pkgs.stdenv.hostPlatform.system;
           };

@@ -7,6 +7,7 @@
   stdenv,
   runCommand,
   python3,
+  cacert,
   agents,
 }:
 let
@@ -25,4 +26,8 @@ runCommand "orca-agents-stub-cli"
   {
     nativeBuildInputs = [ python3 ] ++ map (id: agents.${id}) present;
   }
-  "cd ${tests} && python3 -m tests.stub.run ${lib.escapeShellArgs present} --timeout 180 && touch $out"
+  # goose's HTTP client will not build without CA certificates ("builder
+  # error", shown as a keyring hint): the stub is plain HTTP on loopback,
+  # but the sandbox has none, and stdenv's setup overrides an
+  # SSL_CERT_FILE attribute, so it is set on the command.
+  "cd ${tests} && SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt python3 -m tests.stub.run ${lib.escapeShellArgs present} --timeout 180 && touch $out"
