@@ -164,35 +164,9 @@
             # Deterministic tool output across machines.
             LANG = "C.UTF-8";
 
-            # Hooks on every entry (dev V1): git points at the tracked
-            # `.githooks/` pklith seeds, which run hk. Not before `hk.pkl`
-            # exists, so no empty config ever gates a commit (`paradigm/V22`).
-            # Without hk the shell says so, and never falls back to another
-            # hook runner (`paradigm/V23`).
-            shellHook = ''
-              nix_orca_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
-              if [ -n "$nix_orca_root" ] && [ -f "$nix_orca_root/hk.pkl" ] && [ -d "$nix_orca_root/.githooks" ]; then
-                if command -v hk >/dev/null; then
-                  [ "$(git -C "$nix_orca_root" config --local core.hooksPath)" = .githooks ] \
-                    || git -C "$nix_orca_root" config --local core.hooksPath .githooks
-                else
-                  echo "nix-orca(shell): no hk on PATH, git hooks NOT installed" >&2
-                fi
-              fi
-              unset nix_orca_root
-            ''
-            # Linux work from a Mac goes to `nix-builder.local` (D34). Say so on
-            # entry when nix does not list it as a builder: nix then refuses
-            # every Linux derivation, and nothing here tries one locally.
-            + pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
-              case "$(nix config show builders 2>/dev/null)" in
-                *nix-builder.local*) ;;
-                *) echo "nix-orca(shell): nix-builder.local is not a nix builder here -- Linux builds will not run from this machine" >&2 ;;
-              esac
-            ''
-            + pkgs.lib.optionalString (absent != [ ]) ''
-              echo "nix-orca(shell): no ${system} build of: ${builtins.concatStringsSep ", " absent} -- gates that need them FAIL here" >&2
-            '';
+            # Hooks, the darwin builder warning and the missing fleet tools
+            # (dev V1, D34): scripts/dev/shell-hook.sh.
+            shellHook = "bash ${../scripts/dev/shell-hook.sh} ${system} ${pkgs.lib.escapeShellArgs absent}";
           };
         }
       );

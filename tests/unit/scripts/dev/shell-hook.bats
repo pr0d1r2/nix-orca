@@ -31,11 +31,14 @@ STUB
 
 @test "without hk, no hooks, and the shell says so" {
   rm ../stubs/hk
-  run --separate-stderr "$hook" x86_64-linux
+  # git, bash and the stubs only: the caller's PATH may hold a real hk.
+  mkdir ../bin
+  for t in git bash env dirname; do ln -s "$(command -v "$t")" ../bin/; done
+  PATH="$BATS_TEST_TMPDIR/stubs:$BATS_TEST_TMPDIR/bin" run --separate-stderr "$hook" x86_64-linux
   [ "$status" -eq 0 ]
+  [ "$stderr" = "nix-orca(shell): no hk on PATH, git hooks NOT installed" ]
   run git config --local core.hooksPath
   [ "$status" -eq 1 ]
-  [[ "$stderr" == *"nix-orca(shell): no hk on PATH, git hooks NOT installed"* ]]
 }
 
 @test "before hk.pkl exists, no empty config ever gates a commit" {
