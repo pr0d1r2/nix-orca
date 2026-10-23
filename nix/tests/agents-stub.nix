@@ -66,6 +66,7 @@ testers.runNixOSTest {
     machine.succeed("ORCA_VM_SRC=${src} bash ${vm} stub alice 8787 opencode.json /home/alice/demo")  # nolocalpath
     machine.succeed("bash ${vm} app alice")
     machine.succeed("bash ${vm} record alice /tmp/run.mp4")
+    machine.succeed("bash ${vm} add alice /home/alice/demo")  # nolocalpath
     machine.succeed("bash ${vm} agent alice opencode /home/alice/demo 'write hello.txt' hello.txt")  # nolocalpath
     machine.succeed("su - alice -c 'DISPLAY=:99 import -window root /tmp/shot.png'")
     machine.succeed("bash ${vm} record-stop")

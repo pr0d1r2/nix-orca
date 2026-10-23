@@ -6,7 +6,8 @@
 #        listening PORT ADDRESS | exposure UNIT FILE | seed USER |
 #        stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop |
 #        agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT |
-#        repo USER DIR [FILE...]
+#        repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA |
+#        commits USER DIR N
 #   module: USER's orca-ide --version prints VERSION; the desktop entry and
 #           a hicolor icon are in the system profile
 #   app:    as USER, Xvfb on :99 and `orca-ide open`; the runtime connects
@@ -20,24 +21,30 @@
 #           tip seen, no tour or star prompt may start and telemetry is off,
 #           so the window shows the work (tests T4)
 #   stub:   as USER, the stub model server (tests/stub under ORCA_VM_SRC)
-#           replays tests/stub/scripts/SCRIPT on PORT in WORKDIR
+#           replays tests/stub/scripts/SCRIPT, or SCRIPT itself when it is
+#           an absolute path, on PORT in WORKDIR
 #   record: as USER, ffmpeg records display :99 into FILE until record-stop
-#   agent:  as USER, `orca-ide repo add` DIR, `agent launch` AGENT on it
-#           with PROMPT, focused; the agent writes DIR/FILE and its terminal
-#           goes idle (tests V3)
+#   agent:  as USER, `agent launch` AGENT on the added DIR with PROMPT,
+#           focused; the agent writes DIR/FILE and its terminal goes idle
+#           (tests V3)
 #   compact: IN with each still stretch cut to at most 1.5 s into OUT, the
 #           last frame held
 #   preview: IN as a looping animated WebP OUT, which GitHub plays inline,
 #           at most ORCA_VM_PREVIEW_MAX bytes (default 1 MiB)
 #   repo:   as USER, a new git repository in DIR holding the FILEs and a
 #           README, in one commit: the repository an agent works in
+#   add:    as USER, `orca-ide repo add` DIR
+#   gate:   as USER, SCHEMA (the hk schema pklith's seed would write) to
+#           DIR/pkl/Config.pkl, then pklith seeds, generates, confirms and
+#           commits DIR's gate in a focused Orca terminal, in view
+#   commits: as USER, DIR has at least N commits
 # Env: ORCA_VM_PROFILE (default /run/current-system/sw), ORCA_VM_TIMEOUT
 # (seconds per wait, default 120), ORCA_VM_LOGS (default /tmp), ORCA_VM_SRC
 # (the directory holding tests/, for stub).
 set -euo pipefail
 
 usage() {
-  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...]" >&2
+  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA | commits USER DIR N" >&2
   exit 2
 }
 fail() {
@@ -138,9 +145,13 @@ seed)
 stub)
   [ "$#" -eq 5 ] || usage
   user=$2 port=$3 script=$4 workdir=$5 src=${ORCA_VM_SRC:?ORCA_VM_SRC is unset}
+  case "$script" in
+  /*) ;;
+  *) script=$src/tests/stub/scripts/$script ;;
+  esac
   systemd-run -u orca-stub --uid="$user" -p WorkingDirectory="$src" \
     "$(command -v python3)" -m tests.stub.server \
-    --script "$src/tests/stub/scripts/$script" --port "$port" --workdir "$workdir"
+    --script "$script" --port "$port" --workdir "$workdir"
   listens() {
     ss -ltnH "sport = :$port" | awk -v p=":$port" '$4 ~ p "$"' | grep -q .
   }
@@ -162,7 +173,6 @@ record-stop)
 agent)
   [ "$#" -eq 6 ] || usage
   user=$2 agent=$3 dir=$4 prompt=$5 file=$6
-  as "$user" "orca-ide repo add --path $(printf %q "$dir") --json" >/dev/null
   handle=$(as "$user" "orca-ide agent launch --agent $agent --worktree path:$(printf %q "$dir") --prompt $(printf %q "$prompt") --focus --json" |
     jq -r .result.outcome.handle)
   written() { [ -e "$dir/$file" ]; }
@@ -202,6 +212,30 @@ repo)
   as "$user" "mkdir -p $(printf %q "$dir") && cd $(printf %q "$dir") && git init -q &&
     git config user.email demo@localhost && git config user.name demo$copy &&
     echo demo >README && git add -A && git commit -qm init"
+  ;;
+add)
+  [ "$#" -eq 3 ] || usage
+  user=$2 dir=$3
+  as "$user" "orca-ide repo add --path $(printf %q "$dir") --json" >/dev/null
+  ;;
+gate)
+  [ "$#" -eq 4 ] || usage
+  user=$2 dir=$3 schema=$4 subject="chore: the gate, from .pklith"
+  as "$user" "mkdir -p $(printf %q "$dir")/pkl && cp $(printf %q "$schema") $(printf %q "$dir")/pkl/Config.pkl &&
+    chmod u+w $(printf %q "$dir")/pkl/Config.pkl"
+  command="pklith seed --init && pklith gen && pklith confirm && git config core.hooksPath .githooks && git add -A && git commit -qm '$subject'"
+  as "$user" "orca-ide terminal create --worktree path:$(printf %q "$dir") --title gate --focus --json --command $(printf %q "$command")" >/dev/null
+  gated() {
+    as "$user" "git -C $(printf %q "$dir") log --format=%s" 2>/dev/null | grep -qxF "$subject"
+  }
+  wait_for gated || fail "no gate commit in $dir after $timeout s"
+  ;;
+commits)
+  [ "$#" -eq 4 ] || usage
+  user=$2 dir=$3 want=$4
+  count() { as "$user" "git -C $(printf %q "$dir") rev-list --count HEAD" 2>/dev/null || echo 0; }
+  enough() { [ "$(count)" -ge "$want" ]; }
+  wait_for enough || fail "$dir has $(count) commits after $timeout s, want $want"
   ;;
 *)
   usage
