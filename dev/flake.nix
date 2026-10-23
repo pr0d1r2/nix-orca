@@ -27,12 +27,6 @@
       inputs.nixpkgs-lock.follows = "nixpkgs-lock";
       inputs.nix-hk.follows = "nix-hk";
     };
-    # Context limits (`itok check`).
-    itok = {
-      url = "github:pr0d1r2/itok/v0.3.1";
-      inputs.nixpkgs-lock.follows = "nixpkgs-lock";
-      inputs.hk.follows = "nix-hk";
-    };
     # SPEC-DAG federation, budgets, waves.
     sherd = {
       url = "github:pr0d1r2/sherd/v0.5.4";
@@ -57,12 +51,6 @@
       inputs.nixpkgs-lock.follows = "nixpkgs-lock";
       inputs.nix-hk.follows = "nix-hk";
     };
-    # Rules extracted from agent memory, and the honesty gate on them.
-    rekall = {
-      url = "github:pr0d1r2/rekall/v0.4.0";
-      inputs.nixpkgs-lock.follows = "nixpkgs-lock";
-      inputs.nix-hk.follows = "nix-hk";
-    };
     # One language per file, 1:1 test mirror, TDD order (`xnl`).
     xenolith = {
       url = "github:pr0d1r2/xenolith/v0.1.0";
@@ -75,12 +63,10 @@
       nixpkgs,
       nix-hk,
       microlith,
-      itok,
       sherd,
       characterminator,
       pklith,
       actlith,
-      rekall,
       xenolith,
       ...
     }:
@@ -98,12 +84,10 @@
       fleet = {
         inherit
           microlith
-          itok
           sherd
           characterminator
           pklith
           actlith
-          rekall
           xenolith
           ;
       };
@@ -115,11 +99,9 @@
       unavailable = {
         x86_64-darwin = [
           "microlith"
-          "itok"
           "characterminator"
           "pklith"
           "actlith"
-          "rekall"
           "xenolith"
         ];
       };
@@ -136,7 +118,6 @@
           catalog = pkgs // {
             microlith = microlith.packages.${system}.default;
             sherd = sherd.packages.${system}.default;
-            itok = itok.packages.${system}.default;
           };
         in
         if missing system != [ ] || !builtins.pathExists file then [ ] else import file catalog;
