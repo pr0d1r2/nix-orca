@@ -4,6 +4,7 @@
 catalog: [
   catalog.actionlint
   catalog.bats
+  catalog.characterminator
   catalog.deadnix
   catalog.editorconfig-checker
   catalog.git

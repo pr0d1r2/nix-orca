@@ -1,0 +1,55 @@
+# Drafted by `ctrm init` from the tracked files (2026-10-23), reviewed:
+# every grant is a decision. A pattern with no `/` matches a
+# file name at any depth; the last matching line wins; a path no line
+# matches gets `ascii`. `ctrm explain <path>` says which line decides.
+
+# 179 text files read, 3 skipped (binary or not UTF-8).
+# Pure ASCII, no line needed: *.awk (4) *.jq (2) *.json (14) *.lock (2)
+#   *.yaml (2) *.yml (5) .actlith (1) .closure-budget (1)
+#   .context-limits (1) .editorconfig (1) .envrc (1) .exposure (1)
+#   .gitattributes (1) .gitignore (1) .markdownlintignore (1)
+#   LICENSE (1) pre-commit (1) pre-push (1)
+
+# *.bats, files: 40.
+# caveman for U+00A7 U+2192
+*.bats ascii+caveman
+
+# *.md, files: 22.
+# No preset or locale covers U+2284
+# so `any`, which grants everything (hazards still fire).
+# A set of your own in `.ctrm-sets` is tighter.
+# `ctrm fix` rewrites, no grant needed: U+2013 U+2014 U+2026
+*.md any
+
+# *.nix, files: 22.
+# caveman for U+00A7
+*.nix ascii+caveman
+
+# *.pkl, files: 3.
+# box for U+2500 U+2502 U+2514 U+251C
+# caveman for U+00A7 U+2192
+# `ctrm fix` rewrites, no grant needed: U+2014 U+2019
+*.pkl ascii+box+caveman
+
+# *.py, files: 6.
+# caveman for U+00A7
+*.py ascii+caveman
+
+# *.sh, files: 40.
+# caveman for U+00A7
+*.sh ascii+caveman
+
+# *.toml, files: 2.
+# caveman for U+00A7
+*.toml ascii+caveman
+
+# *.txt, files: 2.
+# caveman for U+00A7
+*.txt ascii+caveman
+
+# .pklith, files: 1.
+# caveman for U+00A7
+.pklith ascii+caveman
+
+# Vendored hk schema (pkl/VENDORED.md): upstream's typography stays.
+pkl/Config.pkl any
