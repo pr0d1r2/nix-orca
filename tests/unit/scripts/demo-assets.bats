@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 # scripts/demo-assets.sh (scripts T6, tests T4): re-record the demo with
-# the agents-stub check and commit its files into docs/demo/, alone. nix
+# the dev flake's agents-gate check and commit its files into docs/demo/, alone. nix
 # is a stub whose build prints a fake check output and whose store cat
 # reads it; git is real, in a scratch repository.
 
@@ -33,11 +33,12 @@ STUB
   git commit -qm init
 }
 
-@test "the check's demo files land in docs/demo/ in one commit of their own" {
+@test "the check's demo files land in docs/demo/ in one commit of their own, with the agent's trailer" {
   run --separate-stderr "$assets"
   [ "$status" -eq 0 ]
-  grep -qx "build --no-link --print-out-paths .#checks.x86_64-linux.agents-stub" ../nix.log
+  grep -qx "build --no-link --print-out-paths ./dev#checks.x86_64-linux.agents-gate" ../nix.log
   [ "$(git log -1 --format=%s)" = "docs(demo): re-record orca-ide 1.4.232" ]
+  git log -1 --format=%B | grep -qx "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   [ "$(git show --name-only --format= HEAD | sort | tr '\n' ' ')" = "docs/demo/demo.mp4 docs/demo/preview.webp docs/demo/shot.png " ]
   [ "$(cat docs/demo/shot.png)" = "shot.png 1" ]
 }
@@ -45,7 +46,7 @@ STUB
 @test "a store builds remotely; the files are read from it, nothing imported" {
   run --separate-stderr "$assets" ssh-ng://root@builder
   [ "$status" -eq 0 ]
-  grep -qx "build --no-link --print-out-paths --store ssh-ng://root@builder --eval-store auto .#checks.x86_64-linux.agents-stub" ../nix.log
+  grep -qx "build --no-link --print-out-paths --store ssh-ng://root@builder --eval-store auto ./dev#checks.x86_64-linux.agents-gate" ../nix.log
   grep -qx "store cat --store ssh-ng://root@builder $BATS_TEST_TMPDIR/out/shot.png" ../nix.log
   run ! grep -q "^copy" ../nix.log
   [ "$(cat docs/demo/shot.png)" = "shot.png 1" ]
