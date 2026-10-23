@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Re-record the demo into docs/demo/ (scripts T6, tests T4): build
-# checks.x86_64-linux.agents-stub, replace docs/demo/{demo.mp4,
+# Re-record the demo into docs/demo/ (scripts T6, tests T4): build the dev
+# flake's checks.x86_64-linux.agents-gate, replace docs/demo/{demo.mp4,
 # preview.webp,shot.png} with its files and commit them alone. The check
 # needs an x86_64-linux host with KVM: STORE (such as
 # ssh-ng://root@nix-builder.local) builds it there and the files are read
@@ -20,7 +20,7 @@ fail() {
   exit 1
 }
 nix=${NIX:-nix}
-check=.#checks.x86_64-linux.agents-stub
+check=./dev#checks.x86_64-linux.agents-gate
 dir=docs/demo
 files=(demo.mp4 preview.webp shot.png)
 
@@ -51,5 +51,7 @@ if git diff --cached --quiet; then
   exit 3
 fi
 version=$(jq -r .version nix/sources.json)
+# The trailer every commit here carries (docs/LLM-DISCLAIMER.md).
 git commit -q -m "docs(demo): re-record orca-ide $version" \
-  -m "scripts/demo-assets.sh from $(basename "$out")."
+  -m "scripts/demo-assets.sh from $(basename "$out")." \
+  -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
