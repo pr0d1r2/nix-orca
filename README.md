@@ -32,11 +32,12 @@ GitHub and checks its sha512, its code signature and its signing team.
 ## Use
 
 ```sh
-nix run github:pr0d1r2/nix-orca
+nix run github:pr0d1r2/nix-orca -- open
 ```
 
 `bin/orca-ide` is upstream's launcher: its CLI verbs, and `orca-ide open`
-to start the app (on Linux the desktop entry starts it too). Do not use Orca's own
+to start the app (on Linux the desktop entry starts it too). Without a
+verb it prints the CLI's help. Do not use Orca's own
 Settings → CLI → "Register in PATH": it links a command to the launcher
 inside one store path, and that link dangles after an update and a garbage
 collection. Put the package on your `PATH` instead.
@@ -179,9 +180,13 @@ collected by the cache's retention.
   launch from Finder or Spotlight does not go through it.
 - **`orca-ide serve` on Linux** runs Orca's Electron server: its lighter
   orcad server needs upstream's own Node binary, which Orca downloads
-  and checks by hash, and the nix package has none. It listens on every
-  address unless told otherwise, and installs `~/.local/bin/orca-ide`
-  pointing at the current store path.
+  and checks by hash, and the nix package has none. Upstream's serve
+  listens on every address; the package lets `ORCA_SERVE_BIND_HOST` pin
+  one (the NixOS service sets it from `listenAddress`). Serve also
+  installs `~/.local/bin/orca-ide` pointing at the current store path,
+  which dangles after an update and a garbage collection like the PATH
+  registration above: keep the package's own `bin/orca-ide` first on your
+  `PATH`.
 - **Spotlight**: on nix-darwin and home-manager the app shows up under
   `Nix Apps`.
 - **`PYTHONPATH`**: Orca passes your environment to the agents it
