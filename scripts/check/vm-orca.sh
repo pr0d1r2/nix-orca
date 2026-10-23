@@ -5,7 +5,8 @@
 # Usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT |
 #        listening PORT ADDRESS | exposure UNIT FILE | seed USER |
 #        stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop |
-#        agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT
+#        agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT |
+#        repo USER DIR [FILE...]
 #   module: USER's orca-ide --version prints VERSION; the desktop entry and
 #           a hicolor icon are in the system profile
 #   app:    as USER, Xvfb on :99 and `orca-ide open`; the runtime connects
@@ -27,13 +28,15 @@
 #   compact: IN without its still stretches into OUT, the last frame held
 #   preview: IN as a looping animated WebP OUT, which GitHub plays inline,
 #           at most ORCA_VM_PREVIEW_MAX bytes (default 1 MiB)
+#   repo:   as USER, a new git repository in DIR holding the FILEs and a
+#           README, in one commit: the repository an agent works in
 # Env: ORCA_VM_PROFILE (default /run/current-system/sw), ORCA_VM_TIMEOUT
 # (seconds per wait, default 120), ORCA_VM_LOGS (default /tmp), ORCA_VM_SRC
 # (the directory holding tests/, for stub).
 set -euo pipefail
 
 usage() {
-  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT" >&2
+  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...]" >&2
   exit 2
 }
 fail() {
@@ -183,6 +186,20 @@ preview)
     -c:v libwebp -quality 60 -loop 0 -an "$out"
   size=$(($(wc -c <"$out")))
   [ "$size" -le "$max" ] || fail "$out is $size bytes, over $max"
+  ;;
+repo)
+  [ "$#" -ge 3 ] || usage
+  user=$2 dir=$3
+  shift 3
+  [ ! -e "$dir" ] || fail "$dir already exists"
+  copy=""
+  for f in "$@"; do
+    f=$(cd "$(dirname "$f")" && pwd)/$(basename "$f")
+    copy+=" && cp $(printf %q "$f") ."
+  done
+  as "$user" "mkdir -p $(printf %q "$dir") && cd $(printf %q "$dir") && git init -q &&
+    git config user.email demo@localhost && git config user.name demo$copy &&
+    echo demo >README && git add -A && git commit -qm init"
   ;;
 *)
   usage
