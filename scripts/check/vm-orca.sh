@@ -194,8 +194,9 @@ compact)
 preview)
   [ "$#" -eq 3 ] || usage
   in=$2 out=$3 max=${ORCA_VM_PREVIEW_MAX:-1048576}
-  ffmpeg -v error -y -i "$in" -vf "fps=5,scale=960:-1" \
-    -c:v libwebp -quality 60 -loop 0 -an "$out"
+  # Each frame of the compacted video once, held as long as it is there.
+  ffmpeg -v error -y -i "$in" -vf scale=960:-1 -fps_mode vfr \
+    -c:v libwebp_anim -quality 60 -loop 0 -an "$out"
   size=$(($(wc -c <"$out")))
   [ "$size" -le "$max" ] || fail "$out is $size bytes, over $max"
   ;;
