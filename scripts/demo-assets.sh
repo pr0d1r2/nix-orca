@@ -3,8 +3,8 @@
 # checks.x86_64-linux.agents-stub, replace docs/demo/{demo.mp4,
 # preview.webp,shot.png} with its files and commit them alone. The check
 # needs an x86_64-linux host with KVM: STORE (such as
-# ssh-ng://root@nix-builder.local) builds it there and the output is
-# copied back. A check already built is not run again, so the files
+# ssh-ng://root@nix-builder.local) builds it there and the files are read
+# from it. A check already built is not run again, so the files
 # change only when its inputs do.
 # Usage: demo-assets.sh [STORE]
 # Exit: 0 committed, 3 docs/demo/ unchanged, 1 refused, 2 usage.
@@ -27,22 +27,22 @@ files=(demo.mp4 preview.webp shot.png)
 cd "$(git rev-parse --show-toplevel)"
 git diff --cached --quiet || fail "changes are staged; the commit holds the demo files alone"
 
+store=() eval_store=()
 if [ "$#" -eq 1 ]; then
-  store=$1
-  out=$("$nix" build --no-link --print-out-paths --store "$store" --eval-store auto "$check")
-  "$nix" copy --no-check-sigs --from "$store" "$out"
-else
-  out=$("$nix" build --no-link --print-out-paths "$check")
+  store=(--store "$1") eval_store=(--eval-store auto)
 fi
+out=$("$nix" build --no-link --print-out-paths "${store[@]}" "${eval_store[@]}" "$check")
 
+# Read from the store that built it: importing a remote output needs its
+# signature trusted, which an untrusted user cannot waive.
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
 for f in "${files[@]}"; do
-  [ -e "$out/$f" ] || fail "$out has no $f"
+  "$nix" store cat "${store[@]}" "$out/$f" >"$tmp/$f" 2>/dev/null || fail "$out has no $f"
 done
 mkdir -p "$dir"
 for f in "${files[@]}"; do
-  # Store files are read-only; the copy must not be.
-  cp "$out/$f" "$dir/$f"
-  chmod 644 "$dir/$f"
+  cp "$tmp/$f" "$dir/$f"
 done
 
 git add "${files[@]/#/$dir/}"
