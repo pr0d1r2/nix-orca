@@ -5,7 +5,7 @@
 # Usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT |
 #        listening PORT ADDRESS | exposure UNIT FILE | seed USER |
 #        stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop |
-#        agent USER AGENT DIR PROMPT FILE | compact IN OUT
+#        agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT
 #   module: USER's orca-ide --version prints VERSION; the desktop entry and
 #           a hicolor icon are in the system profile
 #   app:    as USER, Xvfb on :99 and `orca-ide open`; the runtime connects
@@ -25,13 +25,15 @@
 #           with PROMPT, focused; the agent writes DIR/FILE and its terminal
 #           goes idle (tests V3)
 #   compact: IN without its still stretches into OUT, the last frame held
+#   preview: IN as a looping animated WebP OUT, which GitHub plays inline,
+#           at most ORCA_VM_PREVIEW_MAX bytes (default 1 MiB)
 # Env: ORCA_VM_PROFILE (default /run/current-system/sw), ORCA_VM_TIMEOUT
 # (seconds per wait, default 120), ORCA_VM_LOGS (default /tmp), ORCA_VM_SRC
 # (the directory holding tests/, for stub).
 set -euo pipefail
 
 usage() {
-  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT" >&2
+  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT" >&2
   exit 2
 }
 fail() {
@@ -173,6 +175,14 @@ compact)
     -vf "mpdecimate=hi=64*12:lo=64*5:frac=0.33:max=20,setpts=N/10/TB,tpad=stop_mode=clone:stop_duration=3" \
     -an -pix_fmt yuv420p "$out"
   [ -s "$out" ] || fail "ffmpeg wrote no $out"
+  ;;
+preview)
+  [ "$#" -eq 3 ] || usage
+  in=$2 out=$3 max=${ORCA_VM_PREVIEW_MAX:-1048576}
+  ffmpeg -v error -y -i "$in" -vf "fps=5,scale=960:-1" \
+    -c:v libwebp -quality 60 -loop 0 -an "$out"
+  size=$(($(wc -c <"$out")))
+  [ "$size" -le "$max" ] || fail "$out is $size bytes, over $max"
   ;;
 *)
   usage
