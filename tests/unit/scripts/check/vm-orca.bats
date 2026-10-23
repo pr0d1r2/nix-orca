@@ -174,11 +174,11 @@ STUB
   [ "$stderr" = "vm-orca: orca-ide.service exposure 2.3, ratchet 2.2 in exposure; raise it in its own reviewed commit (nix/modules V1)" ]
 }
 
-@test "seed: the user's Orca starts with onboarding closed, tips seen, no tours, telemetry off" {
+@test "seed: the user's Orca starts with onboarding closed, tips seen, no tours, no star prompt, telemetry off" {
   run --separate-stderr "$vm" seed alice
   [ "$status" -eq 0 ]
   grep -qx "su alice" su.log
-  jq -e '.onboarding.closedAt != null and .onboarding.outcome == "completed" and .ui.contextualToursAutoEligible == false and (.ui.featureTipsSeenIds | length) > 0 and .settings.telemetry.optedIn == false and .settings.telemetry.existedBeforeTelemetryRelease == false' home/.config/orca/orca-data.json
+  jq -e '.onboarding.closedAt != null and .onboarding.outcome == "completed" and .ui.contextualToursAutoEligible == false and (.ui.featureTipsSeenIds | length) > 0 and .ui.starNagCompleted == true and .settings.telemetry.optedIn == false and .settings.telemetry.existedBeforeTelemetryRelease == false' home/.config/orca/orca-data.json
 }
 
 @test "seed: state already there fails, untouched" {
@@ -248,10 +248,10 @@ STUB
   [ "$stderr" = "vm-orca: opencode's terminal term_1 not idle after 3 s" ]
 }
 
-@test "compact: frames that do not change are dropped, the last one held" {
+@test "compact: a still stretch lasts at most 1.5 s, a blinking cursor is still, the last frame held" {
   run --separate-stderr "$vm" compact run.mp4 demo.mp4
   [ "$status" -eq 0 ]
-  grep -q "mpdecimate=.*max=20,setpts=N/10/TB,tpad=stop_mode=clone:stop_duration=3" ffmpeg.log
+  grep -qF 'mpdecimate=hi=64*100000:lo=64*5:frac=0.005,setpts='"'"'if(eq(N\,0)\,0\,PREV_OUTPTS+min(PTS-PREV_INPTS\,1.5/TB))'"'"',tpad=stop_mode=clone:stop_duration=3 -fps_mode vfr' ffmpeg.log
   [ -s demo.mp4 ]
 }
 
