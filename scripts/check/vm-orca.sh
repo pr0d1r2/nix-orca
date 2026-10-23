@@ -17,15 +17,16 @@
 #   exposure: `systemd-analyze security UNIT` scores at most UNIT's line in
 #           FILE (`unit score`, `#` comments), the .exposure ratchet
 #   seed:   before `app`, USER's Orca state says onboarding is done, every
-#           tip seen, no tour may start and telemetry is off, so the window
-#           shows the work (tests T4)
+#           tip seen, no tour or star prompt may start and telemetry is off,
+#           so the window shows the work (tests T4)
 #   stub:   as USER, the stub model server (tests/stub under ORCA_VM_SRC)
 #           replays tests/stub/scripts/SCRIPT on PORT in WORKDIR
 #   record: as USER, ffmpeg records display :99 into FILE until record-stop
 #   agent:  as USER, `orca-ide repo add` DIR, `agent launch` AGENT on it
 #           with PROMPT, focused; the agent writes DIR/FILE and its terminal
 #           goes idle (tests V3)
-#   compact: IN without its still stretches into OUT, the last frame held
+#   compact: IN with each still stretch cut to at most 1.5 s into OUT, the
+#           last frame held
 #   preview: IN as a looping animated WebP OUT, which GitHub plays inline,
 #           at most ORCA_VM_PREVIEW_MAX bytes (default 1 MiB)
 #   repo:   as USER, a new git repository in DIR holding the FILEs and a
@@ -128,7 +129,7 @@ seed)
   # older than telemetry, which gets the consent banner. New tips in an
   # Orca bump show in the recording until listed here.
   state='{"onboarding":{"flowVersion":4,"closedAt":1,"outcome":"completed","lastCompletedStep":5},'
-  state+='"ui":{"contextualToursAutoEligible":false,"featureTipsSeenIds":["native-chat-upgrade","agent-session-search","orca-cli","cmd-j-palette","voice-dictation"]},'
+  state+='"ui":{"contextualToursAutoEligible":false,"starNagCompleted":true,"featureTipsSeenIds":["native-chat-upgrade","agent-session-search","orca-cli","cmd-j-palette","voice-dictation"]},'
   state+='"settings":{"telemetry":{"existedBeforeTelemetryRelease":false,"optedIn":false}}}'
   as "$user" "test ! -e ~/.config/orca/orca-data.json" ||
     fail "$user already has Orca state in ~/.config/orca/orca-data.json"
@@ -172,11 +173,12 @@ agent)
 compact)
   [ "$#" -eq 3 ] || usage
   in=$2 out=$3
-  # A still stretch keeps at most 2 s of frames (shown as 0.2 s), so each
-  # step stays on screen a moment; the result is held 3 s at the end.
+  # A frame counts as changed when over 0.5% of its 8x8 blocks differ, so
+  # a blinking cursor is still; each still stretch is held at most 1.5 s,
+  # timed from the previous kept frame; the result is held 3 s at the end.
   ffmpeg -v error -y -i "$in" \
-    -vf "mpdecimate=hi=64*12:lo=64*5:frac=0.33:max=20,setpts=N/10/TB,tpad=stop_mode=clone:stop_duration=3" \
-    -an -pix_fmt yuv420p "$out"
+    -vf "mpdecimate=hi=64*100000:lo=64*5:frac=0.005,setpts='if(eq(N\,0)\,0\,PREV_OUTPTS+min(PTS-PREV_INPTS\,1.5/TB))',tpad=stop_mode=clone:stop_duration=3" \
+    -fps_mode vfr -an -pix_fmt yuv420p "$out"
   [ -s "$out" ] || fail "ffmpeg wrote no $out"
   ;;
 preview)
