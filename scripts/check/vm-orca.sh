@@ -3,7 +3,9 @@
 # tests T1). The test driver only takes Python, so the tests call this
 # and keep their Python to the driver's own calls.
 # Usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT |
-#        listening PORT ADDRESS | exposure UNIT FILE
+#        listening PORT ADDRESS | exposure UNIT FILE | seed USER |
+#        stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop |
+#        agent USER AGENT DIR PROMPT FILE | compact IN OUT
 #   module: USER's orca-ide --version prints VERSION; the desktop entry and
 #           a hicolor icon are in the system profile
 #   app:    as USER, Xvfb on :99 and `orca-ide open`; the runtime connects
@@ -13,12 +15,23 @@
 #   listening: every listener on PORT is on ADDRESS
 #   exposure: `systemd-analyze security UNIT` scores at most UNIT's line in
 #           FILE (`unit score`, `#` comments), the .exposure ratchet
+#   seed:   before `app`, USER's Orca state says onboarding is done, every
+#           tip seen, no tour may start and telemetry is off, so the window
+#           shows the work (tests T4)
+#   stub:   as USER, the stub model server (tests/stub under ORCA_VM_SRC)
+#           replays tests/stub/scripts/SCRIPT on PORT in WORKDIR
+#   record: as USER, ffmpeg records display :99 into FILE until record-stop
+#   agent:  as USER, `orca-ide repo add` DIR, `agent launch` AGENT on it
+#           with PROMPT, focused; the agent writes DIR/FILE and its terminal
+#           goes idle (tests V3)
+#   compact: IN without its still stretches into OUT, the last frame held
 # Env: ORCA_VM_PROFILE (default /run/current-system/sw), ORCA_VM_TIMEOUT
-# (seconds per wait, default 120), ORCA_VM_LOGS (default /tmp).
+# (seconds per wait, default 120), ORCA_VM_LOGS (default /tmp), ORCA_VM_SRC
+# (the directory holding tests/, for stub).
 set -euo pipefail
 
 usage() {
-  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE" >&2
+  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT" >&2
   exit 2
 }
 fail() {
@@ -101,6 +114,65 @@ exposure)
   if awk -v s="$score" -v l="$limit" 'BEGIN { exit !(s > l) }'; then
     fail "$unit exposure $score, ratchet $limit in $file; raise it in its own reviewed commit (nix/modules V1)"
   fi
+  ;;
+seed)
+  [ "$#" -eq 2 ] || usage
+  user=$2
+  # The fields Orca's dev builds set to skip first-run education, and
+  # telemetry off: a state file present at first start reads as an install
+  # older than telemetry, which gets the consent banner. New tips in an
+  # Orca bump show in the recording until listed here.
+  state='{"onboarding":{"flowVersion":4,"closedAt":1,"outcome":"completed","lastCompletedStep":5},'
+  state+='"ui":{"contextualToursAutoEligible":false,"featureTipsSeenIds":["native-chat-upgrade","agent-session-search","orca-cli","cmd-j-palette","voice-dictation"]},'
+  state+='"settings":{"telemetry":{"existedBeforeTelemetryRelease":false,"optedIn":false}}}'
+  as "$user" "test ! -e ~/.config/orca/orca-data.json" ||
+    fail "$user already has Orca state in ~/.config/orca/orca-data.json"
+  as "$user" "mkdir -p ~/.config/orca && echo '$state' >~/.config/orca/orca-data.json"
+  ;;
+stub)
+  [ "$#" -eq 5 ] || usage
+  user=$2 port=$3 script=$4 workdir=$5 src=${ORCA_VM_SRC:?ORCA_VM_SRC is unset}
+  systemd-run -u orca-stub --uid="$user" -p WorkingDirectory="$src" \
+    "$(command -v python3)" -m tests.stub.server \
+    --script "$src/tests/stub/scripts/$script" --port "$port" --workdir "$workdir"
+  listens() {
+    ss -ltnH "sport = :$port" | awk -v p=":$port" '$4 ~ p "$"' | grep -q .
+  }
+  wait_for listens || fail "stub model server not listening on $port after $timeout s"
+  ;;
+record)
+  [ "$#" -eq 3 ] || usage
+  user=$2 file=$3
+  systemd-run -u orca-record --uid="$user" --setenv=DISPLAY=:99 \
+    "$(command -v ffmpeg)" -nostdin -y -f x11grab -video_size 1440x900 -framerate 10 \
+    -i :99 -pix_fmt yuv420p "$file"
+  ;;
+record-stop)
+  [ "$#" -eq 1 ] || usage
+  systemctl kill -s INT orca-record
+  stopped() { ! systemctl is-active -q orca-record; }
+  wait_for stopped || fail "recorder still running after $timeout s"
+  ;;
+agent)
+  [ "$#" -eq 6 ] || usage
+  user=$2 agent=$3 dir=$4 prompt=$5 file=$6
+  as "$user" "orca-ide repo add --path $(printf %q "$dir") --json" >/dev/null
+  handle=$(as "$user" "orca-ide agent launch --agent $agent --worktree path:$(printf %q "$dir") --prompt $(printf %q "$prompt") --focus --json" |
+    jq -r .result.outcome.handle)
+  written() { [ -e "$dir/$file" ]; }
+  wait_for written || fail "$agent wrote no $dir/$file after $timeout s"
+  as "$user" "orca-ide terminal wait --terminal $handle --for tui-idle --timeout-ms $((timeout * 1000)) --json" >/dev/null ||
+    fail "$agent's terminal $handle not idle after $timeout s"
+  ;;
+compact)
+  [ "$#" -eq 3 ] || usage
+  in=$2 out=$3
+  # A still stretch keeps at most 2 s of frames (shown as 0.2 s), so each
+  # step stays on screen a moment; the result is held 3 s at the end.
+  ffmpeg -v error -y -i "$in" \
+    -vf "mpdecimate=hi=64*12:lo=64*5:frac=0.33:max=20,setpts=N/10/TB,tpad=stop_mode=clone:stop_duration=3" \
+    -an -pix_fmt yuv420p "$out"
+  [ -s "$out" ] || fail "ffmpeg wrote no $out"
   ;;
 *)
   usage
