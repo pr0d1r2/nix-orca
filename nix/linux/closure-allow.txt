@@ -16,7 +16,8 @@ avahi
 bash
 bash-interactive
 bluez
-# aarch64-linux only: electron's libpisp (Raspberry Pi ISP) links it.
+# Needed by aarch64-linux, whose electron's libpisp links it; the list is
+# shared, so x86_64-linux allows it too.
 boost
 brotli
 bzip2
@@ -133,7 +134,8 @@ libogg
 libopenmpt
 libopus
 libpciaccess
-# aarch64-linux only: in the pin's electron closure there.
+# Needed by aarch64-linux (the pin's electron closure there); allowed on
+# x86_64-linux too, the list being shared.
 libpisp
 libpng-apng
 libpsl
