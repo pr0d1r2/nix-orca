@@ -92,7 +92,7 @@ V10: ⊥ private repo named in committed text (`paradigm/V37`).
 id|status|task|cites
 T8|.|waves via `sherd wave`, build order: `nix/linux` x86_64-linux on `nix-builder.local` + unprivileged-user test → `nix/bin` → aarch64-linux (CI) → `nix/darwin` → `scripts` bump → CI → release → `docs` → `nix/modules` stacked → `nix/agents` → `tests` integration layers|V1,V2,V7
 T9|.|CI & release pipeline, see `release` node|V4,V5,V6
-T10|.|GitHub repo `pr0d1r2/nix-orca` created public & empty 2026-10-24 (owner); first push ! owner approval; `CACHIX_AUTH_TOKEN` set by owner (`gh secret set`); `gh repo view` ∀ named repo first|V9,V10
+T10|.|GitHub repo `pr0d1r2/nix-orca` created public & empty 2026-10-24 (owner); first push ! owner approval; `CACHIX_AUTH_TOKEN` set by owner 2026-10-24 (`gh secret set`); `gh repo view` ∀ named repo first|V9,V10
 T11|.|drop release-approval waiver row (§C) when `pr0d1r2/paradigm#24` decided|V9
 T12|.|follow paradigm: when paradigm moves past `e5605a3`, own PR re-vendors `FORMAT.md` & `FORMAT-EXTENSIONS.md`, updates LINEAGE pin, passes spec checks; owner merges (round 11)|-
 T14|.|gate follow-ups from T6: V2 check once `nix/linux` builds; pklith pin past v0.1.0 brings hk 2.7.0 schema, `bats-unit`, `tdd-order` rule, `## exempt` table (release waiver moves there); name guard allowlist half in CI (`paradigm/V37`)|V2,V9,V10
