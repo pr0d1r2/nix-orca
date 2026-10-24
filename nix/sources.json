@@ -1,35 +1,35 @@
 {
-  "version": "1.4.237",
-  "tag": "v1.4.237",
-  "commit": "071747853f5995ee233b36751613f09a60007c2b",
+  "version": "1.4.239",
+  "tag": "v1.4.239",
+  "commit": "47f77cf7018ebc0d046b82c6dde31cf704909162",
   "src": {
-    "hash": "sha256-1Cl4g1WcQKMIydWAhLuXO2g47DC/qaTlK17Oayq7wik="
+    "hash": "sha256-Sc8blLAXrpRQOikpiig8Dd9TsekSjBCLoOZgvpvWRe0="
   },
   "pnpmDeps": {
-    "hash": "sha256-xUnIwJ/vKLKhasQtcoDLjgdfRpcEyugHsYfEqMtvGiE="
+    "hash": "sha256-akl/OEoo9KawTa+NPcW6tnZnLPI1/ql2cVmRM6VDql4="
   },
   "mobilePnpmDeps": {
-    "hash": "sha256-RGo34LFTN/77dcDoDmptHsRZ7ngaaw8yTM9EECSi4Ho="
+    "hash": "sha256-VchhTR3cGkViK4xyZT/xqKTtkYKfxa1RihKTxCi9IwQ="
   },
   "linux": {
     "x86_64-linux": {
       "deb": {
-        "name": "orca-ide_1.4.237_amd64.deb",
-        "size": 178396596,
-        "hash": "sha512-0nxTLtip5zNXcm99Mk99g6Ol/NE2lwtmWntm5JfSL/g7v4+QOcgTFoZBlBGQwISTNQ8IER+t1PqEP6GcMdtD5w=="
+        "name": "orca-ide_1.4.239_amd64.deb",
+        "size": 181752756,
+        "hash": "sha512-VakWMtdki1TPXTdUhLHzco0kY7k7cgLIT5AzUQ49HivqTZaLbbAljSf0Jwu1JyCKAo+861cX5O/dBTWMTTpBYw=="
       },
       "orcadTemplate": {
-        "hash": "sha256-OM7DI/pL/kqXK0ORzM2J5earFmKMORYqXL+eTqvGvn4="
+        "hash": "sha256-+U5hLRKXXPHmpAkqriETRQIve9pBHevJqqWU/2UBFBo="
       }
     },
     "aarch64-linux": {
       "deb": {
-        "name": "orca-ide_1.4.237_arm64.deb",
-        "size": 174359412,
-        "hash": "sha512-xZFIyTJ37pc/uYMK0Fpi6r6olXfYMt4vKCLp8c4mg6t97mOwHe/VnKOvQFjR1Z1IgB02IAkgTVevJhPPaGM5Rw=="
+        "name": "orca-ide_1.4.239_arm64.deb",
+        "size": 177505064,
+        "hash": "sha512-yHrQZ7AtKoZYqQAu9KGduD2XiGyIC0C3Zc6TWQuJkBZQR/LTJc3+i2TggwvQ7YUIDUyyreuMmM/w02H9o2tYJQ=="
       },
       "orcadTemplate": {
-        "hash": "sha256-OM7DI/pL/kqXK0ORzM2J5earFmKMORYqXL+eTqvGvn4="
+        "hash": "sha256-+U5hLRKXXPHmpAkqriETRQIve9pBHevJqqWU/2UBFBo="
       }
     }
   },
@@ -37,16 +37,16 @@
     "teamIdentifier": "6CX3WHS9HZ",
     "aarch64-darwin": {
       "zip": {
-        "name": "Orca-1.4.237-arm64-mac.zip",
-        "size": 267616359,
-        "hash": "sha512-3UCQZfaKUwH3MRpnh5jtptNB9NXQNvHvT0UubUGJTbrCDEQnBiibozfOKodkMom/pFmwJkgtDnXXKAMqNkKTeg=="
+        "name": "Orca-1.4.239-arm64-mac.zip",
+        "size": 272056405,
+        "hash": "sha512-mR6Yi6g9f1pU9FP/xGgFZrkqIY2FzO1eAKAky/KWb491VCYO1yayFfEc8lQehC/EQyeZimWeFUUG1Qxm/+KB8Q=="
       }
     },
     "x86_64-darwin": {
       "zip": {
-        "name": "Orca-1.4.237-mac.zip",
-        "size": 276844387,
-        "hash": "sha512-ICQk5k+6oIimmo4+cOtzWKX4wBu/sIbRNKCIKOvGWDmUi1oyjjiC4+VqF5Eoz4SWyVOsQ2nTElyzgHsASSt6iQ=="
+        "name": "Orca-1.4.239-mac.zip",
+        "size": 281327644,
+        "hash": "sha512-rYpB7VZSMvMRgZr2S+bl5PpRyCNad2hDl5Uhv39vTmkEWjNTWLVlzp5sXxgJNMe+sf540Y3oQicdyTPqLa30tg=="
       }
     }
   }
