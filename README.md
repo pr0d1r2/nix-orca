@@ -91,10 +91,28 @@ cache holds:
 `services.orca-ide.enable = true` runs `orca-ide serve` as a hardened
 system service: a dynamic user whose home is `/var/lib/orca-ide`, where
 the repositories it serves and the agents' credentials live, listening on
-`127.0.0.1:6768`. `listenAddress` and `openFirewall` expose it; past
-loopback, Orca's own pairing is the only gate. The package patches Orca's
-serve so it can bind one address (`ORCA_SERVE_BIND_HOST`); upstream's
-binds every interface.
+`127.0.0.1:6768`. The package patches Orca's serve so it can bind one
+address (`ORCA_SERVE_BIND_HOST`); upstream's binds every interface.
+
+To pair over a LAN, open it to that network only:
+
+```nix
+services.orca-ide = {
+  enable = true;
+  listenInterface = "enp3s0";               # its address, from DHCP
+  firewallInterfaces = [ "enp3s0" ];        # the port opens there only
+  allowedClients = [ "192.168.1.0/24" ];    # and only to these sources
+};
+```
+
+`allowedClients` is a firewall rule on the serve port, so it limits who
+reaches serve and not where the agents connect. Without it, anything that
+reaches the port meets only Orca's own pairing. `listenAddress` binds a
+fixed address instead of `listenInterface`; `openFirewall` opens the port
+on every interface to everyone, and combines with neither. Beyond the LAN,
+put serve on a VPN interface (`tailscale0`, a WireGuard `wg0`) rather than
+opening a port to the internet; whether Orca encrypts pairing traffic on a
+plain network is not checked here.
 
 The same overlay works in a nix-darwin configuration and in home-manager
 (`home.packages = [ pkgs.orca-ide ];`). The flake follows `nixpkgs-lock`
