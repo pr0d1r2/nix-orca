@@ -56,7 +56,7 @@ STUB
   export ELECTRON_HEADERS=/store/electron-headers
   export ELECTRON_VERSION=43.7.11
   export ELECTRON_MAJOR_CHECK=$BATS_TEST_TMPDIR/stubs/guard
-  export mobilePnpmDeps=/store/mobile-deps
+  export ORCA_MOBILE=1 mobilePnpmDeps=/store/mobile-deps
   export ORCA_HELPER_RPATH=/store/wayland/lib:/store/gtk3/lib
 }
 
@@ -98,6 +98,14 @@ build_phase() {
   grep -qxF "/mobile: node scripts/build-terminal-document-script.mjs" "$log"
 }
 
+@test "without ORCA_MOBILE, no mobile/ deps, sources or web bundle, and no mobile deps needed" {
+  unset ORCA_MOBILE mobilePnpmDeps
+  run build_phase
+  [ "$status" -eq 0 ]
+  run ! grep -q "mobile" "$log"
+  grep -q "electron-builder --dir" "$log"
+}
+
 @test "node-pty and @parcel/watcher build against the pin's Electron headers" {
   run build_phase
   [ "$status" -eq 0 ]
@@ -122,7 +130,7 @@ build_phase() {
   grep -q "electron-builder --dir --linux --arm64" "$log"
 }
 
-@test "the JS bundles build in upstream's release order" {
+@test "the JS bundles build in upstream's release order, the mobile web bundle last" {
   run build_phase
   [ "$status" -eq 0 ]
   want=": pnpm run build:packages
