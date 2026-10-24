@@ -35,6 +35,9 @@
   updater ? true,
   telemetry ? true,
   agents ? [ ],
+  # Orca Mobile's web bundle, which the app serves to a paired phone. Off by
+  # default (root T18): it costs a second deps fetch of 736 MiB.
+  mobile ? false,
 }:
 let
   electron = electron_43;
@@ -44,7 +47,9 @@ in
 stdenv.mkDerivation {
   pname = "orca-ide";
   inherit (sources) version;
-  inherit (upstream) src pnpmDeps mobilePnpmDeps;
+  inherit (upstream) src pnpmDeps;
+  ORCA_MOBILE = if mobile then "1" else "";
+  ${if mobile then "mobilePnpmDeps" else null} = upstream.mobilePnpmDeps;
 
   nativeBuildInputs = [
     pnpm

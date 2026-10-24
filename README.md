@@ -191,6 +191,9 @@ collected by the cache's retention.
   official build: `orca-ide.override { telemetry = false; }` sets
   `ORCA_TELEMETRY_DISABLED=1` for launches through `bin/orca-ide`, and a
   launch from Finder or Spotlight does not go through it.
+- **Orca Mobile** (pairing a phone) is off in the Linux build: its web
+  bundle needs a second 736 MiB dependency fetch. Turn it on with
+  `orca-ide.override { mobile = true; }`, which builds from source.
 - **`orca-ide serve` on Linux** runs Orca's Electron server: its lighter
   orcad server needs upstream's own Node binary, which Orca downloads
   and checks by hash, and the nix package has none. Upstream's serve
