@@ -18,12 +18,12 @@ modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposure`|pack
 rel|path|lens
 up|.|-
 self|nix|flake outputs, `nix/sources.json`; packages & modules in children
-sib|scripts|bash for bump, release notes, cachix pins, budgets, reports; mirrored bats
+sib|scripts|bash for bump, cachix pins, budgets, reports; mirrored bats
 sib|tests|VM & integration tests, stub model server
 sib|dev|dev shell flake, hook install on entry
 sib|gate|gate scripts: name guard, lock-graph guard; their bats
 sib|docs|human pages: README, SECURITY, CONTRIBUTING, LLM-DISCLAIMER
-sib|release|CI & release pipeline: workflows from `.actlith`, bump PR flow, release job, tokens, permissions
+sib|release|CI pipeline: workflows from `.actlith`, bump PR flow, cache checks, tokens, permissions
 
 ## §C CONSTRAINTS
 

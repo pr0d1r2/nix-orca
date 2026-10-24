@@ -107,4 +107,4 @@ stub-test|exists|tests/stub/*.py|tests/stub/test_{stem}.py|tests/stub/test_*.py,
 # once pklith or sherdwright reads one.
 #
 # id|reason
-# paradigm/V32|after the first release, which the owner approves, releases go out behind the required checks without per-release approval. What they publish can be undone: a cachix push (unpin, retention collects it) and a text-only GitHub release with its tag. No irreversible registry is used. Proposed for paradigm in pr0d1r2/paradigm#24; root T11 drops this row once that is decided (root §C, D37).
+# paradigm/V32|after the first push, which the owner approves, cachix pushes go out behind the required checks without per-push approval. What they publish can be undone: unpin, and the cache's retention collects it. There is no GitHub release or tag (root T19), and no irreversible registry is used. Proposed for paradigm in pr0d1r2/paradigm#24; root T11 drops this row once that is decided (root §C, D37).
