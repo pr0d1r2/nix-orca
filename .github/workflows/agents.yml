@@ -1,6 +1,6 @@
-# Hand-written, listed in .actlith: the agent-input PR must come from a
-# GitHub App token so it triggers the build (round 8), and it never merges
-# itself (round 9); actlith v0.1.0's `update-pins` kind does neither.
+# Hand-written, listed in .actlith: only the new-agent watch runs here.
+# The agent-input PR comes from the owner's tending loop (owner
+# 2026-10-24), which actlith v0.1.0's `update-pins` kind cannot express.
 ---
 name: agents
 
@@ -9,7 +9,6 @@ on:
     - cron: "40 6 * * *"
   workflow_dispatch:
 
-# One update at a time; a cancelled run could leave a half-pushed branch.
 concurrency:
   group: agents
   cancel-in-progress: false
@@ -18,35 +17,6 @@ permissions:
   contents: read
 
 jobs:
-  update:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    permissions:
-      contents: read
-    steps:
-      - id: app
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510  # v3.3.0
-        with:
-          app-id: ${{ secrets.BUMP_APP_ID }}
-          private-key: ${{ secrets.BUMP_APP_PRIVATE_KEY }}
-          # Only what the update needs, whatever the installation grants.
-          permission-contents: write
-          permission-pull-requests: write
-      # Pushes agents/update, so the App token stays in the checkout.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          token: ${{ steps.app.outputs.token }}
-          persist-credentials: true  # zizmor: ignore[artipacked]
-      - uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342  # v31.11.0
-        with:
-          extra_nix_config: |
-            extra-substituters = https://pr0d1r2.cachix.org
-            extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
-      - run: git config user.name "nix-orca agents" && git config user.email "agents@users.noreply.github.com"
-      - run: nix develop ./dev --command bash scripts/ci/agents-pr.sh
-        env:
-          GH_TOKEN: ${{ steps.app.outputs.token }}
-
   # A new agent upstream opens one issue, never a red build (nix/agents V5).
   watch:
     runs-on: ubuntu-latest
