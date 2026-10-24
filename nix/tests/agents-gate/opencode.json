@@ -1,8 +1,34 @@
 {
   "turns": [
-    {"tool": {"name": "write", "arguments": {"filePath": "{workdir}/greet.sh", "content": "#!/usr/bin/env bash\nname=$1\necho hello $name\n"}}},
-    {"tool": {"name": "bash", "arguments": {"command": "chmod +x greet.sh && git add greet.sh && git commit -m 'feat: greet by name'", "description": "Commit greet.sh"}}},
-    {"tool": {"name": "bash", "arguments": {"command": "sed -i 's/echo hello $name/echo \"hello $name\"/' greet.sh && git add greet.sh && git commit -m 'feat: greet by name'", "description": "Quote the name, commit again"}}},
-    {"text": "Committed. The gate refused the first try (shellcheck SC2086); the name is quoted now."}
+    {
+      "tool": {
+        "name": "write",
+        "arguments": {
+          "filePath": "{workdir}/greet.sh",
+          "content": "#!/usr/bin/env bash\nname=$1\necho hello $name\n"
+        }
+      }
+    },
+    {
+      "tool": {
+        "name": "bash",
+        "arguments": {
+          "command": "chmod +x greet.sh && git add greet.sh && git commit -qm 'feat: greet by name' >.git/hk-out 2>&1 || { echo 'commit refused by the gate:'; grep -E 'SC[0-9]{4}' .git/hk-out | head -3; exit 1; }",
+          "description": "Commit greet.sh"
+        }
+      }
+    },
+    {
+      "tool": {
+        "name": "bash",
+        "arguments": {
+          "command": "sed -i 's/echo hello $name/echo \"hello $name\"/' greet.sh && git add greet.sh && git commit -qm 'feat: greet by name' >.git/hk-out 2>&1 && git log --oneline -1",
+          "description": "Quote the name, commit again"
+        }
+      }
+    },
+    {
+      "text": "Committed. The gate refused the first try (shellcheck SC2086); the name is quoted now."
+    }
   ]
 }
