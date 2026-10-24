@@ -162,11 +162,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792353981,
-        "narHash": "sha256-eovf3dDz/yY4REsaiNb/OXP1Q598xu1k5eFI2N00dZk=",
+        "lastModified": 1792855189,
+        "narHash": "sha256-ZDZSJzcNudpH+Hay00N6rDtHzwmDEuNsjKtT9RUTKGE=",
         "owner": "pr0d1r2",
         "repo": "nix-mistral-vibe",
-        "rev": "a56c75d7ead8d9642341bab7b2676ffa44297fee",
+        "rev": "fb8852f0072202cbabffea695a3ecc1eead885a2",
         "type": "github"
       },
       "original": {
