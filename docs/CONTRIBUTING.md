@@ -12,6 +12,8 @@ Linux builder; the shell says so when nix has none. The reference one,
 `nix-builder.local`, is a
 [nixos-nix-builder](https://github.com/pr0d1r2/nixos-nix-builder)
 appliance: x86_64-linux with KVM, so it also runs the NixOS VM checks.
+`docs/BUILDER.md` says how to build there, run the VM checks and share
+the machine.
 
 ## The gate
 
