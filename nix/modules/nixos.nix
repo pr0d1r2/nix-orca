@@ -24,6 +24,30 @@ let
     inherit (pkgs.stdenv.hostPlatform) system;
     extra = true;
   };
+  # The firewall rules for allowedClients: the serve port, from those
+  # sources, on firewallInterfaces or anywhere.
+  v6 = builtins.filter (lib.hasInfix ":") service.allowedClients;
+  v4 = lib.subtractLists v6 service.allowedClients;
+  interfaces = if service.firewallInterfaces == [ ] then [ null ] else service.firewallInterfaces;
+  nftRules = lib.concatMap (
+    i:
+    let
+      onIf = lib.optionalString (i != null) "iifname \"${i}\" ";
+      set = l: "{ ${lib.concatStringsSep ", " l} }";
+    in
+    lib.optional (v4 != [ ]) "${onIf}ip saddr ${set v4} tcp dport ${toString service.port} accept"
+    ++ lib.optional (v6 != [ ]) "${onIf}ip6 saddr ${set v6} tcp dport ${toString service.port} accept"
+  ) interfaces;
+  iptRules = lib.concatMap (
+    i:
+    let
+      onIf = lib.optionalString (i != null) "-i ${i} ";
+      rule =
+        cmd: c:
+        "${cmd} -A nixos-fw ${onIf}-p tcp --dport ${toString service.port} -s ${c} -j nixos-fw-accept";
+    in
+    map (rule "iptables") v4 ++ map (rule "ip6tables") v6
+  ) interfaces;
   enabled = builtins.filter (id: cfg.agents.${id}.enable) (names.default ++ names.extra);
   missing = builtins.filter (id: !(available ? ${id})) enabled;
   withAgents =
@@ -84,6 +108,20 @@ in
         VPN, where `openFirewall` opens it everywhere.
       '';
     };
+    allowedClients = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [
+        "192.168.1.0/24"
+        "fd00::/8"
+      ];
+      description = ''
+        Open `port` in the firewall only to these sources (IPv4 or IPv6
+        addresses or CIDRs), on `firewallInterfaces` when set, else on every
+        interface. A firewall rule, so it limits who reaches serve and not
+        where the agents it runs connect.
+      '';
+    };
     stateDir = lib.mkOption {
       type = lib.types.str;
       default = "/var/lib/orca-ide";
@@ -107,14 +145,22 @@ in
     (lib.mkIf service.enable {
       assertions = [
         {
-          assertion = !(service.openFirewall && service.firewallInterfaces != [ ]);
-          message = "services.orca-ide: openFirewall opens the port everywhere; use firewallInterfaces instead, not both";
+          assertion =
+            !(service.openFirewall && (service.firewallInterfaces != [ ] || service.allowedClients != [ ]));
+          message = "services.orca-ide: openFirewall opens the port everywhere; use firewallInterfaces or allowedClients instead, not both";
         }
       ];
-      networking.firewall.allowedTCPPorts = lib.optional service.openFirewall service.port;
-      networking.firewall.interfaces = lib.genAttrs service.firewallInterfaces (_: {
-        allowedTCPPorts = [ service.port ];
-      });
+      networking.firewall = {
+        allowedTCPPorts = lib.optional service.openFirewall service.port;
+        # With allowedClients, only its rules open the port.
+        interfaces = lib.mkIf (service.allowedClients == [ ]) (
+          lib.genAttrs service.firewallInterfaces (_: {
+            allowedTCPPorts = [ service.port ];
+          })
+        );
+        extraInputRules = lib.mkIf config.networking.nftables.enable (lib.concatStringsSep "\n" nftRules);
+        extraCommands = lib.mkIf (!config.networking.nftables.enable) (lib.concatStringsSep "\n" iptRules);
+      };
       systemd.services.orca-ide = {
         description = "Orca runtime server (orca-ide serve)";
         wantedBy = [ "multi-user.target" ];
