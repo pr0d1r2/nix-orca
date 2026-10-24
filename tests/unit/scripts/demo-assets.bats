@@ -9,15 +9,21 @@ bats_require_minimum_version 1.5.0
 setup() {
   assets="$BATS_TEST_DIRNAME/../../../scripts/demo-assets.sh"
   cd "$BATS_TEST_TMPDIR" || exit 1
-  mkdir stubs out repo
+  mkdir stubs out onboarding repo
   for f in demo.mp4 preview.webp shot.png run.mp4; do
     echo "$f 1" >"out/$f"
+    echo "onboarding $f 1" >"onboarding/$f"
   done
   cat >stubs/nix <<'STUB'
 #!/usr/bin/env bash
 echo "$*" >>"$BATS_TEST_TMPDIR/nix.log"
 case "$1 $2" in
-build*) echo "$BATS_TEST_TMPDIR/out" ;;
+build*)
+  case "${*: -1}" in
+  *onboarding) echo "$BATS_TEST_TMPDIR/onboarding" ;;
+  *) echo "$BATS_TEST_TMPDIR/out" ;;
+  esac
+  ;;
 "store cat") cat "${*: -1}" ;;
 esac
 STUB
@@ -33,14 +39,16 @@ STUB
   git commit -qm init
 }
 
-@test "the check's demo files land in docs/demo/ in one commit of their own, with the agent's trailer" {
+@test "both checks' files land in docs/demo/ in one commit of their own, with the agent's trailer" {
   run --separate-stderr "$assets"
   [ "$status" -eq 0 ]
   grep -qx "build --no-link --print-out-paths ./dev#checks.x86_64-linux.agents-gate" ../nix.log
+  grep -qx "build --no-link --print-out-paths ./dev#checks.x86_64-linux.onboarding" ../nix.log
   [ "$(git log -1 --format=%s)" = "docs(demo): re-record orca-ide 1.4.232" ]
   git log -1 --format=%B | grep -qx "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
-  [ "$(git show --name-only --format= HEAD | sort | tr '\n' ' ')" = "docs/demo/demo.mp4 docs/demo/preview.webp docs/demo/shot.png " ]
+  [ "$(git show --name-only --format= HEAD | sort | tr '\n' ' ')" = "docs/demo/demo.mp4 docs/demo/onboarding.mp4 docs/demo/onboarding.png docs/demo/onboarding.webp docs/demo/preview.webp docs/demo/shot.png " ]
   [ "$(cat docs/demo/shot.png)" = "shot.png 1" ]
+  [ "$(cat docs/demo/onboarding.png)" = "onboarding shot.png 1" ]
 }
 
 @test "a store builds remotely; the files are read from it, nothing imported" {
