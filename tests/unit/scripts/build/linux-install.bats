@@ -235,11 +235,11 @@ install_phase() {
   [ -e "$sherpa/index.js" ]
 }
 
-@test "ssh2's Windows pageant helper does not ship" {
+@test "ssh2 is left as upstream ships it: no pageant files since v1.4.239; the hygiene check guards that" {
   run install_phase
   [ "$status" -eq 0 ]
   util=$out/libexec/orca-ide/resources/node_modules/ssh2/util
-  [ "$(ls "$util")" = agent.js ]
+  [ -e "$util/pagent.exe" ] && [ -e "$util/pagent.c" ] && [ -e "$util/build_pagent.bat" ]
 }
 
 @test "pre and post install hooks run around it" {

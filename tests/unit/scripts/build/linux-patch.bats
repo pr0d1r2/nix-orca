@@ -88,10 +88,10 @@ patch_phase() {
   grep -A2 -F "'!src{,/**/*}'," config/electron-builder.config.cjs | tail -1 | grep -qF "'!node_modules{,/**/*}',"
 }
 
-@test "upstream's root configs stay out of app.asar" {
+@test "no root-config exclusion of ours: upstream excludes them since v1.4.239" {
   run patch_phase
   [ "$status" -eq 0 ]
-  grep -qF "'!{.oxfmtrc.json,.oxlintrc.json,components.json,opencode.json,orca.yaml,pnpm-workspace.yaml,vite.web.config.ts}'," config/electron-builder.config.cjs
+  run ! grep -q "stablyai/orca#30993" config/electron-builder.config.cjs
 }
 
 @test "serve's listener can be pinned through ORCA_SERVE_BIND_HOST" {
