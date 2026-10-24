@@ -8,6 +8,15 @@
   pnpm,
   sources,
 }:
+let
+  # pnpm 12 leaves an empty v11/links/ in the store on darwin, not on Linux,
+  # even with the global virtual store off; empty, it holds nothing, but it
+  # makes the fixed-output hash depend on the platform (measured 2026-10-24,
+  # pnpm 12.15.0). rmdir only removes it while it is empty.
+  dropEmptyLinks = ''
+    rmdir "$storePath/v11/links" 2>/dev/null || true
+  '';
+in
 rec {
   src = fetchFromGitHub {
     owner = "stablyai";
@@ -16,8 +25,8 @@ rec {
     inherit (sources.src) hash;
   };
 
-  # pnpm stays the pin's 11.27.0; inside the fetcher it does not switch to
-  # upstream's `packageManager` 12.8.1 (nix/linux R2).
+  # pnpm is nix-pnpm's 12, the major upstream's `packageManager` pins
+  # (nix/linux/pnpm.nix, root T18).
   pnpmDeps = fetchPnpmDeps {
     pname = "orca-ide";
     inherit (sources) version;
@@ -29,6 +38,7 @@ rec {
     # fetcher's fixup then fails on their JSONC tsconfig files. Off, as
     # upstream's own CI runs it.
     ORCA_PNPM_GLOBAL_VIRTUAL_STORE = "0";
+    postInstall = dropEmptyLinks;
   };
 
   # `mobile/` has its own lockfile; the desktop app ships its web build
@@ -40,5 +50,6 @@ rec {
     inherit (sources.mobilePnpmDeps) hash;
     fetcherVersion = 4;
     preInstall = "cd mobile";
+    postInstall = dropEmptyLinks;
   };
 }

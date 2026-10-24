@@ -44,6 +44,11 @@
       url = "github:pr0d1r2/nix-mistral-vibe";
       inputs.nixpkgs-lock.follows = "nixpkgs-lock";
     };
+    # pnpm 12, which upstream's package.json pins (root T18).
+    nix-pnpm = {
+      url = "github:pr0d1r2/nix-pnpm";
+      inputs.nixpkgs-lock.follows = "nixpkgs-lock";
+    };
   };
 
   outputs =
@@ -85,7 +90,10 @@
             if isDarwin then
               pkgs.callPackage ./nix/darwin/package.nix { inherit sources; }
             else
-              pkgs.callPackage ./nix/linux/package.nix { inherit sources; };
+              pkgs.callPackage ./nix/linux/package.nix {
+                inherit sources;
+                pnpm = pkgs.callPackage ./nix/linux/pnpm.nix { inherit (inputs) nix-pnpm; };
+              };
           orca-ide-agents = orca-ide.override {
             agents = builtins.attrValues (agentsFor system);
           };

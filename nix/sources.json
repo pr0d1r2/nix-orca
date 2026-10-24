@@ -6,10 +6,10 @@
     "hash": "sha256-1Cl4g1WcQKMIydWAhLuXO2g47DC/qaTlK17Oayq7wik="
   },
   "pnpmDeps": {
-    "hash": "sha256-sxy7XolzxBg/c5GtukhZCMZLSAfNKCJmnoX6pV82hKQ="
+    "hash": "sha256-xUnIwJ/vKLKhasQtcoDLjgdfRpcEyugHsYfEqMtvGiE="
   },
   "mobilePnpmDeps": {
-    "hash": "sha256-ats7KpRXFFN+iSWjGCG+b1gdzopCTwoLY6usRZVXY8Y="
+    "hash": "sha256-RGo34LFTN/77dcDoDmptHsRZ7ngaaw8yTM9EECSi4Ho="
   },
   "linux": {
     "x86_64-linux": {

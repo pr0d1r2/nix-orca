@@ -180,7 +180,14 @@
         let
           pkgs = nixpkgs.legacyPackages.x86_64-linux.extend nix-hk.overlays.default;
           sources = import ../nix/sources.nix { inherit (pkgs) lib; };
-          orca-ide = pkgs.callPackage ../nix/linux/package.nix { inherit sources; };
+          # nix-pnpm at the revision the root flake locks, so this is the
+          # root flake's own package without a second lock to drift.
+          nix-pnpm = builtins.fetchTree (builtins.fromJSON (builtins.readFile ../flake.lock))
+            .nodes.nix-pnpm.locked;
+          orca-ide = pkgs.callPackage ../nix/linux/package.nix {
+            inherit sources;
+            pnpm = pkgs.callPackage ../nix/linux/pnpm.nix { inherit nix-pnpm; };
+          };
         in
         import ../nix/tests/agents-gate.nix {
           inherit (pkgs)

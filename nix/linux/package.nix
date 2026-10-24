@@ -43,7 +43,7 @@
 }:
 let
   electron = electron_43;
-  upstream = callPackage ./sources.nix { inherit sources; };
+  upstream = callPackage ./sources.nix { inherit sources pnpm; };
   # Upstream's template piece, whole (nix/bin), and the pin's static rg for
   # the Linux remote targets, which its manifest then names (nix/linux §C,
   # root T18).

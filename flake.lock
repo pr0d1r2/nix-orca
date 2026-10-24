@@ -150,6 +150,31 @@
         "type": "github"
       }
     },
+    "nix-pnpm": {
+      "inputs": {
+        "nixpkgs": [
+          "nix-pnpm",
+          "nixpkgs-lock",
+          "nixpkgs"
+        ],
+        "nixpkgs-lock": [
+          "nixpkgs-lock"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792836990,
+        "narHash": "sha256-x+95TEMtSLUn5D1UXmy0XvMcFORGmjwLihhfj7L+baE=",
+        "owner": "pr0d1r2",
+        "repo": "nix-pnpm",
+        "rev": "0957415b8a72b462bd03c6e1a0958776be4bf708",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nix-pnpm",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1792615934,
@@ -261,6 +286,7 @@
         "gemini-cli-nix": "gemini-cli-nix",
         "grok-build-nix": "grok-build-nix",
         "nix-mistral-vibe": "nix-mistral-vibe",
+        "nix-pnpm": "nix-pnpm",
         "nixpkgs": [
           "nixpkgs-lock",
           "nixpkgs"

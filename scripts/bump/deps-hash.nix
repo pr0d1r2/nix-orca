@@ -12,6 +12,8 @@ let
   pkgs = flake.inputs.nixpkgs.legacyPackages.${builtins.currentSystem};
 in
 (pkgs.callPackage (root + "/nix/linux/sources.nix") {
+  # The package's own pnpm, so the hash is the one its build fetches.
+  pnpm = pkgs.callPackage (root + "/nix/linux/pnpm.nix") { inherit (flake.inputs) nix-pnpm; };
   sources = {
     inherit tag;
     version = pkgs.lib.removePrefix "v" tag;

@@ -14,7 +14,10 @@ let
     if isDarwin then
       final.callPackage ./darwin/package.nix { inherit sources; }
     else
-      final.callPackage ./linux/package.nix { inherit sources; };
+      final.callPackage ./linux/package.nix {
+        inherit sources;
+        pnpm = final.callPackage ./linux/pnpm.nix { inherit (inputs) nix-pnpm; };
+      };
 in
 {
   inherit orca-ide;
