@@ -20,7 +20,7 @@ sib|release|CI pipeline: workflows from `.actlith`, bump PR flow, cache checks, 
 
 - `docs/SHELL.md` rules (`.` §C); env seams in header; external tools stubbed in bats.
 - bump: latest stable upstream tag (skip `-rc.N`); new → write `nix/sources.json` only: tag source hash, JS deps hash, `.deb` & piece hashes (`nix hash path`), darwin SRI `sha512` from manifests; refuse on missing manifest entry | size ≠ (D12). diff `sherpa-onnx/c-api/c-api.h` bundled vs pin (`gh api repos/k2-fsa/sherpa-onnx/compare/v<a>...v<b>`) (D25).
-- 1 bump PR at a time, branch `bump/orca-ide`, updated in place by the next run; ≥ 2 upstream releases since last bump → jump to latest, intermediates ⊥ built; `upstream.yml` concurrency group `upstream`, ⊥ cancel in progress (round 8).
+- 1 bump PR at a time, branch `bump/orca-ide`, updated in place by the next run; ≥ 2 upstream releases since last bump → jump to latest, intermediates ⊥ built; tending loop runs 1 upstream run at a time (owner 2026-10-24).
 - upstream immutability: `nix/sources.json` records tag → commit sha; bump re-reads it ∀ run. pinned version whose tag moved | asset hash changed → stop, open issue, ⊥ rewrite hashes for a version already pinned. new version only via new tag (round 9).
 - bump PR body lists npm packages added, removed & version-changed between old & new `pnpm-lock.yaml`, plus new `allowBuilds` entries (install scripts) in `pnpm-workspace.yaml`; report-only, ⊥ blocks auto-merge (round 9).
 - pin: `cachix pin pr0d1r2 orca-ide-<system> <path> --keep-revisions 2` only when path ≠ newest pinned revision (D40).
