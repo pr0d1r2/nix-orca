@@ -54,7 +54,7 @@ T1|x|`nixosModules.orca-ide` + VM test (`checks.x86_64-linux.module-nixos`)|V6
 T2|x|`services.orca-ide` hardened + exposure ratchet (`checks.x86_64-linux.service-nixos`, score 2.2)|V1
 T3|.|`darwinModules.orca-ide` + `orca-ide.sb` + probes (macOS runner, Tart reference)|V4,V5
 T4|.|`homeManagerModules.orca-ide` + activation check|V6
-T5|.|darwin app placement: nix-darwin `/Applications/Nix Apps`, home-manager its own apps dir; Tart probe: TCC grant (Accessibility, Screen Recording) given to version N still holds after update to N+1 at a new store path; result → §R & README (round 10)|V4
+T5|.|darwin app placement: nix-darwin `/Applications/Nix Apps`, home-manager its own apps dir; Tart probe: TCC grant (Accessibility, Screen Recording) given to version N still holds after update to N+1 at a new store path; result → §R & README (round 10). probe opt-in, off by default: own output, ⊥ `checks`, ⊥ CI; README says unverified until run (owner 2026-10-24, root T18)|V4
 T6|.|under full hardening: paired client session runs agent command via `serve`; same service in NixOS container inside VM|V2,V3
 
 ## §B BUGS
