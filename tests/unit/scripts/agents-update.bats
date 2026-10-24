@@ -12,7 +12,7 @@ setup() {
 #!/usr/bin/env bash
 echo "$*" >>"$BATS_TEST_TMPDIR/nix.log"
 if [ "$1 $2" = "flake metadata" ]; then
-  echo '{"locks":{"nodes":{"root":{"inputs":{"nixpkgs":["nixpkgs-lock","nixpkgs"],"nixpkgs-lock":"nixpkgs-lock","claude-code-nix":"claude-code-nix","nix-mistral-vibe":"nix-mistral-vibe"}}}}}'
+  echo '{"locks":{"nodes":{"root":{"inputs":{"nixpkgs":["nixpkgs-lock","nixpkgs"],"nixpkgs-lock":"nixpkgs-lock","claude-code-nix":"claude-code-nix","nix-mistral-vibe":"nix-mistral-vibe","nix-pnpm":"nix-pnpm"}}}}}'
 fi
 STUB
   chmod +x stubs/nix
@@ -28,5 +28,12 @@ STUB
 @test "the pin is never updated here (nixpkgs-lock bumps are their own PR)" {
   run --separate-stderr "$update"
   run grep -E "update .*nixpkgs" nix.log
+  [ "$status" -eq 1 ]
+}
+
+@test "nix-pnpm is never updated here: its bumps move the deps hashes, in their own PR" {
+  run --separate-stderr "$update"
+  [ "$status" -eq 0 ]
+  run grep -q "nix-pnpm" nix.log
   [ "$status" -eq 1 ]
 }
