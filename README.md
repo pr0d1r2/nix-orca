@@ -118,6 +118,18 @@ pkgs.orca-ide.override {
 }
 ```
 
+On NixOS the module has a switch per agent, each off by default (the
+whole set is about 12 GB):
+
+```nix
+programs.orca-ide.agents.opencode.enable = true;
+programs.orca-ide.agents.claude.enable = true;
+```
+
+An agent your nixpkgs config does not allow (unfree, insecure) is left
+out with a warning. `openclaw` is offered only this way, and only where
+you list it in `permittedInsecurePackages`.
+
 Six of them come from flakes that track their upstream releases ahead of
 nixpkgs. Override any of those from your own flake:
 
@@ -131,9 +143,10 @@ The inputs are `claude-code-nix`, `codex-cli-nix`, `gemini-cli-nix`,
 Seven agents are unfree (Claude Code, Amp, Crush, Cursor Agent, Copilot,
 Kiro, Rovo Dev). Through the overlay they appear only when your nixpkgs
 config allows unfree packages; the flake's own outputs allow them. Not
-packaged: `codebuff` (nixpkgs' package downloads the CLI on first run) and
-`openclaw` (nixpkgs marks it insecure; add it yourself with
-`permittedInsecurePackages` if you accept that). Orca knows 26 more agents
+packaged yet: `codebuff` (nixpkgs' package downloads the CLI on first
+run; a pinned flake of its own is planned). `openclaw`, which nixpkgs
+marks insecure, is never in `orca-ide-agents`; see the module switch
+above. Orca knows 26 more agents
 with no nix package yet; they are listed in `nix/agents/no-package.txt`.
 
 ## Releases
