@@ -153,11 +153,9 @@
               pkgs.deadnix
               pkgs.gitleaks
               pkgs.jq
-              # Cache pushes and pins, closure diffs, CVE scan, SBOM.
+              # Cache pushes and pins, CVE scan.
               pkgs.cachix
-              pkgs.nvd
               pkgs.vulnix
-              pkgs.sbomnix
             ]
             ++ present system
             ++ generated pkgs system;

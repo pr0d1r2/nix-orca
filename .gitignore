@@ -8,8 +8,5 @@ result*
 .envrc.local
 .private/
 
-# sbomnix's request cache, written to the working directory.
-http_cache.sqlite
-
 # Python bytecode from the stub server tests.
 __pycache__/
