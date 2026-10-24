@@ -11,6 +11,8 @@
   node-gyp,
   python3,
   jq,
+  pkgsCross,
+  runCommand,
   electron_43,
   wayland,
   agent-browser,
@@ -42,7 +44,17 @@
 let
   electron = electron_43;
   upstream = callPackage ./sources.nix { inherit sources; };
-  orcadTemplate = callPackage ../bin/orcad-template.nix { inherit sources; };
+  # Upstream's template piece, whole (nix/bin), and the pin's static rg for
+  # the Linux remote targets, which its manifest then names (nix/linux §C,
+  # root T18).
+  upstreamTemplate = callPackage ../bin/orcad-template.nix { inherit sources; };
+  ripgrep = {
+    x64 = pkgsCross.musl64.pkgsStatic.ripgrep;
+    arm64 = pkgsCross.aarch64-multiplatform-musl.pkgsStatic.ripgrep;
+  };
+  orcadTemplate =
+    runCommand "orcad-template-${sources.version}" { nativeBuildInputs = [ jq ]; }
+      "cp -r ${upstreamTemplate} $out && chmod -R u+w $out && bash ${../../scripts/build/template-ripgrep.sh} ${upstreamTemplate}/orcad-template.json ${ripgrep.x64}/bin/rg ${ripgrep.arm64}/bin/rg > $out/orcad-template.json";
 in
 stdenv.mkDerivation {
   pname = "orca-ide";
@@ -93,6 +105,8 @@ stdenv.mkDerivation {
     ORCA_COREUTILS = "${coreutils}/bin";
     ORCA_ARCH = if stdenv.hostPlatform.isAarch64 then "arm64" else "x64";
     ORCA_TEMPLATE = orcadTemplate;
+    ORCA_RG_X64 = "${ripgrep.x64}/bin/rg";
+    ORCA_RG_ARM64 = "${ripgrep.arm64}/bin/rg";
     ORCA_PNPM_GLOBAL_VIRTUAL_STORE = "0";
     pnpm_config_verify_deps_before_run = "false";
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
@@ -132,7 +146,14 @@ stdenv.mkDerivation {
   buildPhase = ". ${../../scripts/build/linux-build.sh}";
   installPhase = ". ${../../scripts/build/linux-install.sh}";
 
-  passthru = { inherit electron orcadTemplate; };
+  passthru = {
+    inherit
+      electron
+      orcadTemplate
+      upstreamTemplate
+      ripgrep
+      ;
+  };
 
   meta = {
     description = "Orca, an IDE that runs a fleet of coding agents (built from source)";
