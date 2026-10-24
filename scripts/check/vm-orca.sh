@@ -139,6 +139,8 @@ isolated)
   [ -e "$path" ] || fail "$path is missing on the host"
   pid=$(systemctl show -p MainPID --value "$unit")
   [ -n "$pid" ] && [ "$pid" != 0 ] || fail "$unit has no main process"
+  # A control: without it, an nsenter that cannot enter passes both probes.
+  nsenter -t "$pid" -m test -e / || fail "cannot look into $unit's mount namespace"
   ! nsenter -t "$pid" -m test -e "$path" || fail "$unit sees $path (nix/modules V8)"
   if nsenter -t "$pid" -m touch /.vm-orca-probe 2>/dev/null; then
     nsenter -t "$pid" -m rm -f /.vm-orca-probe || true
