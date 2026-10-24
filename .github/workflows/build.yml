@@ -74,8 +74,8 @@ jobs:
       - if: matrix.system != 'x86_64-darwin'
         run: nix build .#packages.${{ matrix.system }}.orca-ide --rebuild --no-link
       # Linux orca-ide closures only, pushed and pinned (root V5, D40); the
-      # bump PR from this repository's own branch pushes, so the release
-      # builds nothing (D20). Fork PRs get no secret and skip it (D18).
+      # bump PR from this repository's own branch pushes, so its merge
+      # builds nothing new (D20). Fork PRs get no secret and skip it (D18).
       - if: >-
           endsWith(matrix.system, '-linux')
           && (github.event_name != 'pull_request'
@@ -83,3 +83,33 @@ jobs:
         run: nix develop ./dev --command bash scripts/ci/cache-push.sh ${{ matrix.system }}
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+  # On main only, after every system is green (root T19): each Linux path
+  # answers from the cache, since a cachix push failure does not fail its
+  # job, and a critical CVE in a path this package owns opens an issue
+  # (round 9, D15). Builds nothing: the paths come from the cache (D20).
+  watch:
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342  # v31.11.0
+        with:
+          extra_nix_config: |
+            extra-substituters = https://pr0d1r2.cachix.org
+            extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
+      - run: nix develop ./dev --command bash scripts/ci/verify-cache.sh x86_64-linux aarch64-linux
+      # Report-only: the paths are in the cache already (`scripts` node, round 9).
+      - run: >-
+          nix develop ./dev --command bash scripts/ci/vulnix-watch.sh
+          "$(nix build --no-link --print-out-paths .#packages.x86_64-linux.orca-ide)"
+          "$(nix build --no-link --print-out-paths .#packages.aarch64-linux.orca-ide)"
+        env:
+          GH_TOKEN: ${{ github.token }}
