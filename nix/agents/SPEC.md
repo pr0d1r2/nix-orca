@@ -25,7 +25,7 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 - ⊥ cachix push of ∀ agent | `orca-ide-agents` (licence, 5 GB, `.:V5`).
 - agent inputs updated in own PR, opened by the owner's tending loop w/ its token (`release` §C, owner 2026-10-24) so `build.yml` runs; builds & checks, ⊥ release (D19, D43). ⊥ auto-merge: an update changes third-party nix code (`package.nix`) evaluated in this build; owner merges after reading the diff (round 9; D10 covers only upstream Orca bumps).
 - later, ⊥ v1: each agent in own `systemd-nspawn` container | hardened unit.
-- no-package list (V5), 26 `TuiAgent` ids at `v1.4.230`: `codebuddy`, `openclaude`, `autohand`, `ante`, `trae`, `opencode2`, `mimo-code`, `omp`, `prime-agent`, `qoder`, `qoder-cn`, `antigravity`, `kilo`, `aug`, `cline`, `freebuff`, `command-code`, `continue`, `droid`, `kimi`, `hermes`, `muse`, `dsh`, `zcode`, `devin`, `jcode`. potential, ⊥ v1: packaged only after first release (root T10) (owner, 2026-10-20).
+- no-package list (V5), 26 `TuiAgent` ids at `v1.4.230`: `codebuddy`, `openclaude`, `autohand`, `ante`, `trae`, `opencode2`, `mimo-code`, `omp`, `prime-agent`, `qoder`, `qoder-cn`, `antigravity`, `kilo`, `aug`, `cline`, `freebuff`, `command-code`, `continue`, `droid`, `kimi`, `hermes`, `muse`, `dsh`, `zcode`, `devin`, `jcode`. potential, ⊥ v1: packaged only after first push (root T10) (owner, 2026-10-20; release → push 2026-10-24).
 - agent set by `TuiAgent` id (§I), 17: `claude`, `codex`, `gemini`, `pi`, `grok`, `mistral-vibe`, `opencode`, `aider`, `goose`, `amp`, `crush`, `cursor`, `copilot`, `kiro`, `qwen-code`, `rovo`, `codebuff` (`nix-codebuff` flake, pinned CLI; pin pkg = launcher, fails V3); + `openclaw` only where consumer permits insecure, ⊥ in `orca-ide-agents`. `mistral-vibe` ⊥ x86_64-darwin: upstream crane IFD at eval breaks `nix:V2`; back once `nix-mistral-vibe` T21 lands (owner 2026-10-24). `claude-agent-teams` = Orca itself. id ≠ command: `cursor` (`cursor-agent`), `kiro` (`kiro-cli`), `mistral-vibe` (`vibe`), `qwen-code` (`qwen`), `rovo` (`acli`).
 
 ## §I INTERFACES
@@ -56,7 +56,7 @@ T1|x|agent set from pin + `detectCmd` check|V1,V2
 T2|x|5 `flake = false` inputs + `nix-mistral-vibe`|V4
 T3|x|`orca-ide-agents` + `--version` checks|V3
 T4|.|agent-input update PR (`scripts`, scripts done: `scripts/agents-update.sh`, `scripts/ci/agents-pr.sh`; run by the tending loop)|-
-T5|.|after first release (root T10): packaging nodes for no-package list (§C), nixpkgs first where licence allows|V5
+T5|.|after first push (root T10): packaging nodes for no-package list (§C), nixpkgs first where licence allows|V5
 
 ## §B BUGS
 
