@@ -54,7 +54,7 @@ id|status|task|cites
 T1|x|launch VM test; speech worker load = `checks.<linux>.sherpa-load`|V4
 T2|.|detection layer|V2
 T3|x|stub server + recorded scripts per protocol|V1
-T4|.|stub layer, endpoint matrix; `opencode` done (`agents-stub`; demo: dev `agents-gate`)|V3
+T4|.|stub layer, endpoint matrix; `opencode` done (`agents-stub`; demos: dev `agents-gate`, `onboarding`)|V3
 T5|.|dogfood demo; 1st task: `demo-assets.sh` unstages on gate refusal|-
 
 ## §B BUGS
