@@ -39,7 +39,7 @@ V1: `codesign --verify --deep --strict` passes on store `Orca.app` (D16).
 V2: `lipo -archs Orca.app/Contents/MacOS/Orca` = `arm64` on `aarch64-darwin`, `x86_64` on `x86_64-darwin` (D39).
 V5: `codesign -dv` `TeamIdentifier` of `Orca.app` = value pinned in `nix/sources.json` at first darwin bump; change → check fails, human review before re-pin (round 9).
 V3: `Orca.app` tree ≡ zip contents byte for byte.
-V4: unpack reproducible: `nix build --rebuild` bit-identical ∴ attested NAR hash reproducible by consumer (D30, D41).
+V4: unpack reproducible: `nix build --rebuild` bit-identical ∴ NAR hash reproducible by consumer (D30, D41).
 
 ## §T TASKS
 
