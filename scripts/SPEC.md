@@ -2,7 +2,7 @@
 
 ## §G GOAL
 
-bash scripts CI & humans run: upstream bump, release notes, cachix pins, closure diff & budget, vulnix & Electron-lag reports, SBOM, agent-input update. each w/ mirrored bats.
+bash scripts CI & humans run: upstream bump, cachix pins & cache check, closure budget, vulnix watch, agent-input update. each w/ mirrored bats.
 
 ## §N NAV
 
@@ -20,19 +20,19 @@ sib|release|CI pipeline: workflows from `.actlith`, bump PR flow, cache checks, 
 
 - `docs/SHELL.md` rules (`.` §C); env seams in header; external tools stubbed in bats.
 - bump: latest stable upstream tag (skip `-rc.N`); new → write `nix/sources.json` only: tag source hash, JS deps hash, `.deb` & piece hashes (`nix hash path`), darwin SRI `sha512` from manifests; refuse on missing manifest entry | size ≠ (D12). diff `sherpa-onnx/c-api/c-api.h` bundled vs pin (`gh api repos/k2-fsa/sherpa-onnx/compare/v<a>...v<b>`) (D25).
-- 1 bump PR at a time, branch `bump/orca-ide`, updated in place by the next run; ≥ 2 upstream releases since last bump → jump to latest, intermediates ⊥ released; `upstream.yml` concurrency group `upstream`, ⊥ cancel in progress (round 8).
+- 1 bump PR at a time, branch `bump/orca-ide`, updated in place by the next run; ≥ 2 upstream releases since last bump → jump to latest, intermediates ⊥ built; `upstream.yml` concurrency group `upstream`, ⊥ cancel in progress (round 8).
 - upstream immutability: `nix/sources.json` records tag → commit sha; bump re-reads it ∀ run. pinned version whose tag moved | asset hash changed → stop, open issue, ⊥ rewrite hashes for a version already pinned. new version only via new tag (round 9).
 - bump PR body lists npm packages added, removed & version-changed between old & new `pnpm-lock.yaml`, plus new `allowBuilds` entries (install scripts) in `pnpm-workspace.yaml`; report-only, ⊥ blocks auto-merge (round 9).
 - pin: `cachix pin pr0d1r2 orca-ide-<system> <path> --keep-revisions 2` only when path ≠ newest pinned revision (D40).
-- cache watch: release notes carry compressed bytes this release pushed (`cachix push` output); monthly job sums last 30 days & this repo's pinned paths; > 4 GB pushed (D40 expects ~3) | > 0.5 GB pinned (D40 expects ~0.35) → issue, ~10% over a 5 GB tier shared w/ the fleet (D40, D41; round 11).
-- release notes: ∀ field of `.` §I release; closure diff via `nvd` vs previous release (D14); vulnix findings & Electron-lag report, both report-only (D15); SBOM via `sbomnix` CycloneDX & SPDX (D29).
-- vulnix & Electron-lag stay report-only (D15); a new finding w/ CVSS ≥ 9.0 in a path the package owns (⊥ pin paths, which nixpkgs tracks) opens an issue once per CVE; ⊥ blocks release (round 9).
+- cache watch: monthly job sums compressed bytes `cachix push` reported in `build.yml` runs on `main` over last 30 days, & this repo's pinned paths (root T19); > 4 GB pushed (D40 expects ~3) | > 0.5 GB pinned (D40 expects ~0.35) → issue, ~10% over a 5 GB tier shared w/ the fleet (D40, D41; round 11).
+- vulnix report-only (D15), run by `build.yml` `watch` on `main`: a new finding w/ CVSS ≥ 9.0 in a path the package owns (⊥ pin paths, which nixpkgs tracks) opens an issue once per CVE; ⊥ fails the build (round 9). release notes, SBOM & Electron-lag report dropped (root T19).
 - ⊥ network in bats; ⊥ real cachix | GitHub call in tests.
 
 ## §I INTERFACES
 
 - cmd: `scripts/bump.sh` → edits `nix/sources.json`, exit 0 = bumped, 3 = up to date, 4 = upstream moved a pinned tag | asset (round 9), 1 = tool refused.
-- cmd: `scripts/release-notes.sh <system>...` → markdown stdout.
+- cmd: `scripts/ci/verify-cache.sh <linux-system>...` → exit 1 when a path ∉ cache.
+- cmd: `scripts/ci/vulnix-watch.sh <path>...` → issues, exit 0.
 - cmd: `scripts/cachix-pin.sh <system> <path>`.
 - cmd: `scripts/closure-budget.sh <system> <path>` → exit 1 over budget.
 - cmd: `scripts/agents-update.sh` → `nix flake update` of agent inputs.
@@ -43,7 +43,7 @@ sib|release|CI pipeline: workflows from `.actlith`, bump PR flow, cache checks, 
 V1: bump writes only `nix/sources.json` (`nix:V3`).
 V2: bump ⊥ picks `-rc.N` (D7).
 V3: pin script ⊥ pins same path twice in a row; ⊥ calls cachix delete | retention API (`.:V6`).
-V4: release notes ⊥ reference binary asset upload (`.:V3`).
+V4: release notes ⊥ reference binary asset upload (`.:V3`). [superseded by `.:V11`]
 V5: ∀ script has mirrored bats & passes w/ stubs only.
 
 ## §T TASKS
@@ -51,7 +51,6 @@ V5: ∀ script has mirrored bats & passes w/ stubs only.
 id|status|task|cites
 T1|.|`bump.sh` + manifest refusal + sherpa header diff|V1,V2
 T2|x|`cachix-pin.sh`|V3
-T3|x|`release-notes.sh` w/ nvd, vulnix, Electron lag; SBOM via `scripts/sbom.sh`|V4
 T4|x|`closure-budget.sh`|V5
 T5|x|`agents-update.sh`|V5
 T6|x|`demo-assets.sh [STORE]` → `docs/demo/`|V5
