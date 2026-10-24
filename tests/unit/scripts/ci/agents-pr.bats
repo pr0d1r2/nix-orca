@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# scripts/ci/agents-pr.sh (nix/agents T4, round 9): the daily agent-input
+# scripts/ci/agents-pr.sh (nix/agents T4, round 9): the agent-input
 # PR, opened for the owner to read and merge. agents-update.sh, git and gh
 # are stubs that log their calls.
 # Each @test runs in its own subshell, so its exports are meant to be local.

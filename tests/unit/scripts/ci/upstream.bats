@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 # scripts/ci/upstream.sh (`release` T1, scripts §C rounds 8, 9, D10): the
-# daily upstream run. bump.sh, git and gh are stubs that log their calls.
+# upstream run the tending loop calls. bump.sh, git and gh are stubs that
+# log their calls.
 # Each @test runs in its own subshell, so its exports are meant to be local.
 # shellcheck disable=SC2030,SC2031
 
@@ -97,7 +98,7 @@ STUB
   run ! grep -q "^git " calls
 }
 
-@test "issues use the job token, PRs the App token (round 8)" {
+@test "issues use ISSUE_TOKEN when set, PRs GH_TOKEN" {
   export STUB_BUMP=4 GH_TOKEN=app ISSUE_TOKEN=job
   run --separate-stderr "$upstream"
   [ "$(sort -u tokens)" = "job issue" ]

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# The daily upstream run (`release` T1). Runs the bump, then:
+# The upstream run, called by the owner's tending loop (`release` §C,
+# owner 2026-10-24). Runs the bump, then:
 # - exit 3, up to date: nothing else
 # - exit 0, bumped: commit nix/sources.json to `bump/orca-ide`, force-push,
 #   open the one bump PR or update it in place (round 8), and turn on
@@ -7,9 +8,8 @@
 # - exit 4, upstream moved a pinned tag or asset: one issue, never reopened
 #   while open, and the run fails (round 9)
 # - anything else: the run fails, nothing pushed
-# Runs with a GitHub App token in GH_TOKEN, so the PR triggers the build;
-# issues go through ISSUE_TOKEN, the job's own token with `issues: write`
-# (the App holds contents and pull-requests only, round 8).
+# GH_TOKEN is the loop's token, so the PR triggers the build; issues go
+# through ISSUE_TOKEN when it is set, GH_TOKEN otherwise.
 # Usage: upstream.sh
 # Env: BUMP, PR_BODY, GIT, GH name the tools (defaults: scripts/bump.sh,
 # scripts/bump/pr-body.sh, git, gh);

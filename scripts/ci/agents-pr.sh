@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# The daily agent-input PR (nix/agents T4): update every agent input; when
+# The agent-input PR (nix/agents T4): update every agent input; when
 # flake.lock moved, commit it to `agents/update`, force-push, and open the
 # one PR or update it in place. Never auto-merged: an update changes
 # third-party nix code evaluated in this build, and the owner merges after
-# reading the diff (round 9). Runs with a GitHub App token in GH_TOKEN, so
-# the PR triggers the build (round 8).
+# reading the diff (round 9). Called by the owner's tending loop with its
+# token in GH_TOKEN, so the PR triggers the build (owner 2026-10-24).
 # Usage: agents-pr.sh
 # Env: AGENTS_UPDATE, GIT, GH name the tools (defaults:
 # scripts/agents-update.sh, git, gh).
