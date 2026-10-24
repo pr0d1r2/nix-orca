@@ -2,7 +2,7 @@
 
 ## §G GOAL
 
-`nix-orca` — Orca (`stablyai/orca`, desktop app running fleet of coding agents) as nix flake on fleet nixpkgs pin (`nixpkgs-lock`), ∀ 4 fleet systems, attachable to NixOS, nix-darwin & home-manager closures w/ 1 input. Linux built from source on pin's Electron; darwin = upstream's signed `Orca.app` untouched. built daily; Linux cached on `pr0d1r2.cachix.org`; ⊥ GitHub release (T19).
+`nix-orca` — Orca (`stablyai/orca`, desktop app running fleet of coding agents) as nix flake on fleet nixpkgs pin (`nixpkgs-lock`), ∀ 4 fleet systems, attachable to NixOS, nix-darwin & home-manager closures w/ 1 input. Linux built from source on pin's Electron; darwin = upstream's signed `Orca.app` untouched. built on each bump; Linux cached on `pr0d1r2.cachix.org`; ⊥ GitHub release (T19).
 
 LINEAGE: `SPEC-PROMPT.md` (HISTORICAL after this run). where it & this spec differ, this spec wins. prompt decisions cited `D<n>`. paradigm `e5605a3` + its `docs/NIX.md` & `docs/SHELL.md`; fleet rules cited `paradigm/V<n>`.
 
@@ -37,11 +37,11 @@ self|.|-
 - stable upstream releases only, ⊥ `-rc.N` (D7).
 - program `orca-ide` only, ⊥ `orca` (screen reader clash, D5).
 - ⊥ self-update: update arrives as new flake revision only (D6); updater & telemetry off switches opt-in, default = upstream behaviour (D26, D27).
-- cadence: build daily from `main`; upstream stable version | `nixpkgs-lock` bump → built, checked, cached (D19). build once: bump PR from own branch pushes cachix, its merge builds nothing new (D20). Orca & `nixpkgs-lock` bump PRs merge themselves when ∀ required check green (D10); agent-input PRs wait for the owner (round 9).
+- cadence: owner's tending loop opens bump & agent-input PRs, ⊥ GitHub App (owner 2026-10-24); upstream stable version | `nixpkgs-lock` bump → built, checked, cached (D19). build once: bump PR from own branch pushes cachix, its merge builds nothing new (D20). Orca & `nixpkgs-lock` bump PRs merge themselves when ∀ required check green (D10); agent-input PRs wait for the owner (round 9).
 - CI mechanics (workflows, tokens, permissions, bump flow, cache checks) in `release` node.
 - cachix only (owner 2026-10-24, amends D22): ⊥ GitHub release, ⊥ tag, ⊥ attestation, ⊥ SBOM; Linux bytes from cachix, darwin from upstream's zip. round 7's `-nix.<n>` tags & owner-dispatched packaging fix dropped: a fix lands on `main` & is pushed like any build.
 - cache `pr0d1r2.cachix.org`: cachix free tier, 5 GB shared w/ fleet (D40). push = Linux `orca-ide` closure only: ⊥ darwin (D41), ⊥ agents, ⊥ unfree (D43), ⊥ `orca-ide-bin` (D38). pins keep 2 Linux revisions / system (D40). ⊥ change cache retention, ⊥ delete path.
-- outward acts ! explicit human approval: GitHub repo creation, first push, cachix token, bump GitHub App & its secrets (round 8), first push (it brings the first cachix push). after it, cachix pushes go out behind required checks w/o per-push approval: `.pklith` `exempt` row for `paradigm/V32` citing `pr0d1r2/paradigm#24` (D37). ⊥ publish to irreversible registry.
+- outward acts ! explicit human approval: GitHub repo creation, first push (it brings the first cachix push), cachix token. after first push, cachix pushes go out behind required checks w/o per-push approval: `.pklith` `exempt` row for `paradigm/V32` citing `pr0d1r2/paradigm#24` (D37). ⊥ publish to irreversible registry.
 - Linux work from workstation → `nix-builder.local` (x86_64-linux, `kvm`, `nixos-test`, `big-parallel`); `aarch64-linux` CI only (D34). builder configured outside this repo; ⊥ push from builder.
 - first hands-on test: Linux, unprivileged account (⊥ sudo, ∉ `trusted-users`) (D38).
 - ⊥ private repo named in committed text; ∀ repo named checked by `gh repo view` before first push (`paradigm/V37`).
