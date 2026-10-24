@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 # scripts/ci/vulnix-watch.sh (scripts §C round 9, D15): a vulnix finding
 # with CVSS >= 9.0 in a path this package owns opens one issue per CVE;
-# pin paths are nixpkgs' to track. Never fails the release. vulnix and gh
+# pin paths are nixpkgs' to track. Never fails the build. vulnix and gh
 # are stubs.
 # Each @test runs in its own subshell, so its exports are meant to be local.
 # shellcheck disable=SC2030,SC2031

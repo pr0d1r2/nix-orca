@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
-# scripts/ci/verify-cache.sh (`release` §C round 8, D20): before a release,
-# every Linux orca-ide store path answers from the cache. nix and curl are
-# stubs.
+# scripts/ci/verify-cache.sh (`release` §C round 8, D20, root T19): after the
+# push on main, every Linux orca-ide store path answers from the cache. nix
+# and curl are stubs.
 # Each @test runs in its own subshell, so its exports are meant to be local.
 # shellcheck disable=SC2030,SC2031
 
@@ -34,18 +34,18 @@ STUB
   grep -q "https://pr0d1r2.cachix.org/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.narinfo" calls
 }
 
-@test "a path missing from the cache stops the release" {
+@test "a path missing from the cache fails the check" {
   export STUB_MISSING=bbbbbbbb
   run --separate-stderr "$verify" x86_64-linux aarch64-linux
   [ "$status" -eq 1 ]
-  [ "$stderr" = "verify-cache: aarch64-linux /nix/store/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb-orca-ide-1.4.232 is not in pr0d1r2.cachix.org; no release" ]
+  [ "$stderr" = "verify-cache: aarch64-linux /nix/store/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb-orca-ide-1.4.232 is not in pr0d1r2.cachix.org" ]
 }
 
-@test "a Linux system with no orca-ide package stops the release" {
+@test "a Linux system with no orca-ide package fails the check" {
   export STUB_NO_ARM=1
   run --separate-stderr "$verify" x86_64-linux aarch64-linux
   [ "$status" -eq 1 ]
-  [ "$stderr" = "verify-cache: aarch64-linux has no orca-ide package; no release" ]
+  [ "$stderr" = "verify-cache: aarch64-linux has no orca-ide package" ]
 }
 
 @test "darwin is never expected in the cache (root V5)" {
