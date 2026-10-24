@@ -7,12 +7,15 @@
 # shell options; a failing step fails the phase.
 # Env: ORCA_ARCH (x64 | arm64), ELECTRON_DIST, ELECTRON_HEADERS,
 # ELECTRON_VERSION, ELECTRON_MAJOR_CHECK (scripts/check/electron-major.sh),
-# mobilePnpmDeps (the mobile/ deps fetch), ORCA_HELPER_RPATH (where the
-# clipboard helper finds what it dlopens).
+# ORCA_HELPER_RPATH (where the clipboard helper finds what it dlopens);
+# ORCA_MOBILE=1 builds Orca Mobile's web bundle, from mobilePnpmDeps (the
+# mobile/ deps fetch). Without it the app has no bundle, which upstream's
+# app treats as an install without Orca Mobile.
 
 # shellcheck disable=SC2154 # set by the derivation.
 : "${ORCA_ARCH:?}" "${ELECTRON_DIST:?}" "${ELECTRON_HEADERS:?}" "${ELECTRON_VERSION:?}" \
-  "${ELECTRON_MAJOR_CHECK:?}" "${mobilePnpmDeps:?}" "${ORCA_HELPER_RPATH:?}"
+  "${ELECTRON_MAJOR_CHECK:?}" "${ORCA_HELPER_RPATH:?}"
+mobile=${ORCA_MOBILE:-}
 
 runHook preBuild
 
@@ -20,10 +23,12 @@ bash "$ELECTRON_MAJOR_CHECK" package.json "$ELECTRON_VERSION"
 
 # mobile/ has its own lockfile; its postinstall generates sources the web
 # bundle imports.
-pnpmRoot=mobile pnpmDeps=$mobilePnpmDeps pnpmConfigHook
-(cd mobile && node scripts/build-terminal-webview-engine.mjs &&
-  node scripts/build-mermaid-page-engine.mjs &&
-  node scripts/build-terminal-document-script.mjs)
+if [ "$mobile" = 1 ]; then
+  pnpmRoot=mobile pnpmDeps=${mobilePnpmDeps:?} pnpmConfigHook
+  (cd mobile && node scripts/build-terminal-webview-engine.mjs &&
+    node scripts/build-mermaid-page-engine.mjs &&
+    node scripts/build-terminal-document-script.mjs)
+fi
 
 # Native modules against the pin's Electron. Upstream's rebuild script
 # downloads Electron first; node-gyp with the pin's headers needs nothing.
@@ -51,8 +56,10 @@ node config/scripts/run-electron-vite-build.mjs
 node config/scripts/verify-skills-cli-runtime.cjs out
 node config/scripts/project-renderer-web-client.mjs
 node config/scripts/verify-web-build.mjs
-node config/scripts/build-mobile-web-app-bundle.mjs
-node config/scripts/verify-mobile-web-app-bundle.mjs
+if [ "$mobile" = 1 ]; then
+  node config/scripts/build-mobile-web-app-bundle.mjs
+  node config/scripts/verify-mobile-web-app-bundle.mjs
+fi
 
 # Upstream's flags. The helper dlopens libwayland-client and GTK by name,
 # which on NixOS only its RUNPATH can find.
