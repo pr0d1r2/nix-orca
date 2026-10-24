@@ -95,7 +95,8 @@ STUB
 # and STUB_WRITABLE.
 echo "nsenter $*" >>"$BATS_TEST_TMPDIR/nsenter.log"
 case "$4" in
-test) [ -n "${STUB_SEES:-}" ] ;;
+test) [ "$6" = / ] && [ -z "${STUB_BLIND:-}" ] && exit 0
+  [ -n "${STUB_SEES:-}" ] ;;
 touch) [ -n "${STUB_WRITABLE:-}" ] ;;
 esac
 STUB
@@ -224,6 +225,14 @@ STUB
   run --separate-stderr "$vm" isolated orca-ide.service home/alice/secret
   [ "$status" -eq 1 ]
   [ "$stderr" = "vm-orca: home/alice/secret is missing on the host" ]
+}
+
+@test "isolated: a namespace nsenter cannot look into fails, so the check is not vacuous" {
+  mkdir -p home/alice && touch home/alice/secret
+  export STUB_BLIND=1
+  run --separate-stderr "$vm" isolated orca-ide.service home/alice/secret
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: cannot look into orca-ide.service's mount namespace" ]
 }
 
 @test "isolated: a unit with no main process fails" {
