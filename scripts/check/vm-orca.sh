@@ -3,11 +3,11 @@
 # tests T1). The test driver only takes Python, so the tests call this
 # and keep their Python to the driver's own calls.
 # Usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT |
-#        listening PORT ADDRESS | exposure UNIT FILE | seed USER |
+#        listening PORT ADDRESS | exposure UNIT FILE | seed USER [onboarding] |
 #        stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop |
 #        agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT |
 #        repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA |
-#        commits USER DIR N
+#        commits USER DIR N | keys USER KEY...
 #   module: USER's orca-ide --version prints VERSION; the desktop entry and
 #           a hicolor icon are in the system profile
 #   app:    as USER, Xvfb on :99 and `orca-ide open`; the runtime connects
@@ -17,9 +17,11 @@
 #   listening: every listener on PORT is on ADDRESS
 #   exposure: `systemd-analyze security UNIT` scores at most UNIT's line in
 #           FILE (`unit score`, `#` comments), the .exposure ratchet
-#   seed:   before `app`, USER's Orca state says onboarding is done, every
-#           tip seen, no tour or star prompt may start and telemetry is off,
-#           so the window shows the work (tests T4)
+#   seed:   before `app`, USER's Orca state says onboarding is done (unless
+#           `onboarding`), every tip seen, no tour or star prompt may start
+#           and telemetry is off, so the window shows the work (tests T4)
+#   keys:   as USER, xdotool presses each KEY on :99, ORCA_VM_KEY_PAUSE
+#           seconds apart (default 2)
 #   stub:   as USER, the stub model server (tests/stub under ORCA_VM_SRC)
 #           replays tests/stub/scripts/SCRIPT, or SCRIPT itself when it is
 #           an absolute path, on PORT in WORKDIR
@@ -44,7 +46,7 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA | commits USER DIR N" >&2
+  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER [onboarding] | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA | commits USER DIR N | keys USER KEY..." >&2
   exit 2
 }
 fail() {
@@ -129,13 +131,17 @@ exposure)
   fi
   ;;
 seed)
-  [ "$#" -eq 2 ] || usage
+  [ "$#" -eq 2 ] || { [ "$#" -eq 3 ] && [ "$3" = onboarding ]; } || usage
   user=$2
   # The fields Orca's dev builds set to skip first-run education, and
   # telemetry off: a state file present at first start reads as an install
   # older than telemetry, which gets the consent banner. New tips in an
-  # Orca bump show in the recording until listed here.
-  state='{"onboarding":{"flowVersion":4,"closedAt":1,"outcome":"completed","lastCompletedStep":5},'
+  # Orca bump show in the recording until listed here. With `onboarding`
+  # the wizard is left to run, for the onboarding video.
+  state='{'
+  if [ "$#" -eq 2 ]; then
+    state+='"onboarding":{"flowVersion":4,"closedAt":1,"outcome":"completed","lastCompletedStep":5},'
+  fi
   state+='"ui":{"contextualToursAutoEligible":false,"starNagCompleted":true,"featureTipsSeenIds":["native-chat-upgrade","agent-session-search","orca-cli","cmd-j-palette","voice-dictation"]},'
   state+='"settings":{"telemetry":{"existedBeforeTelemetryRelease":false,"optedIn":false}}}'
   as "$user" "test ! -e ~/.config/orca/orca-data.json" ||
@@ -237,6 +243,15 @@ commits)
   count() { as "$user" "git -C $(printf %q "$dir") rev-list --count HEAD" 2>/dev/null || echo 0; }
   enough() { [ "$(count)" -ge "$want" ]; }
   wait_for enough || fail "$dir has $(count) commits after $timeout s, want $want"
+  ;;
+keys)
+  [ "$#" -ge 3 ] || usage
+  user=$2
+  shift 2
+  for key in "$@"; do
+    as "$user" "DISPLAY=:99 xdotool key $(printf %q "$key")"
+    sleep "${ORCA_VM_KEY_PAUSE:-2}"
+  done
   ;;
 *)
   usage
