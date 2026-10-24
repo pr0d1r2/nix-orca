@@ -92,12 +92,12 @@ V10: ⊥ private repo named in committed text (`paradigm/V37`).
 id|status|task|cites
 T8|.|waves via `sherd wave`, build order: `nix/linux` x86_64-linux on `nix-builder.local` + unprivileged-user test → `nix/bin` → aarch64-linux (CI) → `nix/darwin` → `scripts` bump → CI → release → `docs` → `nix/modules` stacked → `nix/agents` → `tests` integration layers|V1,V2,V7
 T9|.|CI & release pipeline, see `release` node|V4,V5,V6
-T10|.|GitHub repo `pr0d1r2/nix-orca`, first push, first release `-nix.1`, ∀ w/ approval; `gh repo view` ∀ named repo first|V9,V10
+T10|.|GitHub repo `pr0d1r2/nix-orca` created public & empty 2026-10-24 (owner); first push ! owner approval; `CACHIX_AUTH_TOKEN` set by owner (`gh secret set`); `gh repo view` ∀ named repo first|V9,V10
 T11|.|drop release-approval waiver row (§C) when `pr0d1r2/paradigm#24` decided|V9
 T12|.|follow paradigm: when paradigm moves past `e5605a3`, own PR re-vendors `FORMAT.md` & `FORMAT-EXTENSIONS.md`, updates LINEAGE pin, passes spec checks; owner merges (round 11)|-
 T14|.|gate follow-ups from T6: V2 check once `nix/linux` builds; pklith pin past v0.1.0 brings hk 2.7.0 schema, `bats-unit`, `tdd-order` rule, `## exempt` table (release waiver moves there); name guard allowlist half in CI (`paradigm/V37`)|V2,V9,V10
 T16|.|register `nix-builder.local` as this Mac's nix builder (daemon `builders` empty); `root@` ssh works since 2026-10-21, agent builds there over ssh meanwhile|-
-T18|.|owner amendments, review of rounds 7–11 & agent decisions 2026-10-20…23 (2026-10-24; rest approved): lean package, features opt-in, Orca Mobile off (D35 amended); per-agent options, all on but `openclaw` (D26); own flakes `nix-codebuff` (pinned versions) & `nix-pnpm` (pnpm 12; D22); ripgrep swapped in binary & `orcad-template` manifest (D36, amends `nix/linux` R5); `mistral-vibe` on x86_64-darwin only if buildable w/o IFD (D27); TCC probe opt-in, off by default (D19)|-
+T19|.|cachix only (owner 2026-10-24, amends D22): ⊥ GitHub release & tag. drop `release.yml`, `scripts/ci/release-{tag,subjects,files}.sh`, `scripts/release-notes.sh`, `scripts/sbom.sh` + bats, attestations; rehome `vulnix-watch.sh` (decision 16) & `verify-cache.sh` to `build.yml` on `main`, cache-usage watch (decision 24) off `cachix push` output; amend §C release line, V9 & waiver, `release`, `scripts`, `docs` nodes, README "Releases", SECURITY, LLM-DISCLAIMER|-
 
 ## §B BUGS
 
