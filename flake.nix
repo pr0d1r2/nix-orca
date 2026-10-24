@@ -209,6 +209,11 @@
             inherit (nixpkgs.lib) nixosSystem;
             module = inputs.self.nixosModules.orca-ide;
           };
+          service-lan = import ./nix/tests/service-lan.nix {
+            inherit (pkgs) testers netcat;
+            module = inputs.self.nixosModules.orca-ide;
+            inherit (own) orca-ide;
+          };
           launch = import ./nix/tests/launch.nix {
             inherit (pkgs) testers xvfb jq;
             module = inputs.self.nixosModules.orca-ide;
