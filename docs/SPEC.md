@@ -18,7 +18,7 @@ sib|release|CI pipeline: workflows from `.actlith`, bump PR flow, cache checks, 
 
 ## §C CONSTRAINTS
 
-- README: platform table, pin graph, cachix trust trap (untrusted user ignores flake `nixConfig`; admin adds substituter & key), attach overlay to NixOS / nix-darwin / home-manager, agents & overrides, releases = text only & how to fetch by store path.
+- README: platform table, pin graph, cachix trust trap (untrusted user ignores flake `nixConfig`; admin adds substituter & key), attach overlay to NixOS / nix-darwin / home-manager, agents & overrides, ⊥ GitHub release (root T19): builds from cachix & how to fetch by store path.
 - README notes (D26, D27, D32): Ubuntu ≥ 24.04 AppArmor userns → load shipped profile, ⊥ suggest `--no-sandbox`; updater override on distros w/ `dpkg`; darwin updater & telemetry limits; `Nix Apps` Spotlight; darwin sandbox opt-out → please open issue.
 - README note (round 7): ⊥ use Orca's Settings → CLI "Register in PATH" under nix: it symlinks a command path (`orca` on darwin) to the launcher inside the store path, which dangles after update + GC; `bin/orca-ide` from the package is the CLI.
 - README note (round 10): on Linux outside NixOS the host's GPU driver is ⊥ in the store, so Chromium falls back to software GL; Orca still runs. hardware GL needs a host-driver wrapper (nixGL-style) the consumer adds; package ⊥ bundles host drivers.

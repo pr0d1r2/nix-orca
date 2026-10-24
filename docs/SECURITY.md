@@ -15,8 +15,8 @@ here only if this packaging makes it worse.
 
 ## Supported versions
 
-Nothing is released yet. Once releases exist, the latest
-`v<upstream>-nix.<n>` is supported.
+There are no releases or tags. The newest commit on `main` is supported,
+with the Linux builds it pushed to the cache.
 
 ## What this flake trusts, and what it promises
 
@@ -37,9 +37,10 @@ Nothing is released yet. Once releases exist, the latest
   and give secrets only to jobs on this repository's own branches. Bump
   pull requests come from a GitHub App token limited to contents and pull
   requests.
-- **Releases** carry no binaries; their NAR hashes are attested, and a
-  rebuild of the package is checked to be bit for bit identical.
+- **Builds** are rebuilt in CI and checked to be bit for bit identical.
+  There is no GitHub release and no attestation: the cache's signature,
+  under the key in the flake's `nixConfig`, says a path came from here.
 
 In scope: anything that would let an upstream change, a third-party input
-or a pull request reach the cache, a release or a user's machine
+or a pull request reach the cache or a user's machine
 unreviewed, and any deviation from the promises above.

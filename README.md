@@ -23,8 +23,8 @@ gate refuses it (shellcheck), and OpenCode fixes it and commits again.
 | --- | --- | --- |
 | `aarch64-darwin` | upstream's signed `Orca.app`, from the release zip, untouched | no |
 | `x86_64-darwin` | the same, built in CI under Rosetta | no |
-| `x86_64-linux` | from source, on the pin's Electron | yes, once released |
-| `aarch64-linux` | from source, on the pin's Electron (not built yet) | yes, once released |
+| `x86_64-linux` | from source, on the pin's Electron | yes, once pushed |
+| `aarch64-linux` | from source, on the pin's Electron (not built yet) | yes, once pushed |
 
 Darwin is never pushed to the cache: nix fetches upstream's zip from
 GitHub and checks its sha512, its code signature and its signing team.
@@ -167,17 +167,14 @@ at a pinned version: nixpkgs' package downloads the CLI on first run.
 see the module switch above. Orca knows 26 more agents
 with no nix package yet; they are listed in `nix/agents/no-package.txt`.
 
-## Releases
+## Getting a build
 
-A release follows each upstream Orca release, tagged
-`v<upstream version>-nix.<n>`. It attaches no binaries: its notes give,
-for each system, the store path, NAR hash and size, closure size, the
-nixpkgs revision, the commit, a closure diff against the previous release,
-vulnix findings and the result of rebuilding the package bit for bit. The
-release files are the NAR hashes with their build-provenance attestation
-and CycloneDX and SPDX SBOMs.
+There are no GitHub releases or tags. Each green build of `main` pushes
+the Linux `orca-ide` closures to `pr0d1r2.cachix.org`; darwin comes from
+upstream's zip, which nix fetches and checks. Follow `main`, or pin one of
+its commits, to get a new Orca version.
 
-To fetch a released Linux build without evaluating the flake, ask the
+To fetch a cached Linux build without evaluating the flake, ask the
 cache for its store path:
 
 ```sh

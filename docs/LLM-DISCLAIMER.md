@@ -27,8 +27,8 @@ look at it.
 - **Measurements, not memory.** Sizes, hashes and versions in the spec and
   commit messages were measured on the date given, with the command named.
 - **Reproducible output.** Each package is rebuilt and compared bit for
-  bit, and releases attest the NAR hashes, so a reader can check a release
-  without trusting this text.
+  bit, and anyone can rebuild a cached path and compare its NAR hash, so a
+  reader can check a build without trusting this text.
 
 ## What to watch for
 
