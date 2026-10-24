@@ -32,17 +32,31 @@ Orca's first-run screens (onboarding, tips, tours, star prompt,
 telemetry notice) are skipped by seeding its state. Each still stretch
 is cut to at most 1.5 s.
 
+## First run
+
+![Orca's first-run wizard: default agent, look, GitHub tasks, notifications](demo/onboarding.webp)
+
+[Full video (mp4)](demo/onboarding.mp4) · [last frame](demo/onboarding.png)
+
+A fresh Orca walks through its four-step wizard: the default agent (it
+finds OpenCode on the `PATH`), the look, GitHub tasks and notifications.
+The folder picker its last step opens is closed and the repository is
+added from the command line instead, so the video ends on Orca ready to
+work. Tips, tours, the star prompt and the telemetry notice are seeded
+away; the wizard itself is untouched.
+
 ## Re-record
 
-The video is the output of the dev flake's
-`checks.x86_64-linux.agents-gate`, which needs an x86_64-linux host with
-KVM. In the dev shell:
+The videos are the outputs of the dev flake's
+`checks.x86_64-linux.agents-gate` and `checks.x86_64-linux.onboarding`,
+which need an x86_64-linux host with KVM (`docs/BUILDER.md`). In the dev
+shell:
 
 ```sh
 scripts/demo-assets.sh                                # this host builds it
 scripts/demo-assets.sh ssh-ng://root@builder.example  # a remote host does
 ```
 
-It replaces the files in `docs/demo/` and commits them alone. The check
+It replaces the files in `docs/demo/` and commits them alone. A check
 runs again only when its inputs change (a bump, the stub server, the
 scripts), so the same inputs commit nothing.
