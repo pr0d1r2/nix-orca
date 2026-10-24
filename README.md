@@ -105,14 +105,9 @@ services.orca-ide = {
 };
 ```
 
-`allowedClients` is a firewall rule on the serve port, so it limits who
-reaches serve and not where the agents connect. Without it, anything that
-reaches the port meets only Orca's own pairing. `listenAddress` binds a
-fixed address instead of `listenInterface`; `openFirewall` opens the port
-on every interface to everyone, and combines with neither. Beyond the LAN,
-put serve on a VPN interface (`tailscale0`, a WireGuard `wg0`) rather than
-opening a port to the internet; whether Orca encrypts pairing traffic on a
-plain network is not checked here.
+[`docs/SERVE.md`](docs/SERVE.md) has the other profiles (loopback over
+SSH, VPN, upstream's `0.0.0.0` behind the firewall), what the unit
+isolates and what it does not, and how to check a deployment.
 
 The same overlay works in a nix-darwin configuration and in home-manager
 (`home.packages = [ pkgs.orca-ide ];`). The flake follows `nixpkgs-lock`
