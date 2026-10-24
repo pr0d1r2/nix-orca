@@ -95,11 +95,9 @@ T9|.|CI & release pipeline, see `release` node|V4,V5,V6
 T10|.|GitHub repo `pr0d1r2/nix-orca`, first push, first release `-nix.1`, ∀ w/ approval; `gh repo view` ∀ named repo first|V9,V10
 T11|.|drop release-approval waiver row (§C) when `pr0d1r2/paradigm#24` decided|V9
 T12|.|follow paradigm: when paradigm moves past `e5605a3`, own PR re-vendors `FORMAT.md` & `FORMAT-EXTENSIONS.md`, updates LINEAGE pin, passes spec checks; owner merges (round 11)|-
-T13|.|owner reviews gap rounds 7–11 (agent-answered, `git log --format='%(trailers:key=Paradigm-Stage,valueonly)'` lists them); each amendment = new dated decision, ⊥ silent rewrite (`paradigm/V5`) (round 11)|-
 T14|.|gate follow-ups from T6: V2 check once `nix/linux` builds; pklith pin past v0.1.0 brings hk 2.7.0 schema, `bats-unit`, `tdd-order` rule, `## exempt` table (release waiver moves there); name guard allowlist half in CI (`paradigm/V37`)|V2,V9,V10
-T15|.|owner reviews agent-made decisions of 2026-10-20 (owner away), each in its commit body: `gitMinimal`, `codebuff` & `openclaw` out, `mistral-vibe` ⊥ x86_64-darwin, codex skip in darwin stub check, hand-written workflows, pnpm global store off, bump to `v1.4.232`|-
 T16|.|register `nix-builder.local` as this Mac's nix builder (daemon `builders` empty); `root@` ssh works since 2026-10-21, agent builds there over ssh meanwhile|-
-T17|.|owner reviews agent-made Linux decisions of 2026-10-21, each in its commit body: app = pin Electron dist copied beside `resources/`, gtk4 out of GApps env, whole `orcad-template` piece, `mobile/` deps 2nd fetch, ripgrep swap dropped (amends D23, `nix/linux` R5), pin sherpa-onnx costs +83 MiB|-
+T18|.|owner amendments, review of rounds 7–11 & agent decisions 2026-10-20…23 (2026-10-24; rest approved): lean package, features opt-in, Orca Mobile off (D35 amended); per-agent options, all on but `openclaw` (D26); own flakes `nix-codebuff` (pinned versions) & `nix-pnpm` (pnpm 12; D22); ripgrep swapped in binary & `orcad-template` manifest (D36, amends `nix/linux` R5); `mistral-vibe` on x86_64-darwin only if buildable w/o IFD (D27); TCC probe opt-in, off by default (D19)|-
 
 ## §B BUGS
 
