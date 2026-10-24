@@ -86,6 +86,17 @@ echo "systemctl $*" >>"$BATS_TEST_TMPDIR/systemctl.log"
 case "$1" in
 is-active) [ -e "$BATS_TEST_TMPDIR/active-${*: -1}" ] ;;
 kill) [ -n "${STUB_NO_STOP:-}" ] || rm -f "$BATS_TEST_TMPDIR/active-${*: -1}" ;;
+show) echo "${STUB_PID-42}" ;;
+esac
+STUB
+  cat >stubs/nsenter <<'STUB'
+#!/usr/bin/env bash
+# nsenter -t PID -m COMMAND...: the unit's mount namespace, by STUB_SEES
+# and STUB_WRITABLE.
+echo "nsenter $*" >>"$BATS_TEST_TMPDIR/nsenter.log"
+case "$4" in
+test) [ -n "${STUB_SEES:-}" ] ;;
+touch) [ -n "${STUB_WRITABLE:-}" ] ;;
 esac
 STUB
   cat >stubs/xdotool <<'STUB'
@@ -184,6 +195,43 @@ STUB
   run --separate-stderr "$vm" exposure orca-ide.service exposure
   [ "$status" -eq 1 ]
   [ "$stderr" = "vm-orca: orca-ide.service exposure 2.3, ratchet 2.2 in exposure; raise it in its own reviewed commit (nix/modules V1)" ]
+}
+
+@test "isolated: the unit's mount namespace hides PATH and keeps / read-only" {
+  mkdir -p home/alice && touch home/alice/secret
+  run --separate-stderr "$vm" isolated orca-ide.service home/alice/secret
+  [ "$status" -eq 0 ]
+  grep -qx "nsenter -t 42 -m test -e home/alice/secret" nsenter.log
+}
+
+@test "isolated: a PATH the unit sees fails and names V8" {
+  mkdir -p home/alice && touch home/alice/secret
+  export STUB_SEES=1
+  run --separate-stderr "$vm" isolated orca-ide.service home/alice/secret
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: orca-ide.service sees home/alice/secret (nix/modules V8)" ]
+}
+
+@test "isolated: a writable / fails and names V8" {
+  mkdir -p home/alice && touch home/alice/secret
+  export STUB_WRITABLE=1
+  run --separate-stderr "$vm" isolated orca-ide.service home/alice/secret
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: orca-ide.service can write / (nix/modules V8)" ]
+}
+
+@test "isolated: a PATH missing on the host fails, so the check is not vacuous" {
+  run --separate-stderr "$vm" isolated orca-ide.service home/alice/secret
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: home/alice/secret is missing on the host" ]
+}
+
+@test "isolated: a unit with no main process fails" {
+  mkdir -p home/alice && touch home/alice/secret
+  export STUB_PID=0
+  run --separate-stderr "$vm" isolated orca-ide.service home/alice/secret
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: orca-ide.service has no main process" ]
 }
 
 @test "seed: the user's Orca starts with onboarding closed, tips seen, no tours, no star prompt, telemetry off" {
