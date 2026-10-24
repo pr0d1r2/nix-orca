@@ -3,8 +3,9 @@
 # tests T1). The test driver only takes Python, so the tests call this
 # and keep their Python to the driver's own calls.
 # Usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT |
-#        listening PORT ADDRESS | exposure UNIT FILE | seed USER [onboarding] |
-#        stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop |
+#        listening PORT ADDRESS | exposure UNIT FILE | isolated UNIT PATH |
+#        seed USER [onboarding] | stub USER PORT SCRIPT WORKDIR |
+#        record USER FILE | record-stop |
 #        agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT |
 #        repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA |
 #        commits USER DIR N | keys USER KEY...
@@ -17,6 +18,8 @@
 #   listening: every listener on PORT is on ADDRESS
 #   exposure: `systemd-analyze security UNIT` scores at most UNIT's line in
 #           FILE (`unit score`, `#` comments), the .exposure ratchet
+#   isolated: UNIT's main process, in its mount namespace, cannot see PATH
+#           (which the host has) and cannot write / (nix/modules V8)
 #   seed:   before `app`, USER's Orca state says onboarding is done (unless
 #           `onboarding`), every tip seen, no tour or star prompt may start
 #           and telemetry is off, so the window shows the work (tests T4)
@@ -46,7 +49,7 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER [onboarding] | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA | commits USER DIR N | keys USER KEY..." >&2
+  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | isolated UNIT PATH | seed USER [onboarding] | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA | commits USER DIR N | keys USER KEY..." >&2
   exit 2
 }
 fail() {
@@ -128,6 +131,18 @@ exposure)
   [ -n "$limit" ] || fail "no ratchet for $unit in $file"
   if awk -v s="$score" -v l="$limit" 'BEGIN { exit !(s > l) }'; then
     fail "$unit exposure $score, ratchet $limit in $file; raise it in its own reviewed commit (nix/modules V1)"
+  fi
+  ;;
+isolated)
+  [ "$#" -eq 3 ] || usage
+  unit=$2 path=$3
+  [ -e "$path" ] || fail "$path is missing on the host"
+  pid=$(systemctl show -p MainPID --value "$unit")
+  [ -n "$pid" ] && [ "$pid" != 0 ] || fail "$unit has no main process"
+  ! nsenter -t "$pid" -m test -e "$path" || fail "$unit sees $path (nix/modules V8)"
+  if nsenter -t "$pid" -m touch /.vm-orca-probe 2>/dev/null; then
+    nsenter -t "$pid" -m rm -f /.vm-orca-probe || true
+    fail "$unit can write / (nix/modules V8)"
   fi
   ;;
 seed)
