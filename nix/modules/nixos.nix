@@ -88,7 +88,19 @@ in
       example = "0.0.0.0";
       description = ''
         Literal IP address the server binds. Beyond loopback, Orca's own
-        pairing is the only gate in front of it.
+        pairing is the only gate in front of it, unless `allowedClients`
+        limits who reaches it.
+      '';
+    };
+    listenInterface = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "enp3s0";
+      description = ''
+        Bind the server to this interface's first IPv4 address instead of
+        `listenAddress`, resolved when the service starts (waiting up to 60 s
+        for it), for a LAN whose address DHCP hands out. A later address
+        change needs a restart of the service.
       '';
     };
     openFirewall = lib.mkOption {
@@ -145,6 +157,10 @@ in
     (lib.mkIf service.enable {
       assertions = [
         {
+          assertion = service.listenInterface == null || service.listenAddress == "127.0.0.1";
+          message = "services.orca-ide: set listenInterface or listenAddress, not both";
+        }
+        {
           assertion =
             !(service.openFirewall && (service.firewallInterfaces != [ ] || service.allowedClients != [ ]));
           message = "services.orca-ide: openFirewall opens the port everywhere; use firewallInterfaces or allowedClients instead, not both";
@@ -172,10 +188,22 @@ in
         after = [ "network-online.target" ];
         environment = {
           HOME = service.stateDir;
+        }
+        // lib.optionalAttrs (service.listenInterface == null) {
           ORCA_SERVE_BIND_HOST = service.listenAddress;
         };
+        # serve-bind.sh resolves listenInterface's address with ip and awk.
+        path = lib.mkIf (service.listenInterface != null) [
+          pkgs.iproute2
+          pkgs.gawk
+          pkgs.coreutils
+        ];
         serviceConfig = {
-          ExecStart = "${lib.getExe service.package} serve --port ${toString service.port}";
+          ExecStart =
+            lib.optionalString (
+              service.listenInterface != null
+            ) "${pkgs.bash}/bin/bash ${../../scripts/service/serve-bind.sh} ${service.listenInterface} -- "
+            + "${lib.getExe service.package} serve --port ${toString service.port}";
           DynamicUser = true;
           StateDirectory = "orca-ide";
           WorkingDirectory = service.stateDir;
