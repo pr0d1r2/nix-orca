@@ -5,3 +5,6 @@
 aarch64-darwin 906600000
 # x86_64-linux: 1739365392 measured at v1.4.232 on 2026-10-21.
 x86_64-linux 1826400000
+# aarch64-linux: 1795063224 measured at v1.4.239 on 2026-10-24, in CI run
+# 40125254242 (D34: aarch64-linux builds in CI only).
+aarch64-linux 1884900000
