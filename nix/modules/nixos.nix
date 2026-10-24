@@ -70,7 +70,19 @@ in
     openFirewall = lib.mkOption {
       type = lib.types.bool;
       default = false;
-      description = "Open `port` in the firewall.";
+      description = "Open `port` in the firewall, on every interface, to every source.";
+    };
+    firewallInterfaces = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [
+        "enp3s0"
+        "tailscale0"
+      ];
+      description = ''
+        Open `port` in the firewall on these interfaces only, for a LAN or a
+        VPN, where `openFirewall` opens it everywhere.
+      '';
     };
     stateDir = lib.mkOption {
       type = lib.types.str;
@@ -93,7 +105,16 @@ in
       ) missing;
     })
     (lib.mkIf service.enable {
+      assertions = [
+        {
+          assertion = !(service.openFirewall && service.firewallInterfaces != [ ]);
+          message = "services.orca-ide: openFirewall opens the port everywhere; use firewallInterfaces instead, not both";
+        }
+      ];
       networking.firewall.allowedTCPPorts = lib.optional service.openFirewall service.port;
+      networking.firewall.interfaces = lib.genAttrs service.firewallInterfaces (_: {
+        allowedTCPPorts = [ service.port ];
+      });
       systemd.services.orca-ide = {
         description = "Orca runtime server (orca-ide serve)";
         wantedBy = [ "multi-user.target" ];
