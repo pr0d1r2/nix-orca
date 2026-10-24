@@ -22,7 +22,7 @@ with the Linux builds it pushed to the cache.
 
 - **Upstream Orca.** Linux builds from the tagged source; darwin uses
   upstream's signed `Orca.app` unchanged. Every input is pinned by hash in
-  `nix/sources.json`. The daily bump refuses a release whose manifest and
+  `nix/sources.json`. The bump refuses an upstream release whose manifest and
   GitHub disagree, and stops with an issue when upstream moves a tag or
   replaces an asset it already released. The darwin check pins the app's
   signing team.
@@ -35,8 +35,8 @@ with the Linux builds it pushed to the cache.
 - **CI.** Workflows run with read-only permissions unless a job needs
   more, pin every action to a commit SHA, never use `pull_request_target`,
   and give secrets only to jobs on this repository's own branches. Bump
-  pull requests come from a GitHub App token limited to contents and pull
-  requests.
+  and agent-input pull requests come from the owner's update loop, not
+  from CI, and go through the same checks.
 - **Builds** are rebuilt in CI and checked to be bit for bit identical.
   There is no GitHub release and no attestation: the cache's signature,
   under the key in the flake's `nixConfig`, says a path came from here.
