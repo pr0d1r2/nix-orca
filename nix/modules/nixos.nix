@@ -153,13 +153,17 @@ in
       networking.firewall = {
         allowedTCPPorts = lib.optional service.openFirewall service.port;
         # With allowedClients, only its rules open the port.
-        interfaces = lib.mkIf (service.allowedClients == [ ]) (
+        interfaces = lib.mkIf (service.allowedClients == [ ] && service.firewallInterfaces != [ ]) (
           lib.genAttrs service.firewallInterfaces (_: {
             allowedTCPPorts = [ service.port ];
           })
         );
-        extraInputRules = lib.mkIf config.networking.nftables.enable (lib.concatStringsSep "\n" nftRules);
-        extraCommands = lib.mkIf (!config.networking.nftables.enable) (lib.concatStringsSep "\n" iptRules);
+        extraInputRules = lib.mkIf (config.networking.nftables.enable && nftRules != [ ]) (
+          lib.concatStringsSep "\n" nftRules
+        );
+        extraCommands = lib.mkIf (!config.networking.nftables.enable && iptRules != [ ]) (
+          lib.concatStringsSep "\n" iptRules
+        );
       };
       systemd.services.orca-ide = {
         description = "Orca runtime server (orca-ide serve)";
