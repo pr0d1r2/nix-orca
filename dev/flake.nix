@@ -212,6 +212,8 @@
           ];
           module = import ../nix/modules/nixos.nix {
             packages.x86_64-linux = { inherit orca-ide; };
+            # No agent options set in the demo; the agent comes in by override.
+            inputs = { };
           };
           inherit orca-ide;
         };

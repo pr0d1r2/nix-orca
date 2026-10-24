@@ -1,12 +1,15 @@
 # The agent CLIs Orca knows that have a nix package (nix/agents), keyed by
 # Orca's TuiAgent id (§I). An agent that does not evaluate on a system, by
-# platform, by an upstream throw or as unfree under the caller's config, is
-# left out there rather than failing the set (V2).
+# platform, by an upstream throw, as unfree or as insecure under the
+# caller's config, is left out there rather than failing the set (V2).
+# `extra` adds the agents offered only on request (names.nix), for the
+# NixOS module's options; orca-ide-agents never has them.
 {
   lib,
   pkgs,
   inputs,
   system,
+  extra ? false,
 }:
 let
   fromInput = input: args: pkgs.callPackage "${input}/package.nix" args;
@@ -42,11 +45,14 @@ let
     # codebuff: not offered. The pin's package is an npm launcher that
     # downloads the real CLI on first run (`--version` printed
     # "Downloading..."), so it is no native package and fails V3 offline.
-    # openclaw: not offered. The pin marks it insecure ("uses LLMs to parse
-    # untrusted content ... full access to system by default"); a consumer
-    # who accepts that adds it through `orca-ide.override { agents }` with
+    # openclaw: on request only. The pin marks it insecure ("uses LLMs to
+    # parse untrusted content ... full access to system by default"), so it
+    # evaluates only where the consumer lists it in
     # `permittedInsecurePackages`.
+    openclaw = pkgs.openclaw;
   };
+  names = import ./names.nix;
+  offered = names.default ++ lib.optionals extra names.extra;
 
   evaluates =
     drv:
@@ -57,4 +63,8 @@ let
     in
     tried.success && tried.value;
 in
-lib.filterAttrs (_: evaluates) candidates
+assert lib.assertMsg (
+  lib.sort lib.lessThan (builtins.attrNames candidates)
+  == lib.sort lib.lessThan (names.default ++ names.extra)
+) "nix/agents: default.nix and names.nix name different agents";
+lib.filterAttrs (_: evaluates) (lib.getAttrs offered candidates)

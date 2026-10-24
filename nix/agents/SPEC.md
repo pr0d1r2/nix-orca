@@ -26,13 +26,14 @@ sib|nix/modules|NixOS, nix-darwin, home-manager modules; `orca-ide.sb`; `.exposu
 - agent inputs updated daily in own PR, opened w/ the bump App token (`release` §C, round 8) so `build.yml` runs; builds & checks, ⊥ release (D19, D43). ⊥ auto-merge: an update changes third-party nix code (`package.nix`) evaluated in this build; owner merges after reading the diff (round 9; D10 covers only upstream Orca bumps).
 - later, ⊥ v1: each agent in own `systemd-nspawn` container | hardened unit.
 - no-package list (V5), 26 `TuiAgent` ids at `v1.4.230`: `codebuddy`, `openclaude`, `autohand`, `ante`, `trae`, `opencode2`, `mimo-code`, `omp`, `prime-agent`, `qoder`, `qoder-cn`, `antigravity`, `kilo`, `aug`, `cline`, `freebuff`, `command-code`, `continue`, `droid`, `kimi`, `hermes`, `muse`, `dsh`, `zcode`, `devin`, `jcode`. potential, ⊥ v1: packaged only after first release (root T10) (owner, 2026-10-20).
-- agent set by `TuiAgent` id (§I), 16: `claude`, `codex`, `gemini`, `pi`, `grok`, `mistral-vibe`, `opencode`, `aider`, `goose`, `amp`, `crush`, `cursor`, `copilot`, `kiro`, `qwen-code`, `rovo`. out (2026-10-20, amends D43): `codebuff` (pin pkg = npm launcher downloading CLI on first run, fails V3), `openclaw` (pin marks insecure; consumer adds via override + `permittedInsecurePackages`). `mistral-vibe` absent on x86_64-darwin: import-from-derivation at eval needs x86_64-darwin builder, breaks `nix:V2`. `claude-agent-teams` = Orca itself. id ≠ command for `cursor` (`cursor-agent`), `kiro` (`kiro-cli`), `mistral-vibe` (`vibe`), `qwen-code` (`qwen`), `rovo` (`acli`); `scripts/agents/tui-ids.sh` reads both.
+- agent set by `TuiAgent` id (§I), 16: `claude`, `codex`, `gemini`, `pi`, `grok`, `mistral-vibe`, `opencode`, `aider`, `goose`, `amp`, `crush`, `cursor`, `copilot`, `kiro`, `qwen-code`, `rovo`; + `openclaw` only where consumer permits insecure, ⊥ in `orca-ide-agents`. out: `codebuff` (pin pkg = npm launcher downloading its CLI, fails V3; own flake, root T18). `mistral-vibe` ⊥ x86_64-darwin (IFD at eval breaks `nix:V2`). `claude-agent-teams` = Orca itself. id ≠ command: `cursor` (`cursor-agent`), `kiro` (`kiro-cli`), `mistral-vibe` (`vibe`), `qwen-code` (`qwen`), `rovo` (`acli`).
 
 ## §I INTERFACES
 
 - pkg: `orca-ide-agents` — `orca-ide.override { agents = <∀ available on system>; }`.
 - legacy: `legacyPackages.<system>.agents.<name>`, name = Orca `TuiAgent` id.
 - override: `inputs.nix-orca.inputs.<input>.{url,follows}`; `orca-ide.override { agents = [ ... ]; }`.
+- option: `programs.orca-ide.agents.<id>.enable`, ∀ id, default ⊥ (owner 2026-10-24: full set ≈ 11.8 GB, R2); enabled & ⊥ evaluable → warning.
 
 ## §R RESEARCH
 

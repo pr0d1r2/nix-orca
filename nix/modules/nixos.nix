@@ -1,11 +1,12 @@
 # nixosModules.orca-ide (nix/modules T1, T2):
 # - `programs.orca-ide` puts orca-ide on the system PATH, with its desktop
-#   entry and icons
+#   entry and icons, and `agents.<id>.enable` the agent CLIs on its PATH,
+#   each off by default (the whole set is ~11.8 GB, nix/agents R2)
 # - `services.orca-ide` runs `orca-ide serve` as a hardened system service
 #   (D35): a dynamic user, state under /var/lib, loopback unless told
 # The default package is this flake's, the one CI builds and the cache
 # holds.
-{ packages }:
+{ packages, inputs }:
 {
   config,
   lib,
@@ -15,6 +16,23 @@
 let
   cfg = config.programs.orca-ide;
   service = config.services.orca-ide;
+  names = import ../agents/names.nix;
+  # The agents that evaluate under this system's nixpkgs config (unfree,
+  # insecure, platform), keyed by id.
+  available = import ../agents/default.nix {
+    inherit lib pkgs inputs;
+    inherit (pkgs.stdenv.hostPlatform) system;
+    extra = true;
+  };
+  enabled = builtins.filter (id: cfg.agents.${id}.enable) (names.default ++ names.extra);
+  missing = builtins.filter (id: !(available ? ${id})) enabled;
+  withAgents =
+    if enabled == [ ] then
+      cfg.package
+    else
+      cfg.package.override {
+        agents = map (id: available.${id}) (lib.subtractLists missing enabled);
+      };
   defaultPackage = lib.mkOption {
     type = lib.types.package;
     default = packages.${pkgs.stdenv.hostPlatform.system}.orca-ide;
@@ -27,6 +45,9 @@ in
   options.programs.orca-ide = {
     enable = lib.mkEnableOption "Orca, an IDE that runs a fleet of coding agents";
     package = defaultPackage;
+    agents = lib.genAttrs (names.default ++ names.extra) (id: {
+      enable = lib.mkEnableOption "the `${id}` agent CLI on Orca's PATH";
+    });
   };
 
   options.services.orca-ide = {
@@ -65,7 +86,11 @@ in
 
   config = lib.mkMerge [
     (lib.mkIf cfg.enable {
-      environment.systemPackages = [ cfg.package ];
+      environment.systemPackages = [ withAgents ];
+      warnings = map (
+        id:
+        "programs.orca-ide.agents.${id}: not available under this system's nixpkgs config (unfree, insecure or platform), left out"
+      ) missing;
     })
     (lib.mkIf service.enable {
       networking.firewall.allowedTCPPorts = lib.optional service.openFirewall service.port;

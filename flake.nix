@@ -102,7 +102,10 @@
       overlays.default = import ./nix/overlay.nix { inherit inputs sources; };
 
       nixosModules = rec {
-        orca-ide = import ./nix/modules/nixos.nix { inherit (inputs.self) packages; };
+        orca-ide = import ./nix/modules/nixos.nix {
+          inherit (inputs.self) packages;
+          inherit inputs;
+        };
         default = orca-ide;
       };
 
@@ -200,6 +203,11 @@
             inherit (pkgs) testers;
             module = inputs.self.nixosModules.orca-ide;
             inherit (own) orca-ide;
+          };
+          module-agents = import ./nix/tests/module-agents.nix {
+            inherit (pkgs) lib writeText;
+            inherit (nixpkgs.lib) nixosSystem;
+            module = inputs.self.nixosModules.orca-ide;
           };
           launch = import ./nix/tests/launch.nix {
             inherit (pkgs) testers xvfb jq;
