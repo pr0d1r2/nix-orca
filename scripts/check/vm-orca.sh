@@ -138,9 +138,12 @@ seed)
   # older than telemetry, which gets the consent banner. New tips in an
   # Orca bump show in the recording until listed here. With `onboarding`
   # the wizard is left to run, for the onboarding video.
-  state='{'
+  # A file without an onboarding block reads as an install from before
+  # onboarding, which never shows it: `onboarding` writes the fresh state.
   if [ "$#" -eq 2 ]; then
-    state+='"onboarding":{"flowVersion":4,"closedAt":1,"outcome":"completed","lastCompletedStep":5},'
+    state='{"onboarding":{"flowVersion":4,"closedAt":1,"outcome":"completed","lastCompletedStep":5},'
+  else
+    state='{"onboarding":{"flowVersion":4,"closedAt":null,"outcome":null,"lastCompletedStep":-1},'
   fi
   state+='"ui":{"contextualToursAutoEligible":false,"starNagCompleted":true,"featureTipsSeenIds":["native-chat-upgrade","agent-session-search","orca-cli","cmd-j-palette","voice-dictation"]},'
   state+='"settings":{"telemetry":{"existedBeforeTelemetryRelease":false,"optedIn":false}}}'
