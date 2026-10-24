@@ -21,7 +21,7 @@ sib|nix/agents|agent CLI set, `orca-ide-agents`, agent inputs
 - NixOS service (D35): `DynamicUser`, `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`, `PrivateDevices`, `NoNewPrivileges`, `CapabilityBoundingSet=`, `RestrictAddressFamilies`, `SystemCallFilter=@system-service`, `MemoryDenyWriteExecute` where JS JIT allows; `RestrictNamespaces` & `PrivateUsers` settled by test; ∀ relaxation commented w/ what breaks.
 - service state: `DynamicUser` + `StateDirectory=orca-ide` → `/var/lib/orca-ide` (`stateDir` default); `serve` works on repos under `stateDir` only, ⊥ `/home` (`ProtectHome`); agent CLI creds also under `stateDir`; unit sets `HOME = stateDir` so Electron `userData` lands there too (round 10).
 - `serve` binds `127.0.0.1` by default on NixOS & nix-darwin (upstream default `0.0.0.0`, `nix/linux` R7) (Seatbelt inbound rule follows `listenAddress` & port, D36); option `listenAddress`; `openFirewall = false` default; exposing beyond loopback ! explicit option & README names Orca's own pairing/auth as the only gate (round 10).
-- LAN (owner 2026-10-24; upstream `stablyai/orca#31387`: safer, LAN pairing kept): unit `IPAddressDeny=any` + `IPAddressAllow=localhost` + `allowedClients` (CIDRs); `firewallInterfaces` opens port on those only; `listenInterface` binds that interface's address, resolved at start (`scripts/service/serve-bind.sh`), ⊥ w/ `listenAddress`. README: beyond LAN → VPN interface.
+- LAN (owner 2026-10-24; upstream `stablyai/orca#31387`: safer, LAN pairing kept): firewall opens port only to `allowedClients` (CIDRs) and/or on `firewallInterfaces`, iptables & nftables; ⊥ w/ `openFirewall`. ⊥ systemd `IPAddressDeny`: blocks agents' outbound too. `listenInterface` binds that interface's address, resolved at start (`scripts/service/serve-bind.sh`), ⊥ w/ `listenAddress`. README: beyond LAN → VPN interface.
 - exposure ratchet in `.exposure` (⊥ `.coverage`, `paradigm/V25`).
 - darwin (D36): `launchd.daemons` job, dedicated user from `users.users`, launchd limits; `/usr/bin/sandbox-exec` w/ `orca-ide.sb` in repo: deny default, read `/nix/store` & system paths Electron needs, rw state dir only, inbound TCP only on serve port, exec only from `/nix/store`; store path, state dir, port as `-D` params. opt-out `services.orca-ide.sandbox.enable = false` keeps user & limits.
 - prior art for profile: nix `sandbox-defaults.sb`, Chromium `.sb`. network rules by address & port, ⊥ domain.
@@ -47,7 +47,7 @@ V3: same service runs in NixOS container (`containers.<name>`, systemd-nspawn) i
 V4: darwin probes: job starts; `serve` answers; write outside state dir fails; owner home unreadable; unified log Sandbox denials = expected set only (D36).
 V5: `sandbox.enable = false` → ⊥ `sandbox-exec` in job, user & limits kept.
 V6: home-manager activation puts `orca-ide` on `PATH`; ⊥ module writes into Orca `userData`.
-V7: LAN service: allowed client connects, other client refused by kernel ACL; port closed off `firewallInterfaces`; listens on `listenInterface` address only.
+V7: LAN service: allowed client connects, other client refused by firewall; port closed off `firewallInterfaces`; listens on `listenInterface` address only.
 
 ## §T TASKS
 
