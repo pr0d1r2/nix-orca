@@ -16,6 +16,8 @@ avahi
 bash
 bash-interactive
 bluez
+# aarch64-linux only: electron's libpisp (Raspberry Pi ISP) links it.
+boost
 brotli
 bzip2
 cairo
@@ -131,6 +133,8 @@ libogg
 libopenmpt
 libopus
 libpciaccess
+# aarch64-linux only: in the pin's electron closure there.
+libpisp
 libpng-apng
 libpsl
 libpulseaudio
