@@ -76,7 +76,7 @@ patch_phase() {
   run patch_phase
   [ "$status" -eq 0 ]
   grep -q "finalizePackagedWaylandClipboard(resourcesDir)" config/electron-builder.config.cjs
-  [ "$(grep "// nix:" config/electron-builder.config.cjs | grep -vc "Orca Mobile")" -eq 5 ]
+  [ "$(grep "// nix:" config/electron-builder.config.cjs | grep -vc "Orca Mobile")" -eq 4 ]
   run ! grep -q "ensureWaylandClipboard(context.arch)" config/electron-builder.config.cjs
   run ! grep -q "placeAppImageNodeRuntime(" config/electron-builder.config.cjs
   run ! grep -q "verifyLinuxGlibcFloor(" config/electron-builder.config.cjs
