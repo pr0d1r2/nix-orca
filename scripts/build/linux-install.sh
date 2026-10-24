@@ -12,12 +12,14 @@
 # ORCA_SHERPA_RPATH (the sherpa-onnx addon's RUNPATH), ORCA_PACKAGE_TYPE
 # (resources/package-type: deb, or anything else for an unusable updater,
 # D26), ORCA_TELEMETRY (`false` sets ORCA_TELEMETRY_DISABLED=1, D27),
-# gappsWrapperArgs (wrapGAppsHook3's array, filled by gappsWrapperArgsHook).
+# ORCA_RG_X64 and ORCA_RG_ARM64 (the pin's static rg for the Linux remote
+# targets, root T18), gappsWrapperArgs (wrapGAppsHook3's array, filled by
+# gappsWrapperArgsHook).
 
 # shellcheck disable=SC2154 # set by stdenv and the derivation.
 : "${out:?}" "${ORCA_ARCH:?}" "${ORCA_TEMPLATE:?}" "${ORCA_PATH?}" "${ORCA_RUNTIME_PATH:?}" \
   "${ORCA_AGENT_BROWSER:?}" "${ORCA_AGENT_BROWSER_VERSION:?}" "${ORCA_SHERPA_RPATH:?}" \
-  "${ORCA_PACKAGE_TYPE:?}" "${ORCA_TELEMETRY:?}"
+  "${ORCA_PACKAGE_TYPE:?}" "${ORCA_TELEMETRY:?}" "${ORCA_RG_X64:?}" "${ORCA_RG_ARM64:?}"
 
 runHook preInstall
 
@@ -40,8 +42,12 @@ rm -f "$app/resources/node_modules/ssh2/util/"{pagent.exe,pagent.c,build_pagent.
 # with upstream's interpreter line, as in upstream's .deb.
 grep -rlE '^#!/nix/store/[^ ]+/bin/node' "$app/resources/node_modules" |
   xargs -r sed -i '1s|^#!/nix/store/[^ ]*/bin/node|#!/usr/bin/env node|'
-# Upstream's template, byte for byte (nix/bin V1).
+# The template; its manifest names the rg below (nix/linux §C).
 ln -s "$ORCA_TEMPLATE" "$app/resources/orcad-template"
+# The Linux rg the relay uploads to remote hosts: the pin's static builds,
+# copied, since the relay reads and sends the file itself (root T18).
+install -m 755 "$ORCA_RG_X64" "$app/resources/ripgrep/linux-x64/rg"
+install -m 755 "$ORCA_RG_ARM64" "$app/resources/ripgrep/linux-arm64/rg"
 
 # Upstream's agent-browser asks for /lib64/ld-linux-x86-64.so.2; the pin's
 # runs on NixOS. Only at upstream's version (D24).
