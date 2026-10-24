@@ -125,7 +125,7 @@ theirs with `inputs.nix-orca.inputs.nixpkgs.follows`.
 every agent CLI this flake packages on its `PATH`, so Orca finds them:
 Claude Code, Codex, Gemini CLI, pi, Grok Build, Mistral Vibe, OpenCode,
 aider, goose, Amp, Crush, Cursor Agent, GitHub Copilot CLI, Kiro CLI, Qwen
-Code and Rovo Dev (`acli`). Each one is also
+Code, Rovo Dev (`acli`) and Codebuff. Each one is also
 `legacyPackages.<system>.agents.<id>`, keyed by Orca's own agent id.
 
 Pick your own set:
@@ -148,7 +148,7 @@ An agent your nixpkgs config does not allow (unfree, insecure) is left
 out with a warning. `openclaw` is offered only this way, and only where
 you list it in `permittedInsecurePackages`.
 
-Six of them come from flakes that track their upstream releases ahead of
+Seven of them come from flakes that track their upstream releases ahead of
 nixpkgs. Override any of those from your own flake:
 
 ```nix
@@ -156,15 +156,15 @@ inputs.nix-orca.inputs.claude-code-nix.url = "github:sadjow/claude-code-nix/<rev
 ```
 
 The inputs are `claude-code-nix`, `codex-cli-nix`, `gemini-cli-nix`,
-`pi-nix`, `grok-build-nix` and `nix-mistral-vibe`.
+`pi-nix`, `grok-build-nix`, `nix-mistral-vibe` and `nix-codebuff`.
 
 Seven agents are unfree (Claude Code, Amp, Crush, Cursor Agent, Copilot,
 Kiro, Rovo Dev). Through the overlay they appear only when your nixpkgs
-config allows unfree packages; the flake's own outputs allow them. Not
-packaged yet: `codebuff` (nixpkgs' package downloads the CLI on first
-run; a pinned flake of its own is planned). `openclaw`, which nixpkgs
-marks insecure, is never in `orca-ide-agents`; see the module switch
-above. Orca knows 26 more agents
+config allows unfree packages; the flake's own outputs allow them.
+Codebuff comes from [nix-codebuff](https://github.com/pr0d1r2/nix-codebuff)
+at a pinned version: nixpkgs' package downloads the CLI on first run.
+`openclaw`, which nixpkgs marks insecure, is never in `orca-ide-agents`;
+see the module switch above. Orca knows 26 more agents
 with no nix package yet; they are listed in `nix/agents/no-package.txt`.
 
 ## Releases
