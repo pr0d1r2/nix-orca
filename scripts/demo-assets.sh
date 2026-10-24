@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# Re-record the demo into docs/demo/ (scripts T6, tests T4): build the dev
-# flake's checks.x86_64-linux.agents-gate, replace docs/demo/{demo.mp4,
-# preview.webp,shot.png} with its files and commit them alone. The check
+# Re-record the demos into docs/demo/ (scripts T6, tests T4): build the dev
+# flake's checks.x86_64-linux.agents-gate and .onboarding, replace
+# docs/demo/{demo.mp4,preview.webp,shot.png} and
+# docs/demo/onboarding.{mp4,webp,png} with their files and commit them
+# alone. The check
 # needs an x86_64-linux host with KVM: STORE (such as
 # ssh-ng://root@nix-builder.local) builds it there and the files are read
 # from it. A check already built is not run again, so the files
@@ -20,9 +22,12 @@ fail() {
   exit 1
 }
 nix=${NIX:-nix}
-check=./dev#checks.x86_64-linux.agents-gate
 dir=docs/demo
-files=(demo.mp4 preview.webp shot.png)
+# check, then each output file and the name it gets in docs/demo/.
+demos=(
+  "agents-gate demo.mp4:demo.mp4 preview.webp:preview.webp shot.png:shot.png"
+  "onboarding demo.mp4:onboarding.mp4 preview.webp:onboarding.webp shot.png:onboarding.png"
+)
 
 cd "$(git rev-parse --show-toplevel)"
 git diff --cached --quiet || fail "changes are staged; the commit holds the demo files alone"
@@ -31,21 +36,29 @@ store=() eval_store=()
 if [ "$#" -eq 1 ]; then
   store=(--store "$1") eval_store=(--eval-store auto)
 fi
-out=$("$nix" build --no-link --print-out-paths "${store[@]}" "${eval_store[@]}" "$check")
 
-# Read from the store that built it: importing a remote output needs its
-# signature trusted, which an untrusted user cannot waive.
+# Read from the store that built each: importing a remote output needs its
+# signature trusted, which an untrusted user cannot waive. Every file is
+# read before any is replaced.
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
-for f in "${files[@]}"; do
-  "$nix" store cat "${store[@]}" "$out/$f" >"$tmp/$f" 2>/dev/null || fail "$out has no $f"
+names=() outs=()
+for demo in "${demos[@]}"; do
+  read -r check pairs <<<"$demo"
+  out=$("$nix" build --no-link --print-out-paths "${store[@]}" "${eval_store[@]}" "./dev#checks.x86_64-linux.$check")
+  outs+=("$(basename "$out")")
+  for pair in $pairs; do
+    from=${pair%%:*} to=${pair#*:}
+    "$nix" store cat "${store[@]}" "$out/$from" >"$tmp/$to" 2>/dev/null || fail "$out has no $from"
+    names+=("$to")
+  done
 done
 mkdir -p "$dir"
-for f in "${files[@]}"; do
+for f in "${names[@]}"; do
   cp "$tmp/$f" "$dir/$f"
 done
 
-git add "${files[@]/#/$dir/}"
+git add "${names[@]/#/$dir/}"
 if git diff --cached --quiet; then
   echo "demo-assets: $dir/ unchanged" >&2
   exit 3
@@ -53,5 +66,5 @@ fi
 version=$(jq -r .version nix/sources.json)
 # The trailer every commit here carries (docs/LLM-DISCLAIMER.md).
 git commit -q -m "docs(demo): re-record orca-ide $version" \
-  -m "scripts/demo-assets.sh from $(basename "$out")." \
+  -m "scripts/demo-assets.sh from ${outs[*]}." \
   -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
