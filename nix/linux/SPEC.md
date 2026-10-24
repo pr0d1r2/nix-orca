@@ -71,6 +71,7 @@ T5|x|closure hygiene, budget & rebuild checks|V1,V5,V6,V7
 T6|.|hands-on: unprivileged account runs `nix run`, window opens, ⊥ sudo prompt (D38)|V4
 T7|.|`aarch64-linux` in CI: first build measures `.closure-budget` line & checks names vs `closure-allow.txt` (from x86_64)|V4,V5,V6
 T8|.|? narrow JS deps FOD to Linux via `supportedArchitectures` (own fetcher, `fetchPnpmDeps` passes `--force`); measure first, keep only if saving ≥ 25%|-
+T9|.|after open-sourcing: when `stablyai/orca#31387` ships an opt-in serve bind, drop the `ORCA_SERVE_BIND_HOST` patch & map module `listenAddress`/`listenInterface` onto upstream's; each bump checks (owner 2026-10-24)|-
 
 ## §B BUGS
 
