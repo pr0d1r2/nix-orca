@@ -358,7 +358,7 @@ STUB
 @test "seed onboarding: no tips, tours, star prompt or telemetry banner, but onboarding left to run" {
   run --separate-stderr "$vm" seed alice onboarding
   [ "$status" -eq 0 ]
-  jq -e '(.onboarding | not) and .ui.contextualToursAutoEligible == false and .ui.starNagCompleted == true and .settings.telemetry.optedIn == false' home/.config/orca/orca-data.json
+  jq -e '.onboarding.closedAt == null and .onboarding.lastCompletedStep == -1 and .onboarding.flowVersion == 4 and .ui.contextualToursAutoEligible == false and .ui.starNagCompleted == true and .settings.telemetry.optedIn == false' home/.config/orca/orca-data.json
 }
 
 @test "keys: each key on the user's display :99, a pause between" {
