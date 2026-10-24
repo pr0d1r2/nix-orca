@@ -48,6 +48,7 @@ V4: darwin probes: job starts; `serve` answers; write outside state dir fails; o
 V5: `sandbox.enable = false` → ⊥ `sandbox-exec` in job, user & limits kept.
 V6: home-manager activation puts `orca-ide` on `PATH`; ⊥ module writes into Orca `userData`.
 V7: LAN service: allowed client connects, other client refused by firewall; port closed off `firewallInterfaces`; listens on `listenInterface` address only.
+V8: `listenAddress = "0.0.0.0"` (upstream default): firewall alone limits reach, allowed client connects, other refused; unit mount ns hides `/home`, `/` read-only (owner 2026-10-24, `docs/SERVE.md`).
 
 ## §T TASKS
 
@@ -59,6 +60,7 @@ T4|.|`homeManagerModules.orca-ide` + activation check|V6
 T5|.|darwin app placement: nix-darwin `/Applications/Nix Apps`, home-manager its own apps dir; Tart probe: TCC grant (Accessibility, Screen Recording) given to version N still holds after update to N+1 at a new store path; result → §R & README (round 10). probe opt-in, off by default: own output, ⊥ `checks`, ⊥ CI; README says unverified until run (owner 2026-10-24, root T18)|V4
 T6|.|under full hardening: paired client session runs agent command via `serve`; same service in NixOS container inside VM|V2,V3
 T7|x|LAN options + `checks.x86_64-linux.service-lan` (3 VMs)|V7
+T8|.|`service-lan` + `wide` server on `0.0.0.0`; `vm-orca.sh isolated UNIT PATH`; `docs/SERVE.md` (profiles, unit isolation, verify, upstream `stablyai/orca#31387`); README LAN → link (owner 2026-10-24)|V7,V8
 
 ## §B BUGS
 
