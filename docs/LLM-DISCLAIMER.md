@@ -18,7 +18,8 @@ look at it.
 
 - **A written spec.** `SPEC.md` and its nodes record every decision, with
   its date and who made it. Decisions the agent made on its own are marked
-  as such and listed for the owner's review (root T13).
+  as such and go to the owner for review; the review of 2026-10-24
+  approved most and amended the rest (root T18).
 - **A gate laid before the product code**, one check per commit, each
   shown refusing a planted violation in its commit body.
 - **Tests before scripts.** Every script's bats test landed first and
