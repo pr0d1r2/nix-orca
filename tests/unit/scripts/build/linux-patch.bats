@@ -21,6 +21,7 @@ EOF
     '!src{,/**/*}',
     '!out/orcad{,/**/*}',
   ],
+    assertMobileWebBundleBuilt(mobileWebBundleDir)
     if (context.electronPlatformName === 'linux') {
       ensureWaylandClipboard(context.arch)
     }
@@ -141,4 +142,18 @@ patch_phase() {
   unset ORCA_COMMIT
   run patch_phase
   [ "$status" -ne 0 ]
+}
+
+@test "without ORCA_MOBILE the packaged Orca Mobile bundle is not required" {
+  run patch_phase
+  [ "$status" -eq 0 ]
+  run ! grep -q "^    assertMobileWebBundleBuilt" config/electron-builder.config.cjs
+  grep -q "// nix: Orca Mobile is opt-in" config/electron-builder.config.cjs
+}
+
+@test "with ORCA_MOBILE=1 the packaged Orca Mobile bundle is still required" {
+  export ORCA_MOBILE=1
+  run patch_phase
+  [ "$status" -eq 0 ]
+  grep -qx "    assertMobileWebBundleBuilt(mobileWebBundleDir)" config/electron-builder.config.cjs
 }
