@@ -34,6 +34,7 @@ let
       opencode
       crush
       qwen-code
+      openclaw
       ;
     aider = pkgs.aider-chat;
     goose = pkgs.goose-cli;
@@ -48,8 +49,7 @@ let
     # openclaw: on request only. The pin marks it insecure ("uses LLMs to
     # parse untrusted content ... full access to system by default"), so it
     # evaluates only where the consumer lists it in
-    # `permittedInsecurePackages`.
-    openclaw = pkgs.openclaw;
+    # `permittedInsecurePackages` (inherited from the pin above).
   };
   names = import ./names.nix;
   offered = names.default ++ lib.optionals extra names.extra;
