@@ -3,11 +3,10 @@
 # flake's checks.x86_64-linux.agents-gate and .onboarding, replace
 # docs/demo/{demo.mp4,preview.webp,shot.png} and
 # docs/demo/onboarding.{mp4,webp,png} with their files and commit them
-# alone. The check
-# needs an x86_64-linux host with KVM: STORE (such as
-# ssh-ng://root@nix-builder.local) builds it there and the files are read
-# from it. A check already built is not run again, so the files
-# change only when its inputs do.
+# alone. The checks need an x86_64-linux host with KVM: STORE (such as
+# ssh-ng://root@nix-builder.local) builds them there and the files are read
+# from it. A check already built is not run again, so the files change only
+# when its inputs do.
 # Usage: demo-assets.sh [STORE]
 # Exit: 0 committed, 3 docs/demo/ unchanged, 1 refused, 2 usage.
 # Env: NIX names the tool (default nix).
