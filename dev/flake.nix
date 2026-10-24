@@ -176,7 +176,7 @@
       # needs pklith and hk, dev inputs that must stay out of consumers'
       # locks (D8). Both flakes lock the same nixpkgs, so its Orca is the
       # root flake's own build.
-      checks.x86_64-linux.agents-gate =
+      checks.x86_64-linux =
         let
           pkgs = nixpkgs.legacyPackages.x86_64-linux.extend nix-hk.overlays.default;
           sources = import ../nix/sources.nix { inherit (pkgs) lib; };
@@ -188,41 +188,59 @@
             inherit sources;
             pnpm = pkgs.callPackage ../nix/linux/pnpm.nix { inherit nix-pnpm; };
           };
-        in
-        import ../nix/tests/agents-gate.nix {
-          inherit (pkgs)
-            lib
-            testers
-            xvfb
-            jq
-            git
-            python3
-            ffmpeg-full
-            imagemagick
-            hk
-            pkl
-            opencode
-            ;
-          pklith = pklith.packages.x86_64-linux.default;
-          # The tools `pklith gen` names for the demo repository's files.
-          gateTools = with pkgs; [
-            deadnix
-            editorconfig-checker
-            gnugrep
-            markdownlint-cli
-            nixfmt
-            ripsecrets
-            shellcheck
-            shfmt
-            statix
-            typos
-          ];
           module = import ../nix/modules/nixos.nix {
             packages.x86_64-linux = { inherit orca-ide; };
-            # No agent options set in the demo; the agent comes in by override.
+            # No agent options set in the demos; the agent comes in by override.
             inputs = { };
           };
-          inherit orca-ide;
+        in
+        {
+          agents-gate = import ../nix/tests/agents-gate.nix {
+            inherit (pkgs)
+              lib
+              testers
+              xvfb
+              jq
+              git
+              python3
+              ffmpeg-full
+              imagemagick
+              hk
+              pkl
+              opencode
+              ;
+            pklith = pklith.packages.x86_64-linux.default;
+            # The tools `pklith gen` names for the demo repository's files.
+            gateTools = with pkgs; [
+              deadnix
+              editorconfig-checker
+              gnugrep
+              markdownlint-cli
+              nixfmt
+              ripsecrets
+              shellcheck
+              shfmt
+              statix
+              typos
+            ];
+            inherit module;
+            inherit orca-ide;
+          };
+          # The onboarding video (tests T4), outside CI like the demo.
+          onboarding = import ../nix/tests/onboarding.nix {
+            inherit (pkgs)
+              testers
+              xvfb
+              jq
+              git
+              ffmpeg-full
+              imagemagick
+              xdotool
+              sqlite
+              opencode
+              ;
+            inherit module orca-ide;
+          };
         };
     };
 }
