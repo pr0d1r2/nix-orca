@@ -88,6 +88,10 @@ is-active) [ -e "$BATS_TEST_TMPDIR/active-${*: -1}" ] ;;
 kill) [ -n "${STUB_NO_STOP:-}" ] || rm -f "$BATS_TEST_TMPDIR/active-${*: -1}" ;;
 esac
 STUB
+  cat >stubs/xdotool <<'STUB'
+#!/usr/bin/env bash
+echo "xdotool $* DISPLAY=$DISPLAY" >>"$BATS_TEST_TMPDIR/xdotool.log"
+STUB
   cat >stubs/ffmpeg <<'STUB'
 #!/usr/bin/env bash
 echo "ffmpeg $*" >>"$BATS_TEST_TMPDIR/ffmpeg.log"
@@ -351,8 +355,23 @@ STUB
   [ "$stderr" = "vm-orca: $BATS_TEST_TMPDIR/demo has 1 commits after 3 s, want 3" ]
 }
 
+@test "seed onboarding: no tips, tours, star prompt or telemetry banner, but onboarding left to run" {
+  run --separate-stderr "$vm" seed alice onboarding
+  [ "$status" -eq 0 ]
+  jq -e '(.onboarding | not) and .ui.contextualToursAutoEligible == false and .ui.starNagCompleted == true and .settings.telemetry.optedIn == false' home/.config/orca/orca-data.json
+}
+
+@test "keys: each key on the user's display :99, a pause between" {
+  export ORCA_VM_KEY_PAUSE=0
+  run --separate-stderr "$vm" keys alice ctrl+Return Escape
+  [ "$status" -eq 0 ]
+  grep -qx "su alice" su.log
+  [ "$(cat xdotool.log)" = "xdotool key ctrl+Return DISPLAY=:99
+xdotool key Escape DISPLAY=:99" ]
+}
+
 @test "anything else is a usage error, exit 2" {
   run --separate-stderr "$vm" launch alice
   [ "$status" -eq 2 ]
-  [ "$stderr" = "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA | commits USER DIR N" ]
+  [ "$stderr" = "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER [onboarding] | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA | commits USER DIR N | keys USER KEY..." ]
 }
