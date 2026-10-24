@@ -31,7 +31,5 @@ zcode
 devin
 jcode
 
-# The pin's package downloads the CLI on first run.
-codebuff
 # The pin marks it insecure; a consumer can add it by override.
 openclaw

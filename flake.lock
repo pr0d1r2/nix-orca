@@ -124,6 +124,31 @@
         "type": "github"
       }
     },
+    "nix-codebuff": {
+      "inputs": {
+        "nixpkgs": [
+          "nix-codebuff",
+          "nixpkgs-lock",
+          "nixpkgs"
+        ],
+        "nixpkgs-lock": [
+          "nixpkgs-lock"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792838922,
+        "narHash": "sha256-PF26SMSuOJGiNHXMHsN4tXLn6/WX+vSfDf6iI2Scr1c=",
+        "owner": "pr0d1r2",
+        "repo": "nix-codebuff",
+        "rev": "4f36ca734b87192128c3c593c52db6212a946fc5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nix-codebuff",
+        "type": "github"
+      }
+    },
     "nix-mistral-vibe": {
       "inputs": {
         "mistral-vibe": "mistral-vibe",
@@ -285,6 +310,7 @@
         "codex-cli-nix": "codex-cli-nix",
         "gemini-cli-nix": "gemini-cli-nix",
         "grok-build-nix": "grok-build-nix",
+        "nix-codebuff": "nix-codebuff",
         "nix-mistral-vibe": "nix-mistral-vibe",
         "nix-pnpm": "nix-pnpm",
         "nixpkgs": [

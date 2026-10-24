@@ -19,6 +19,7 @@
     "kiro"
     "qwen-code"
     "rovo"
+    "codebuff"
   ];
   extra = [ "openclaw" ];
 }

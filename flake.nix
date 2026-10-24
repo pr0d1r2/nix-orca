@@ -44,6 +44,12 @@
       url = "github:pr0d1r2/nix-mistral-vibe";
       inputs.nixpkgs-lock.follows = "nixpkgs-lock";
     };
+    # codebuff's real CLI at a pinned version (root T18): nixpkgs' package
+    # is a launcher that downloads it on first run.
+    nix-codebuff = {
+      url = "github:pr0d1r2/nix-codebuff";
+      inputs.nixpkgs-lock.follows = "nixpkgs-lock";
+    };
     # pnpm 12, which upstream's package.json pins (root T18).
     nix-pnpm = {
       url = "github:pr0d1r2/nix-pnpm";

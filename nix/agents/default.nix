@@ -24,6 +24,9 @@ let
     # Its build imports from a derivation at evaluation, so on x86_64-darwin
     # evaluating it needs an x86_64-darwin builder, which tryEval cannot
     # catch; left out there so every system evaluates from any host (nix V2).
+    # nixpkgs' codebuff is a launcher that downloads the real CLI on first
+    # run (fails V3 offline); nix-codebuff fetches that CLI by hash.
+    codebuff = pkgs.callPackage "${inputs.nix-codebuff}/pkgs/codebuff/package.nix" { };
     mistral-vibe =
       if system == "x86_64-darwin" then
         null
@@ -43,9 +46,6 @@ let
     copilot = pkgs.github-copilot-cli;
     kiro = pkgs.kiro-cli;
     rovo = pkgs.acli;
-    # codebuff: not offered. The pin's package is an npm launcher that
-    # downloads the real CLI on first run (`--version` printed
-    # "Downloading..."), so it is no native package and fails V3 offline.
     # openclaw: on request only. The pin marks it insecure ("uses LLMs to
     # parse untrusted content ... full access to system by default"), so it
     # evaluates only where the consumer lists it in
