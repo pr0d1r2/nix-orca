@@ -15,6 +15,14 @@ substituteInPlace config/scripts/build-source-commit.mjs \
   --replace-fail "execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()" "'$ORCA_COMMIT'"
 
 config=config/electron-builder.config.cjs
+# Orca Mobile is opt-in (root T18): without its web bundle the packaging
+# check for it goes; upstream's app treats a missing bundle as an install
+# without Orca Mobile.
+if [ "${ORCA_MOBILE:-}" != 1 ]; then
+  substituteInPlace "$config" \
+    --replace-fail "    assertMobileWebBundleBuilt(mobileWebBundleDir)" \
+    "    // nix: Orca Mobile is opt-in; no bundle unless mobile = true"
+fi
 substituteInPlace "$config" \
   --replace-fail "      ensureWaylandClipboard(context.arch)" \
   "      // nix: the derivation builds the helper; upstream builds it in docker" \
