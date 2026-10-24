@@ -21,6 +21,10 @@ setup() {
     printf '#!/nix/store/0abc-nodejs-24.21.0/bin/node\nrequire("x")\n' \
       >"$unpacked/resources/node_modules/qrcode/bin/qrcode"
     printf '#!/usr/bin/env node\n' >"$unpacked/resources/relay/wsl/relay.js"
+    for platform in linux-x64 linux-arm64 darwin-arm64; do
+      mkdir -p "$unpacked/resources/ripgrep/$platform"
+      echo "upstream $platform" >"$unpacked/resources/ripgrep/$platform/rg"
+    done
     mkdir -p "$unpacked/resources/node_modules/ssh2/util"
     touch "$unpacked/resources/node_modules/ssh2/util/"{pagent.exe,pagent.c,build_pagent.bat,agent.js}
     for arch in x64 arm64; do
@@ -31,6 +35,9 @@ setup() {
         "$sherpa/libsherpa-onnx-c-api.so" "$sherpa/libsherpa-onnx-cxx-api.so"
     done
   done
+  mkdir -p rg/x64/bin rg/arm64/bin
+  echo "pin linux-x64" >rg/x64/bin/rg
+  echo "pin linux-arm64" >rg/arm64/bin/rg
   mkdir -p node_modules/agent-browser stubs
   echo '{"name": "agent-browser", "version": "0.27.0"}' >node_modules/agent-browser/package.json
   cat >stubs/patchelf <<'STUB'
@@ -56,6 +63,7 @@ STUB
   export ORCA_SHERPA_RPATH=/store/sherpa-onnx/lib:/store/gcc-lib/lib
   export ORCA_PACKAGE_TYPE=deb ORCA_TELEMETRY=true
   export ORCA_RUNTIME_PATH=/store/git/bin:/store/procps/bin
+  export ORCA_RG_X64=$BATS_TEST_TMPDIR/rg/x64/bin/rg ORCA_RG_ARM64=$BATS_TEST_TMPDIR/rg/arm64/bin/rg
 }
 
 runHook() {
@@ -243,6 +251,23 @@ install_phase() {
 
 @test "without the template piece the phase fails" {
   unset ORCA_TEMPLATE
+  run install_phase
+  [ "$status" -ne 0 ]
+}
+
+@test "the Linux rg are the pin's builds, executable; darwin's stays upstream's" {
+  run install_phase
+  [ "$status" -eq 0 ]
+  rg=out/libexec/orca-ide/resources/ripgrep
+  [ "$(cat "$rg/linux-x64/rg")" = "pin linux-x64" ]
+  [ "$(cat "$rg/linux-arm64/rg")" = "pin linux-arm64" ]
+  [ -x "$rg/linux-x64/rg" ] && [ -x "$rg/linux-arm64/rg" ]
+  [ ! -L "$rg/linux-x64/rg" ]
+  [ "$(cat "$rg/darwin-arm64/rg")" = "upstream darwin-arm64" ]
+}
+
+@test "without the pin's rg the phase fails" {
+  unset ORCA_RG_ARM64
   run install_phase
   [ "$status" -ne 0 ]
 }
