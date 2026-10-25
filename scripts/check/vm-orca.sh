@@ -139,7 +139,9 @@ isolated)
   unit=$2 given=$3
   # Canonical, from here: inside the namespace a relative path resolves
   # against /, and a `..` cannot climb out of a directory the unit hides.
-  dir=$(cd -- "$(dirname -- "$given")" 2>/dev/null && pwd -P) || fail "$given is missing on the host"
+  # cd -P takes `..` after a symlink as the kernel does; no CDPATH, which
+  # would pick another directory and print it into dir.
+  dir=$(CDPATH='' cd -P -- "$(dirname -- "$given")" 2>/dev/null && pwd -P) || fail "$given is missing on the host"
   path=$dir/$(basename -- "$given")
   [ -e "$path" ] || fail "$given is missing on the host"
   pid=$(systemctl show -p MainPID --value "$unit")
