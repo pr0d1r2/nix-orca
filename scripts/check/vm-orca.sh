@@ -136,10 +136,12 @@ exposure)
   ;;
 isolated)
   [ "$#" -eq 3 ] || usage
-  unit=$2 path=$3
-  # Inside the namespace a relative path resolves against /, not here.
-  case "$path" in /*) ;; *) path=$PWD/$path ;; esac
-  [ -e "$path" ] || fail "$path is missing on the host"
+  unit=$2 given=$3
+  # Canonical, from here: inside the namespace a relative path resolves
+  # against /, and a `..` cannot climb out of a directory the unit hides.
+  dir=$(cd -- "$(dirname -- "$given")" 2>/dev/null && pwd -P) || fail "$given is missing on the host"
+  path=$dir/$(basename -- "$given")
+  [ -e "$path" ] || fail "$given is missing on the host"
   pid=$(systemctl show -p MainPID --value "$unit")
   [ -n "$pid" ] && [ "$pid" != 0 ] || fail "$unit has no main process"
   # A control: without it, an nsenter that cannot enter passes both probes.
