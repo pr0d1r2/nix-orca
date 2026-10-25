@@ -172,7 +172,7 @@ iptables -A nixos-fw -i enp3s0 -p tcp --dport 6768 -s 192.168.1.0/24 -j nixos-fw
 
 ## Check it
 
-On the host:
+On the host, as root:
 
 ```sh
 ss -ltn 'sport = :6768'                        # the address serve is bound on
@@ -182,6 +182,15 @@ pid=$(systemctl show -p MainPID --value orca-ide.service)
 nsenter -t "$pid" -m ls /home                  # empty: the unit sees no home
 nsenter -t "$pid" -m touch /probe              # fails: / is read-only
 ```
+
+`nsenter -m` joins the unit's mount namespace, which needs `CAP_SYS_ADMIN`
+and `CAP_SYS_CHROOT`. With `PrivateUsers=yes` that namespace belongs to the
+unit's own user namespace, so `CAP_SYS_ADMIN` is also needed there; root on
+the host has it, since a capability held in a parent user namespace holds
+in its children. A user without those
+capabilities gets `Operation not permitted`, which says nothing about the
+unit. `vm-orca.sh isolated` runs the same two probes as root in the VM
+tests, after a control probe that fails if it cannot enter at all.
 
 The flake checks these in NixOS VMs on every change:
 
