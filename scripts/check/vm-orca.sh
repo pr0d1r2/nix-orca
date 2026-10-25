@@ -146,7 +146,8 @@ isolated)
   # run (nsenter, or the command inside) fails rather than reads as one.
   nsenter -t "$pid" -m test ! -e "$path" ||
     fail "$unit sees $path, or the probe did not run (nix/modules V8)"
-  nsenter -t "$pid" -m sh -c 'if : >/.vm-orca-probe 2>/dev/null; then rm -f /.vm-orca-probe; exit 1; fi' ||
+  # touch, not `: >`: a failed redirection on a special builtin exits sh.
+  nsenter -t "$pid" -m sh -c 'if touch /.vm-orca-probe 2>/dev/null; then rm -f /.vm-orca-probe; exit 1; fi' ||
     fail "$unit can write /, or the probe did not run (nix/modules V8)"
   ;;
 seed)
