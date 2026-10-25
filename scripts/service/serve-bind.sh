@@ -16,8 +16,10 @@ interface=$1
 shift 2
 timeout=${SERVE_BIND_TIMEOUT:-60}
 
+# awk reads to the end: an `exit` at the first line would SIGPIPE an ip
+# still writing, and pipefail would end the script (nix/modules B1).
 address() {
-  ip -4 -o addr show dev "$interface" | awk '{ sub("/.*", "", $4); print $4; exit }'
+  ip -4 -o addr show dev "$interface" | awk '!found { sub("/.*", "", $4); print $4; found = 1 }'
 }
 
 for ((i = 0; i < timeout; i++)); do

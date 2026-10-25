@@ -65,3 +65,4 @@ T8|x|`service-lan` + `wide` server on `0.0.0.0`; `vm-orca.sh isolated UNIT PATH`
 ## §B BUGS
 
 id|date|cause|fix
+B1|2026-10-25|`serve-bind.sh`: awk `exit` on first line SIGPIPEs `ip` still writing; `pipefail` + `set -e` kill script before command runs (flaky bats, real `ip` w/ many addrs)|V7
