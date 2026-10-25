@@ -19,15 +19,16 @@ nix=${NIX:-nix}
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 file=${CLOSURE_BUDGET:-$here/../.closure-budget}
 
-limit=$(awk -v s="$system" '$1 == s { print $2 }' "$file")
-if [ -z "$limit" ]; then
-  echo "closure-budget: no budget for $system in $file" >&2
-  exit 1
-fi
 if [ -n "${CLOSURE_SIZE_FILE:-}" ]; then
   size=$(<"$CLOSURE_SIZE_FILE")
 else
   size=$("$nix" path-info -S "$path" | awk '{ print $2 }')
+fi
+limit=$(awk -v s="$system" '$1 == s { print $2 }' "$file")
+if [ -z "$limit" ]; then
+  # The size is the measurement a new budget line starts from.
+  echo "closure-budget: no budget for $system in $file; its closure is $size bytes (D14)" >&2
+  exit 1
 fi
 if [ "$size" -gt "$limit" ]; then
   echo "closure-budget: $system $size bytes, budget $limit; raise it in its own reviewed commit (D14)" >&2

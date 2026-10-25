@@ -29,7 +29,8 @@ STUB
   [ "$status" -eq 0 ]
   [ "$(cat 99-kvm.rules)" = 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' ]
   [ "$(cat udevadm.log)" = "udevadm control --reload-rules
-udevadm trigger --name-match=kvm" ]
+udevadm trigger --name-match=kvm
+udevadm settle --timeout=30" ]
 }
 
 @test "no /dev/kvm fails loudly, nothing written" {

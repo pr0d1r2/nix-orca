@@ -24,4 +24,6 @@ echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' |
   sudo tee "$rules" >/dev/null
 sudo udevadm control --reload-rules
 sudo udevadm trigger --name-match=kvm
+# trigger only queues the event; wait until udev has applied the rule.
+sudo udevadm settle --timeout=30
 [ -r "$dev" ] && [ -w "$dev" ] || fail "$dev not readable and writable after the udev rule"

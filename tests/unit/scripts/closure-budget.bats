@@ -37,10 +37,11 @@ STUB
   [ "$stderr" = "closure-budget: x86_64-linux 700000001 bytes, budget 700000000; raise it in its own reviewed commit (D14)" ]
 }
 
-@test "a system with no budget fails" {
+@test "a system with no budget fails and says its measured size" {
+  export STUB_SIZE=1700000000
   run --separate-stderr "$budget" aarch64-linux /nix/store/z-orca-ide
   [ "$status" -eq 1 ]
-  [ "$stderr" = "closure-budget: no budget for aarch64-linux in $CLOSURE_BUDGET" ]
+  [ "$stderr" = "closure-budget: no budget for aarch64-linux in $CLOSURE_BUDGET; its closure is 1700000000 bytes (D14)" ]
 }
 
 @test "anything but a system and a path is a usage error, exit 2" {

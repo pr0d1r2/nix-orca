@@ -17,6 +17,7 @@
   wayland,
   agent-browser,
   sherpa-onnx,
+  onnxruntime,
   patchelf,
   wrapGAppsHook3,
   makeWrapper,
@@ -136,8 +137,12 @@ stdenv.mkDerivation {
     ORCA_TELEMETRY = lib.boolToString telemetry;
     ORCA_AGENT_BROWSER = lib.getExe agent-browser;
     ORCA_AGENT_BROWSER_VERSION = agent-browser.version;
+    # The arm64 addon dlopens libonnxruntime.so from its own RUNPATH
+    # (sherpa-load, CI 2026-10-24), so the pin's onnxruntime is named too
+    # (D25).
     ORCA_SHERPA_RPATH = lib.makeLibraryPath [
       sherpa-onnx
+      onnxruntime
       stdenv.cc.cc.lib
     ];
   };

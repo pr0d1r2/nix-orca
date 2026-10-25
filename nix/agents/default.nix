@@ -45,7 +45,10 @@ let
     cursor = pkgs.cursor-cli;
     copilot = pkgs.github-copilot-cli;
     kiro = pkgs.kiro-cli;
-    rovo = pkgs.acli;
+    # The pin's acli 1.3.36 fetches the 1.3.22 darwin_amd64 tarball, so its
+    # versionCheckHook fails there; left out on x86_64-darwin until the pin
+    # fixes it (V3).
+    rovo = if system == "x86_64-darwin" then null else pkgs.acli;
     # openclaw: on request only. The pin marks it insecure ("uses LLMs to
     # parse untrusted content ... full access to system by default"), so it
     # evaluates only where the consumer lists it in

@@ -32,7 +32,7 @@ self|.|-
 - lang = nix + bash; 1 python stub (stdlib only) in `tests`. paradigm `docs/NIX.md`: nixfmt, statix, deadnix, nixpkgs follows nixpkgs-lock, 1 nixpkgs in lock graph, Linux-only work from macOS → remote Linux builder. `docs/SHELL.md`: one script one job, ⊥ shell functions except `info` `warn` `fatal`, extract ⊥ embed, mirrored bats both ways, TDD order on push, env-var seams named in script header.
 - 1 nixpkgs = pin = `nixpkgs-lock`'s nixpkgs (`f3a73bcf` since 2026-10-20; was `8ce73368`) ∀ package, dev flake, tool (D17). ⊥ nixpkgs-unstable, ⊥ 2nd nixpkgs for newer Electron | agent. follows `nixpkgs-lock` bumps via `nixpkgs-lock-subscribe`.
 - root inputs: `nixpkgs-lock` + 6 agent inputs (D8 amended by D43). gate tools in `dev/flake.nix` ⊥ root (D8).
-- systems: `aarch64-darwin`, `x86_64-darwin`, `x86_64-linux`, `aarch64-linux`, all built & checked by CI (D1). ⊥ Windows (D2).
+- systems: `aarch64-darwin`, `x86_64-darwin`, `x86_64-linux`, `aarch64-linux`, all built & checked by CI (D1); exception: x86_64-darwin agent outputs (`orca-ide-agents`, checks `agents-*`) evaluated only, under Rosetta they compile nodejs from source past the job timeout (owner 2026-10-24). ⊥ Windows (D2).
 - Linux `orca-ide` = source build at upstream tag, run by pin `electron_43` (D21, D38). darwin `orca-ide` = upstream signed `-mac.zip`, `Orca.app` ⊥ modified (D38; nixpkgs Electron on darwin rejected: signature, TCC, keychain). darwin may lag Linux by ≥ 1 upstream version (D38).
 - stable upstream releases only, ⊥ `-rc.N` (D7).
 - program `orca-ide` only, ⊥ `orca` (screen reader clash, D5).

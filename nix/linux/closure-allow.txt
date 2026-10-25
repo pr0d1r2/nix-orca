@@ -16,6 +16,9 @@ avahi
 bash
 bash-interactive
 bluez
+# Needed by aarch64-linux, whose electron's libpisp links it; the list is
+# shared, so x86_64-linux allows it too.
+boost
 brotli
 bzip2
 cairo
@@ -131,6 +134,9 @@ libogg
 libopenmpt
 libopus
 libpciaccess
+# Needed by aarch64-linux (the pin's electron closure there); allowed on
+# x86_64-linux too, the list being shared.
+libpisp
 libpng-apng
 libpsl
 libpulseaudio

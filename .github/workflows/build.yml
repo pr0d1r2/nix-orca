@@ -61,6 +61,10 @@ jobs:
       # The VM checks run under KVM or the job fails here (tests SPEC, constraints).
       - if: matrix.system == 'x86_64-linux'
         run: bash scripts/ci/kvm.sh
+      # bwrap-wrapped agents make a user namespace in the nix sandbox, which
+      # Ubuntu 24.04's AppArmor refuses by default (nix/agents V3).
+      - if: endsWith(matrix.system, '-linux')
+        run: bash scripts/ci/userns.sh
       - uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342  # v31.11.0
         with:
           extra_nix_config: |
