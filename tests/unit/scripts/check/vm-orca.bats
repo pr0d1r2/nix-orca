@@ -205,14 +205,23 @@ STUB
   mkdir -p vault && touch vault/secret
   run --separate-stderr "$vm" isolated orca-ide.service vault/secret
   [ "$status" -eq 0 ]
-  grep -qx "nsenter -t 42 -m test ! -e $PWD/vault/secret" nsenter.log
+  grep -qx "nsenter -t 42 -m test ! -e $(pwd -P)/vault/secret" nsenter.log
 }
 
 @test "isolated: an absolute PATH is probed as given" {
   mkdir -p vault && touch vault/secret
-  run --separate-stderr "$vm" isolated orca-ide.service "$PWD/vault/secret"
+  run --separate-stderr "$vm" isolated orca-ide.service "$(pwd -P)/vault/secret"
   [ "$status" -eq 0 ]
-  grep -qx "nsenter -t 42 -m test ! -e $PWD/vault/secret" nsenter.log
+  grep -qx "nsenter -t 42 -m test ! -e $(pwd -P)/vault/secret" nsenter.log
+}
+
+@test "isolated: a PATH through .. is probed at its canonical path" {
+  mkdir -p vault work && touch vault/secret
+  cd work || return 1
+  run --separate-stderr "$vm" isolated orca-ide.service ../vault/secret
+  cd .. || return 1
+  [ "$status" -eq 0 ]
+  grep -qx "nsenter -t 42 -m test ! -e $(pwd -P)/vault/secret" nsenter.log
 }
 
 @test "isolated: a PATH the unit sees fails and names V8" {
@@ -220,7 +229,7 @@ STUB
   export STUB_SEES=1
   run --separate-stderr "$vm" isolated orca-ide.service vault/secret
   [ "$status" -eq 1 ]
-  [ "$stderr" = "vm-orca: orca-ide.service sees $PWD/vault/secret, or the probe did not run (nix/modules V8)" ]
+  [ "$stderr" = "vm-orca: orca-ide.service sees $(pwd -P)/vault/secret, or the probe did not run (nix/modules V8)" ]
 }
 
 @test "isolated: a writable / fails and names V8" {
@@ -234,7 +243,7 @@ STUB
 @test "isolated: a PATH missing on the host fails, so the check is not vacuous" {
   run --separate-stderr "$vm" isolated orca-ide.service vault/secret
   [ "$status" -eq 1 ]
-  [ "$stderr" = "vm-orca: $PWD/vault/secret is missing on the host" ]
+  [ "$stderr" = "vm-orca: vault/secret is missing on the host" ]
 }
 
 @test "isolated: a namespace nsenter cannot look into fails, so the check is not vacuous" {
@@ -250,7 +259,7 @@ STUB
   export STUB_PROBE_ERR=1
   run --separate-stderr "$vm" isolated orca-ide.service vault/secret
   [ "$status" -eq 1 ]
-  [ "$stderr" = "vm-orca: orca-ide.service sees $PWD/vault/secret, or the probe did not run (nix/modules V8)" ]
+  [ "$stderr" = "vm-orca: orca-ide.service sees $(pwd -P)/vault/secret, or the probe did not run (nix/modules V8)" ]
 }
 
 @test "isolated: a unit with no main process fails" {
