@@ -92,12 +92,15 @@ STUB
   cat >stubs/nsenter <<'STUB'
 #!/usr/bin/env bash
 # nsenter -t PID -m COMMAND...: the unit's mount namespace, by STUB_SEES
-# and STUB_WRITABLE.
+# and STUB_WRITABLE. STUB_BLIND fails every entry, STUB_PROBE_ERR every
+# entry after the control (`test -e /`).
 echo "nsenter $*" >>"$BATS_TEST_TMPDIR/nsenter.log"
+[ -z "${STUB_BLIND:-}" ] || exit 1
+[ "$4 $5 $6" = "test -e /" ] && exit 0
+[ -z "${STUB_PROBE_ERR:-}" ] || exit 1
 case "$4" in
-test) [ "$6" = / ] && [ -z "${STUB_BLIND:-}" ] && exit 0
-  [ -n "${STUB_SEES:-}" ] ;;
-touch) [ -n "${STUB_WRITABLE:-}" ] ;;
+test) [ -z "${STUB_SEES:-}" ] ;;
+sh) [ -z "${STUB_WRITABLE:-}" ] ;;
 esac
 STUB
   cat >stubs/xdotool <<'STUB'
@@ -202,7 +205,7 @@ STUB
   mkdir -p home/alice && touch home/alice/secret
   run --separate-stderr "$vm" isolated orca-ide.service home/alice/secret
   [ "$status" -eq 0 ]
-  grep -qx "nsenter -t 42 -m test -e home/alice/secret" nsenter.log
+  grep -qx "nsenter -t 42 -m test ! -e home/alice/secret" nsenter.log
 }
 
 @test "isolated: a PATH the unit sees fails and names V8" {
@@ -210,7 +213,7 @@ STUB
   export STUB_SEES=1
   run --separate-stderr "$vm" isolated orca-ide.service home/alice/secret
   [ "$status" -eq 1 ]
-  [ "$stderr" = "vm-orca: orca-ide.service sees home/alice/secret (nix/modules V8)" ]
+  [ "$stderr" = "vm-orca: orca-ide.service sees home/alice/secret, or the probe did not run (nix/modules V8)" ]
 }
 
 @test "isolated: a writable / fails and names V8" {
@@ -218,7 +221,7 @@ STUB
   export STUB_WRITABLE=1
   run --separate-stderr "$vm" isolated orca-ide.service home/alice/secret
   [ "$status" -eq 1 ]
-  [ "$stderr" = "vm-orca: orca-ide.service can write / (nix/modules V8)" ]
+  [ "$stderr" = "vm-orca: orca-ide.service can write /, or the probe did not run (nix/modules V8)" ]
 }
 
 @test "isolated: a PATH missing on the host fails, so the check is not vacuous" {
@@ -233,6 +236,14 @@ STUB
   run --separate-stderr "$vm" isolated orca-ide.service home/alice/secret
   [ "$status" -eq 1 ]
   [ "$stderr" = "vm-orca: cannot look into orca-ide.service's mount namespace" ]
+}
+
+@test "isolated: a probe that cannot run after the control fails, so it never reads as isolated" {
+  mkdir -p home/alice && touch home/alice/secret
+  export STUB_PROBE_ERR=1
+  run --separate-stderr "$vm" isolated orca-ide.service home/alice/secret
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: orca-ide.service sees home/alice/secret, or the probe did not run (nix/modules V8)" ]
 }
 
 @test "isolated: a unit with no main process fails" {
