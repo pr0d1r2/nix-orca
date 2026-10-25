@@ -3,8 +3,9 @@
 # tests T1). The test driver only takes Python, so the tests call this
 # and keep their Python to the driver's own calls.
 # Usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT |
-#        listening PORT ADDRESS | exposure UNIT FILE | seed USER [onboarding] |
-#        stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop |
+#        listening PORT ADDRESS | exposure UNIT FILE | isolated UNIT PATH |
+#        seed USER [onboarding] | stub USER PORT SCRIPT WORKDIR |
+#        record USER FILE | record-stop |
 #        agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT |
 #        repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA |
 #        commits USER DIR N | keys USER KEY...
@@ -17,6 +18,9 @@
 #   listening: every listener on PORT is on ADDRESS
 #   exposure: `systemd-analyze security UNIT` scores at most UNIT's line in
 #           FILE (`unit score`, `#` comments), the .exposure ratchet
+#   isolated: UNIT's main process, in its mount namespace, cannot see PATH
+#           (which the host has) and cannot write /; a probe that does not
+#           run fails (nix/modules V8)
 #   seed:   before `app`, USER's Orca state says onboarding is done (unless
 #           `onboarding`), every tip seen, no tour or star prompt may start
 #           and telemetry is off, so the window shows the work (tests T4)
@@ -46,7 +50,7 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER [onboarding] | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA | commits USER DIR N | keys USER KEY..." >&2
+  echo "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | isolated UNIT PATH | seed USER [onboarding] | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA | commits USER DIR N | keys USER KEY..." >&2
   exit 2
 }
 fail() {
@@ -129,6 +133,28 @@ exposure)
   if awk -v s="$score" -v l="$limit" 'BEGIN { exit !(s > l) }'; then
     fail "$unit exposure $score, ratchet $limit in $file; raise it in its own reviewed commit (nix/modules V1)"
   fi
+  ;;
+isolated)
+  [ "$#" -eq 3 ] || usage
+  unit=$2 given=$3
+  # Canonical, from here: inside the namespace a relative path resolves
+  # against /, and a `..` cannot climb out of a directory the unit hides.
+  # cd -P takes `..` after a symlink as the kernel does; no CDPATH, which
+  # would pick another directory and print it into dir.
+  dir=$(CDPATH='' cd -P -- "$(dirname -- "$given")" 2>/dev/null && pwd -P) || fail "$given is missing on the host"
+  path=$dir/$(basename -- "$given")
+  [ -e "$path" ] || fail "$given is missing on the host"
+  pid=$(systemctl show -p MainPID --value "$unit")
+  [ -n "$pid" ] && [ "$pid" != 0 ] || fail "$unit has no main process"
+  # A control: without it, an nsenter that cannot enter passes both probes.
+  nsenter -t "$pid" -m test -e / || fail "cannot look into $unit's mount namespace"
+  # Each probe succeeds only on the isolated answer, so one that does not
+  # run (nsenter, or the command inside) fails rather than reads as one.
+  nsenter -t "$pid" -m test ! -e "$path" ||
+    fail "$unit sees $path, or the probe did not run (nix/modules V8)"
+  # touch, not `: >`: a failed redirection on a special builtin exits sh.
+  nsenter -t "$pid" -m sh -c 'if touch /.vm-orca-probe 2>/dev/null; then rm -f /.vm-orca-probe; exit 1; fi' ||
+    fail "$unit can write /, or the probe did not run (nix/modules V8)"
   ;;
 seed)
   [ "$#" -eq 2 ] || { [ "$#" -eq 3 ] && [ "$3" = onboarding ]; } || usage

@@ -86,6 +86,21 @@ echo "systemctl $*" >>"$BATS_TEST_TMPDIR/systemctl.log"
 case "$1" in
 is-active) [ -e "$BATS_TEST_TMPDIR/active-${*: -1}" ] ;;
 kill) [ -n "${STUB_NO_STOP:-}" ] || rm -f "$BATS_TEST_TMPDIR/active-${*: -1}" ;;
+show) echo "${STUB_PID-42}" ;;
+esac
+STUB
+  cat >stubs/nsenter <<'STUB'
+#!/usr/bin/env bash
+# nsenter -t PID -m COMMAND...: the unit's mount namespace, by STUB_SEES
+# and STUB_WRITABLE. STUB_BLIND fails every entry, STUB_PROBE_ERR every
+# entry after the control (`test -e /`).
+echo "nsenter $*" >>"$BATS_TEST_TMPDIR/nsenter.log"
+[ -z "${STUB_BLIND:-}" ] || exit 1
+[ "$4 $5 $6" = "test -e /" ] && exit 0
+[ -z "${STUB_PROBE_ERR:-}" ] || exit 1
+case "$4" in
+test) [ -z "${STUB_SEES:-}" ] ;;
+sh) [ -z "${STUB_WRITABLE:-}" ] ;;
 esac
 STUB
   cat >stubs/xdotool <<'STUB'
@@ -184,6 +199,90 @@ STUB
   run --separate-stderr "$vm" exposure orca-ide.service exposure
   [ "$status" -eq 1 ]
   [ "$stderr" = "vm-orca: orca-ide.service exposure 2.3, ratchet 2.2 in exposure; raise it in its own reviewed commit (nix/modules V1)" ]
+}
+
+@test "isolated: the unit's mount namespace hides PATH and keeps / read-only" {
+  mkdir -p vault && touch vault/secret
+  run --separate-stderr "$vm" isolated orca-ide.service vault/secret
+  [ "$status" -eq 0 ]
+  grep -qx "nsenter -t 42 -m test ! -e $(pwd -P)/vault/secret" nsenter.log
+}
+
+@test "isolated: an absolute PATH is probed as given" {
+  mkdir -p vault && touch vault/secret
+  run --separate-stderr "$vm" isolated orca-ide.service "$(pwd -P)/vault/secret"
+  [ "$status" -eq 0 ]
+  grep -qx "nsenter -t 42 -m test ! -e $(pwd -P)/vault/secret" nsenter.log
+}
+
+@test "isolated: a PATH through .. is probed at its canonical path" {
+  mkdir -p vault work && touch vault/secret
+  cd work || return 1
+  run --separate-stderr "$vm" isolated orca-ide.service ../vault/secret
+  cd .. || return 1
+  [ "$status" -eq 0 ]
+  grep -qx "nsenter -t 42 -m test ! -e $(pwd -P)/vault/secret" nsenter.log
+}
+
+@test "isolated: a symlink then .. resolves as the kernel does, from the link's target" {
+  mkdir -p real/sub && touch real/secret && ln -s real/sub link
+  run --separate-stderr "$vm" isolated orca-ide.service link/../secret
+  [ "$status" -eq 0 ]
+  grep -qx "nsenter -t 42 -m test ! -e $(pwd -P)/real/secret" nsenter.log
+}
+
+@test "isolated: an exported CDPATH does not move the PATH" {
+  mkdir -p vault other/vault && touch vault/secret other/vault/secret
+  export CDPATH=$PWD/other
+  run --separate-stderr "$vm" isolated orca-ide.service vault/secret
+  [ "$status" -eq 0 ]
+  grep -qx "nsenter -t 42 -m test ! -e $(pwd -P)/vault/secret" nsenter.log
+}
+
+@test "isolated: a PATH the unit sees fails and names V8" {
+  mkdir -p vault && touch vault/secret
+  export STUB_SEES=1
+  run --separate-stderr "$vm" isolated orca-ide.service vault/secret
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: orca-ide.service sees $(pwd -P)/vault/secret, or the probe did not run (nix/modules V8)" ]
+}
+
+@test "isolated: a writable / fails and names V8" {
+  mkdir -p vault && touch vault/secret
+  export STUB_WRITABLE=1
+  run --separate-stderr "$vm" isolated orca-ide.service vault/secret
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: orca-ide.service can write /, or the probe did not run (nix/modules V8)" ]
+}
+
+@test "isolated: a PATH missing on the host fails, so the check is not vacuous" {
+  run --separate-stderr "$vm" isolated orca-ide.service vault/secret
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: vault/secret is missing on the host" ]
+}
+
+@test "isolated: a namespace nsenter cannot look into fails, so the check is not vacuous" {
+  mkdir -p vault && touch vault/secret
+  export STUB_BLIND=1
+  run --separate-stderr "$vm" isolated orca-ide.service vault/secret
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: cannot look into orca-ide.service's mount namespace" ]
+}
+
+@test "isolated: a probe that cannot run after the control fails, so it never reads as isolated" {
+  mkdir -p vault && touch vault/secret
+  export STUB_PROBE_ERR=1
+  run --separate-stderr "$vm" isolated orca-ide.service vault/secret
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: orca-ide.service sees $(pwd -P)/vault/secret, or the probe did not run (nix/modules V8)" ]
+}
+
+@test "isolated: a unit with no main process fails" {
+  mkdir -p vault && touch vault/secret
+  export STUB_PID=0
+  run --separate-stderr "$vm" isolated orca-ide.service vault/secret
+  [ "$status" -eq 1 ]
+  [ "$stderr" = "vm-orca: orca-ide.service has no main process" ]
 }
 
 @test "seed: the user's Orca starts with onboarding closed, tips seen, no tours, no star prompt, telemetry off" {
@@ -373,5 +472,5 @@ xdotool key Escape DISPLAY=:99" ]
 @test "anything else is a usage error, exit 2" {
   run --separate-stderr "$vm" launch alice
   [ "$status" -eq 2 ]
-  [ "$stderr" = "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | seed USER [onboarding] | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA | commits USER DIR N | keys USER KEY..." ]
+  [ "$stderr" = "usage: vm-orca.sh module USER VERSION | app USER | serve USER PORT | listening PORT ADDRESS | exposure UNIT FILE | isolated UNIT PATH | seed USER [onboarding] | stub USER PORT SCRIPT WORKDIR | record USER FILE | record-stop | agent USER AGENT DIR PROMPT FILE | compact IN OUT | preview IN OUT | repo USER DIR [FILE...] | add USER DIR | gate USER DIR SCHEMA | commits USER DIR N | keys USER KEY..." ]
 }

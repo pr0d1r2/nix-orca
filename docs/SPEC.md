@@ -26,7 +26,7 @@ sib|release|CI pipeline: workflows from `.actlith`, bump PR flow, cache checks, 
 
 ## §I INTERFACES
 
-- file: `README.md`, `docs/SECURITY.md`, `docs/CONTRIBUTING.md`, `docs/LLM-DISCLAIMER.md`, `docs/DEMO.md`, `docs/BUILDER.md` (remote builder); `docs/demo/` holds the demo files, written by `scripts/demo-assets.sh` only.
+- file: `README.md`, `docs/SECURITY.md`, `docs/CONTRIBUTING.md`, `docs/LLM-DISCLAIMER.md`, `docs/DEMO.md`, `docs/BUILDER.md` (remote builder), `docs/SERVE.md` (serve profiles, unit isolation, checks; `nix/modules:V8`); `docs/demo/` holds the demo files, written by `scripts/demo-assets.sh` only.
 
 ## §V INVARIANTS
 
