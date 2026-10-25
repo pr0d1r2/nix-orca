@@ -137,6 +137,8 @@ exposure)
 isolated)
   [ "$#" -eq 3 ] || usage
   unit=$2 path=$3
+  # Inside the namespace a relative path resolves against /, not here.
+  case "$path" in /*) ;; *) path=$PWD/$path ;; esac
   [ -e "$path" ] || fail "$path is missing on the host"
   pid=$(systemctl show -p MainPID --value "$unit")
   [ -n "$pid" ] && [ "$pid" != 0 ] || fail "$unit has no main process"
