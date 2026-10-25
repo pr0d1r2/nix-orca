@@ -19,7 +19,8 @@
 #   exposure: `systemd-analyze security UNIT` scores at most UNIT's line in
 #           FILE (`unit score`, `#` comments), the .exposure ratchet
 #   isolated: UNIT's main process, in its mount namespace, cannot see PATH
-#           (which the host has) and cannot write / (nix/modules V8)
+#           (which the host has) and cannot write /; a probe that does not
+#           run fails (nix/modules V8)
 #   seed:   before `app`, USER's Orca state says onboarding is done (unless
 #           `onboarding`), every tip seen, no tour or star prompt may start
 #           and telemetry is off, so the window shows the work (tests T4)
@@ -141,11 +142,12 @@ isolated)
   [ -n "$pid" ] && [ "$pid" != 0 ] || fail "$unit has no main process"
   # A control: without it, an nsenter that cannot enter passes both probes.
   nsenter -t "$pid" -m test -e / || fail "cannot look into $unit's mount namespace"
-  ! nsenter -t "$pid" -m test -e "$path" || fail "$unit sees $path (nix/modules V8)"
-  if nsenter -t "$pid" -m touch /.vm-orca-probe 2>/dev/null; then
-    nsenter -t "$pid" -m rm -f /.vm-orca-probe || true
-    fail "$unit can write / (nix/modules V8)"
-  fi
+  # Each probe succeeds only on the isolated answer, so one that does not
+  # run (nsenter, or the command inside) fails rather than reads as one.
+  nsenter -t "$pid" -m test ! -e "$path" ||
+    fail "$unit sees $path, or the probe did not run (nix/modules V8)"
+  nsenter -t "$pid" -m sh -c 'if : >/.vm-orca-probe 2>/dev/null; then rm -f /.vm-orca-probe; exit 1; fi' ||
+    fail "$unit can write /, or the probe did not run (nix/modules V8)"
   ;;
 seed)
   [ "$#" -eq 2 ] || { [ "$#" -eq 3 ] && [ "$3" = onboarding ]; } || usage
