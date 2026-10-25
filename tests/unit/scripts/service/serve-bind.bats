@@ -15,6 +15,8 @@ setup() {
 echo "ip $*" >>"$BATS_TEST_TMPDIR/ip.log"
 [ -e "$BATS_TEST_TMPDIR/up" ] || exit 0
 echo "2: $5    inet 192.168.1.20/24 brd 192.168.1.255 scope global dynamic $5"
+# STUB_SLOW: the next line comes late, as from an ip still writing.
+[ -z "${STUB_SLOW:-}" ] || sleep 0.5
 echo "2: $5    inet 10.0.0.7/8 scope global secondary $5"
 STUB
   cat >stubs/show <<'STUB'
@@ -31,6 +33,14 @@ STUB
   [ "$status" -eq 0 ]
   [ "$output" = "192.168.1.20 serve --port 6768" ]
   grep -qx "ip -4 -o addr show dev enp3s0" ip.log
+}
+
+@test "an ip still writing after the first address does not stop the command (nix/modules B1)" {
+  touch up
+  export STUB_SLOW=1
+  run --separate-stderr "$bind" enp3s0 -- show serve
+  [ "$status" -eq 0 ]
+  [ "$output" = "192.168.1.20 serve" ]
 }
 
 @test "it waits for the address to come up" {
