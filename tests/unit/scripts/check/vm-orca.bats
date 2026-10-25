@@ -4,6 +4,8 @@
 # systemctl and ffmpeg are stubs; su runs the command as the caller and
 # logs the user.
 # Each @test runs in its own subshell, so its exports are meant to be local.
+# A wait that should succeed gets 30 s, so a loaded machine does not fail
+# it; a test of a wait that times out sets ORCA_VM_TIMEOUT=3 itself.
 # shellcheck disable=SC2030,SC2031
 
 bats_require_minimum_version 1.5.0
@@ -120,7 +122,7 @@ STUB
   mkdir -p demo home src/tests/stub
   chmod +x stubs/*
   export PATH="$BATS_TEST_TMPDIR/stubs:$PATH"
-  export ORCA_VM_PROFILE=$BATS_TEST_TMPDIR/profile ORCA_VM_TIMEOUT=3 ORCA_VM_LOGS=$BATS_TEST_TMPDIR
+  export ORCA_VM_PROFILE=$BATS_TEST_TMPDIR/profile ORCA_VM_TIMEOUT=30 ORCA_VM_LOGS=$BATS_TEST_TMPDIR
   export ORCA_VM_SRC=$BATS_TEST_TMPDIR/src HOME=$BATS_TEST_TMPDIR/home
 }
 
@@ -152,6 +154,7 @@ STUB
 }
 
 @test "app: a runtime that never connects fails within the timeout, with the app's log" {
+  export ORCA_VM_TIMEOUT=3
   export STUB_NO_RUNTIME=1
   run --separate-stderr "$vm" app alice
   [ "$status" -eq 1 ]
@@ -171,6 +174,7 @@ STUB
 }
 
 @test "serve: a server that never gets ready fails with its log" {
+  export ORCA_VM_TIMEOUT=3
   export STUB_NO_SERVE=1
   run --separate-stderr "$vm" serve bob 6769
   [ "$status" -eq 1 ]
@@ -309,6 +313,7 @@ STUB
 }
 
 @test "stub: a server that never listens fails within the timeout" {
+  export ORCA_VM_TIMEOUT=3
   export STUB_NO_LISTEN=1
   run --separate-stderr "$vm" stub alice 8787 opencode.json "$BATS_TEST_TMPDIR/demo"
   [ "$status" -eq 1 ]
@@ -329,6 +334,7 @@ STUB
 }
 
 @test "record-stop: a recorder still running after the timeout fails" {
+  export ORCA_VM_TIMEOUT=3
   touch active-orca-record
   export STUB_NO_STOP=1
   run --separate-stderr "$vm" record-stop
@@ -346,6 +352,7 @@ STUB
 }
 
 @test "agent: no file written fails within the timeout" {
+  export ORCA_VM_TIMEOUT=3
   export STUB_NO_AGENT=1
   run --separate-stderr "$vm" agent alice opencode "$BATS_TEST_TMPDIR/demo" "write hello.txt" hello.txt
   [ "$status" -eq 1 ]
@@ -353,6 +360,7 @@ STUB
 }
 
 @test "agent: an agent that never goes idle fails" {
+  export ORCA_VM_TIMEOUT=3
   export STUB_NOT_IDLE=1
   run --separate-stderr "$vm" agent alice opencode "$BATS_TEST_TMPDIR/demo" "write hello.txt" hello.txt
   [ "$status" -eq 1 ]
@@ -429,6 +437,7 @@ STUB
 }
 
 @test "gate: no gate commit fails within the timeout" {
+  export ORCA_VM_TIMEOUT=3
   git -C demo init -q
   git -C demo -c user.email=t@l -c user.name=t commit -q --allow-empty -m init
   echo schema >Config.pkl
@@ -447,6 +456,7 @@ STUB
 }
 
 @test "commits: fewer than N after the timeout fails" {
+  export ORCA_VM_TIMEOUT=3
   git -C demo init -q
   git -C demo -c user.email=t@l -c user.name=t commit -q --allow-empty -m one
   run --separate-stderr "$vm" commits alice "$BATS_TEST_TMPDIR/demo" 3
