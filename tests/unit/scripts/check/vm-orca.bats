@@ -224,6 +224,21 @@ STUB
   grep -qx "nsenter -t 42 -m test ! -e $(pwd -P)/vault/secret" nsenter.log
 }
 
+@test "isolated: a symlink then .. resolves as the kernel does, from the link's target" {
+  mkdir -p real/sub && touch real/secret && ln -s real/sub link
+  run --separate-stderr "$vm" isolated orca-ide.service link/../secret
+  [ "$status" -eq 0 ]
+  grep -qx "nsenter -t 42 -m test ! -e $(pwd -P)/real/secret" nsenter.log
+}
+
+@test "isolated: an exported CDPATH does not move the PATH" {
+  mkdir -p vault other/vault && touch vault/secret other/vault/secret
+  export CDPATH=$PWD/other
+  run --separate-stderr "$vm" isolated orca-ide.service vault/secret
+  [ "$status" -eq 0 ]
+  grep -qx "nsenter -t 42 -m test ! -e $(pwd -P)/vault/secret" nsenter.log
+}
+
 @test "isolated: a PATH the unit sees fails and names V8" {
   mkdir -p vault && touch vault/secret
   export STUB_SEES=1
